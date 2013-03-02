@@ -1,4 +1,7 @@
 var Player = me.ObjectEntity.extend({
+    shadow: null,
+    inventory: null,
+    attacking: false,
     init: function(x, y, settings){
         this.parent(x, y, settings);
         me.game.viewport.follow(this.pos, me.game.viewport.AXIS_BOTH);
@@ -17,19 +20,21 @@ var Player = me.ObjectEntity.extend({
         this.gravity = 0;
         this.updateColRect(10, 12, 5, 22);
         this.setCurrentAnimation("iddle_down");
-        var attacking = false;
+        
+        this.shadow = new Shadow(this.pos.x+8,this.pos.y+13);
+        me.game.add(this.shadow, 4);
+        me.game.sort();
         
     },
     
     update: function(){
-        var last_position = this.pos;
         if(this.attacking){
-            if(this.getCurrenAnimationFrame() == 34){
+            if(this.getCurrenAnimationFrame() === 34){
                 this.attacking = false;
             }
         }
         
-        if (me.input.isKeyPressed('attack') && this.attacking == false){
+        if (me.input.isKeyPressed('attack') && this.attacking === false){
             if(this.isCurrentAnimation("up") || this.isCurrentAnimation("idle_up")){
                 this.setCurrentAnimation("attack_up");
             } else if(this.isCurrentAnimation("down") || this.isCurrentAnimation("idle_down")){
@@ -78,8 +83,8 @@ var Player = me.ObjectEntity.extend({
         var res = me.game.collide(this);
          
         if(res){
-            if(res.obj.type == "npc" || res.obj.type == me.game.ENEMY_OBJECT){
-                if (res.x != 0){
+            if((res.obj.type === "npc") || (res.obj.type === me.game.ENEMY_OBJECT)){
+                if (res.x !== 0){
                     // x axis
                     if (res.x<0){
                         this.vel.x = -this.vel.x;
@@ -105,6 +110,8 @@ var Player = me.ObjectEntity.extend({
         
         // check & update player movement
         this.updateMovement();
+        this.shadow.pos.x = this.pos.x + 8;
+        this.shadow.pos.y = this.pos.y + 13;
  
         
         // update object animation
