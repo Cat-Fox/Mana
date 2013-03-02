@@ -59,14 +59,14 @@ var Player = me.ObjectEntity.extend({
         } else if (me.input.isKeyPressed('up')) {
             this.setCurrentAnimation("up");
             // update the entity velocity
-            this.vel.y -= this.accel.x * me.timer.tick;
+            this.vel.y -= this.accel.y * me.timer.tick;
             this.vel.x = 0;
         } else if (me.input.isKeyPressed('down')) {
             this.setCurrentAnimation("down");
             // unflip the sprite
             this.flipX(false);
             // update the entity velocity
-            this.vel.y += this.accel.x * me.timer.tick;
+            this.vel.y += this.accel.y * me.timer.tick;
             this.vel.x = 0;
         } else {
             this.vel.x = 0;

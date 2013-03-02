@@ -65,6 +65,10 @@ var g_resources = [{
     type: "image",
     src: "data/shadow16.png"
 }, {
+    name: "smiles16",
+    type: "image",
+    src: "data/smiles16.png"
+}, {
     name: "itempick2",
     type: "audio",
     src: "data/sounds/"
@@ -120,7 +124,7 @@ var jsApp =
         me.entityPool.add("Rat", Rat);
         me.entityPool.add("Shadow", Shadow);
         me.entityPool.add("Sparks", Sparks);
-        me.entityPool.add("Text", Text);
+        me.entityPool.add("Smile", Smile);
         me.entityPool.add("Target", Target);
         
         me.input.bindKey(me.input.KEY.LEFT, "left");
@@ -150,7 +154,7 @@ var PlayScreen = me.ScreenObject.extend(
         me.levelDirector.loadLevel("test_map");
         
         me.game.addHUD(0, 0, 400, 220);
-        me.game.HUD.addItem("HP", new HP(3,210));
+        me.game.HUD.addItem("HP", new HP(3,215));
         me.game.HUD.setItemValue("HP", 50);
         me.game.HUD.addItem("EnemyHP", new EnemyHP(130,8));
         me.game.sort();
