@@ -17,6 +17,10 @@ var g_resources = [{
     type: "tmx",
     src: "data/test_map.tmx"
 }, {
+    name: "house",
+    type: "tmx",
+    src: "data/house.tmx"
+},  {
     name: "human",
     type: "image",
     src: "data/human.png"
@@ -36,6 +40,18 @@ var g_resources = [{
     name: "burger",
     type: "image",
     src: "data/burger.png"
+}, {
+    name: "item-sword1",
+    type: "image",
+    src: "data/item-sword1.png"
+}, {
+    name: "sword1",
+    type: "image",
+    src: "data/sword1.png"
+}, {
+    name: "target",
+    type: "image",
+    src: "data/target.png"
 }, {
     name: "npc_guard",
     type: "image",
@@ -67,11 +83,13 @@ var g_resources = [{
 var jsApp = 
 {	
     /* ---Initialize the jsApp---*/
+    screenWidth: 400,
+    screenHeight: 220,
     onload: function()
     {
 		
         // init the video
-        if (!me.video.init('jsapp', 400, 220, true, 2.0, true))
+        if (!me.video.init('jsapp', this.screenWidth, this.screenHeight, true, 2.0, true))
         {
             alert("Sorry but your browser does not support html 5 canvas.");
             return;
@@ -102,6 +120,8 @@ var jsApp =
         me.entityPool.add("Rat", Rat);
         me.entityPool.add("Shadow", Shadow);
         me.entityPool.add("Sparks", Sparks);
+        me.entityPool.add("Text", Text);
+        me.entityPool.add("Target", Target);
         
         me.input.bindKey(me.input.KEY.LEFT, "left");
         me.input.bindKey(me.input.KEY.RIGHT, "right");
@@ -129,9 +149,10 @@ var PlayScreen = me.ScreenObject.extend(
         // load a level
         me.levelDirector.loadLevel("test_map");
         
-        me.game.addHUD(0, 200, 400, 20);
-        me.game.HUD.addItem("HP", new HP(3,15));
+        me.game.addHUD(0, 0, 400, 220);
+        me.game.HUD.addItem("HP", new HP(3,210));
         me.game.HUD.setItemValue("HP", 50);
+        me.game.HUD.addItem("EnemyHP", new EnemyHP(130,8));
         me.game.sort();
     },
 	
