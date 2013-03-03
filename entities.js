@@ -35,6 +35,23 @@ var CollectableShadow = me.CollectableEntity.extend({
     }
 });
 
+var Item_sword1 = CollectableShadow.extend({
+    init: function(x, y, settings){
+        this.parent(x, y, settings);
+        this.addAnimation("always", [0,1,2,3,4]);
+        this.setCurrentAnimation("always");
+    },
+    onCollision: function() {
+        me.audio.play("metal-clash");
+        smile = new Smile(this.pos.x, this.pos.y-5, "wow");
+        me.game.add(smile, 3);
+        me.game.sort();
+        me.game.remove(this.shadow);
+        me.game.remove(this);
+        this.collidable = false;
+    }
+});
+
 var Target = me.ObjectEntity.extend({
     init: function(x, y, colour) {
         settings = {};
@@ -58,6 +75,7 @@ var Sparks = me.ObjectEntity.extend({
         this.addAnimation("idle", [0, 1, 2, 3, 4]);
         this.setCurrentAnimation("idle");
         this.time = me.timer.getTime();
+        this.collidable = false;
     }
 });
 
@@ -68,6 +86,7 @@ var Shadow = me.ObjectEntity.extend({
         settings.spritewidth = 16;
         settings.spriteheight = 16;
         this.parent(x, y, settings);
+        this.collidable = false;
     }
 });
 
@@ -88,6 +107,7 @@ var Smile = me.ObjectEntity.extend({
         this.setCurrentAnimation(smile);
         this.timer = me.timer.getTime();
         this.setVelocity(1,1);
+        this.collidable = false;
     },
     update: function() {
         this.vel.y -= this.accel.y * me.timer.tick;

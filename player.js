@@ -83,6 +83,7 @@ var Player = me.ObjectEntity.extend({
         var res = me.game.collide(this);
          
         if(res){
+            //this is quite horrible solution
             if((res.obj.type === "npc") || (res.obj.type === me.game.ENEMY_OBJECT)){
                 if (res.x !== 0){
                     // x axis

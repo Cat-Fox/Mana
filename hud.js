@@ -36,3 +36,11 @@ var EnemyHP = me.HUD_Item.extend({
         }
     }
 });
+
+//TODO
+var Inventory = me.HUD_Item.extend({
+    init: function(x, y, settings){
+        settings = {};
+        
+    }
+});

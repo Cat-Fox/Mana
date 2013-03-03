@@ -68,31 +68,38 @@ var g_resources = [{
     name: "smiles16",
     type: "image",
     src: "data/smiles16.png"
+},{
+    name: "sparks",
+    type: "image",
+    src: "data/sparks.png"
+},{
+    name: "inventory_tile",
+    type: "image",
+    src: "data/inventory_tile.png"
 }, {
     name: "itempick2",
+    type: "audio",
+    src: "data/sounds/"
+}, {
+    name: "metal-clash",
     type: "audio",
     src: "data/sounds/"
 },{
     name: "pixfont",
     type: "image",
     src: "data/sprite/pixfont.png"
-},{
-    name: "sparks",
-    type: "image",
-    src: "data/sparks.png"
 }];
 
 
 
 var jsApp = 
 {	
-    /* ---Initialize the jsApp---*/
     screenWidth: 400,
     screenHeight: 220,
     onload: function()
     {
 		
-        // init the video
+        //webFonts are unasable for scale 2.0!!!
         if (!me.video.init('jsapp', this.screenWidth, this.screenHeight, true, 2.0, true))
         {
             alert("Sorry but your browser does not support html 5 canvas.");
@@ -101,13 +108,10 @@ var jsApp =
 				
         // initialize the "audio"
         me.audio.init("mp3,ogg");
-		
         // set all resources to be loaded
-        me.loader.onload = this.loaded.bind(this);
-		
+        me.loader.onload = this.loaded.bind(this);	
         // set all resources to be loaded
         me.loader.preload(g_resources);
-
         // load everything & display a loading screen
         me.state.change(me.state.LOADING);
     },
@@ -126,6 +130,7 @@ var jsApp =
         me.entityPool.add("Sparks", Sparks);
         me.entityPool.add("Smile", Smile);
         me.entityPool.add("Target", Target);
+        me.entityPool.add("Item_sword1", Item_sword1);
         
         me.input.bindKey(me.input.KEY.LEFT, "left");
         me.input.bindKey(me.input.KEY.RIGHT, "right");
@@ -157,6 +162,7 @@ var PlayScreen = me.ScreenObject.extend(
         me.game.HUD.addItem("HP", new HP(3,215));
         me.game.HUD.setItemValue("HP", 50);
         me.game.HUD.addItem("EnemyHP", new EnemyHP(130,8));
+        me.game.HUD.addItem("Inventory", new Inventory());
         me.game.sort();
     },
 	

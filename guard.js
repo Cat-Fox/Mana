@@ -28,6 +28,7 @@ var Guard = me.ObjectEntity.extend ({
         }
     },
     update: function(){
+        //this is horrible solution too, mouseout event should fix it
         if((this.target !== null) && ((me.timer.getTime() - this.timer) > 1500)){
             me.game.remove(this.target);
             this.target = null;
@@ -36,6 +37,7 @@ var Guard = me.ObjectEntity.extend ({
     },
     onDestroyEvent: function() {
         me.input.releaseMouseEvent('mousemove', this.collisionBox);
+        //shadow will always be created, but target is dependent on update function
         me.game.remove(this.shadow);
         //me.game.remove(this.target);
     },
