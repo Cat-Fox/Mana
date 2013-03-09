@@ -76,12 +76,24 @@ var g_resources = [{
     name: "inventory_tile",
     type: "image",
     src: "data/inventory_tile.png"
+},{
+    name: "8x8Font",
+    type: "image",
+    src: "data/8x8Font-white.png"
 }, {
     name: "itempick2",
     type: "audio",
     src: "data/sounds/"
 }, {
     name: "metal-clash",
+    type: "audio",
+    src: "data/sounds/"
+}, {
+    name: "exp_click",
+    type: "audio",
+    src: "data/sounds/"
+}, {
+    name: "fire",
     type: "audio",
     src: "data/sounds/"
 },{
@@ -131,6 +143,9 @@ var jsApp =
         me.entityPool.add("Smile", Smile);
         me.entityPool.add("Target", Target);
         me.entityPool.add("Item_sword1", Item_sword1);
+        me.entityPool.add("InventoryTiles", InventoryTiles);
+        me.entityPool.add("Fire", Fire);
+        me.entityPool.add("CollisionBox", CollisionBox);
         
         me.input.bindKey(me.input.KEY.LEFT, "left");
         me.input.bindKey(me.input.KEY.RIGHT, "right");
@@ -138,6 +153,9 @@ var jsApp =
         me.input.bindKey(me.input.KEY.DOWN, "down");
         me.input.bindKey(me.input.KEY.I, "inventory");
         me.input.bindKey(me.input.KEY.X, "attack");
+        
+        me.gamestat.add("hp", 50);
+        me.gamestat.add("exp", 0);
         
         //me.debug.renderHitBox = true;
         
@@ -159,10 +177,9 @@ var PlayScreen = me.ScreenObject.extend(
         me.levelDirector.loadLevel("test_map");
         
         me.game.addHUD(0, 0, 400, 220);
-        me.game.HUD.addItem("HP", new HP(3,215));
-        me.game.HUD.setItemValue("HP", 50);
+        me.game.HUD.addItem("HP", new HP(5,210));
+        me.game.HUD.setItemValue("HP", 0);
         me.game.HUD.addItem("EnemyHP", new EnemyHP(130,8));
-        me.game.HUD.addItem("Inventory", new Inventory());
         me.game.sort();
     },
 	
@@ -174,7 +191,6 @@ var PlayScreen = me.ScreenObject.extend(
     }
 
 });
-
 
 //bootstrap :)
 window.onReady(function() 
