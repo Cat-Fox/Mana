@@ -49,24 +49,15 @@ var Player = me.ObjectEntity.extend({
         }
 
         if (this.attacking) {
-            if (this.getCurrentAnimationFrame() === 19) {
-                this.setCurrentAnimation("iddle_up");
-                console.log("stop attack");
-                this.attacking = false;
-                if (this.attack_box !== null) {
-                    me.game.remove(this.attack_box);
+            if (this.getCurrentAnimationFrame() === 4) {
+                if(this.isCurrentAnimation("attack_up")){
+                    this.setCurrentAnimation("iddle_up");
+                } else if(this.isCurrentAnimation("attack_down")){
+                    this.setCurrentAnimation("iddle_down");
+                } else if(this.isCurrentAnimation("attack_right")){
+                    this.setCurrentAnimation("iddle_right");
                 }
-                this.attacking = false;
-            } else if (this.getCurrentAnimationFrame() === 34) {
-                this.setCurrentAnimation("iddle_down");
-                console.log("stop attack");
-                this.attacking = false;
-                if (this.attack_box !== null) {
-                    me.game.remove(this.attack_box);
-                }
-                this.attacking = false;
-            } else if (this.getCurrentAnimationFrame() === 4) {
-                this.setCurrentAnimation("iddle_right");
+                
                 console.log("stop attack");
                 if (this.attack_box !== null) {
                     me.game.remove(this.attack_box);
