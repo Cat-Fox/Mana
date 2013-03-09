@@ -1,5 +1,7 @@
 var Rat = me.ObjectEntity.extend({
     hp: 30,
+    shadow: null,
+    target: null,
     init: function(x, y, settings) {
         this.parent(x, y, settings);
         this.collidable = true;
@@ -12,6 +14,7 @@ var Rat = me.ObjectEntity.extend({
         this.addAnimation("attack_right", [6, 7, 8, 9, 10, 11]);
         this.addAnimation("attack_top", [24, 25, 26, 27]);
         this.addAnimation("attack_down", [42, 43, 44, 45]);
+        this.addAnimation("die", [0, 1, 2, 3, 4], 20);
         this.type = me.game.ENEMY_OBJECT;
         this.setCurrentAnimation("idle_right");
         this.updateColRect(15, 18, 18, 12);
@@ -19,13 +22,47 @@ var Rat = me.ObjectEntity.extend({
         this.shadow = new Shadow(this.pos.x + 15, this.pos.y + 15);
         me.game.add(this.shadow, 4);
         me.game.sort();
-
-        me.input.registerMouseEvent('mousemove', this.collisionBox, this.hover.bind(this));
-    },
-    hover: function() {
-        me.game.HUD.setItemValue("EnemyHP", this.hp + ";rat;enemy");
     },
     onDestroyEvent: function() {
-        me.input.releaseMouseEvent('mousemove', this.collisionBox);
+        this.collidable = false;
+        me.game.remove(this.shadow);
+    },
+    update: function() {
+        if (this.getCurrentAnimationFrame() === 4) {
+            me.game.remove(this);
+        }
+        var targeted = false;
+        var res = me.game.collide(this);
+        if (res) {
+            if (res.obj.type === "human_attack") {
+                this.hurt(5);
+                me.game.getEntityByGUID(me.gamestat.getItemValue("player")).destroyAttack();
+            }
+            if (res.obj.type === "human_target") {
+                targeted = true;
+                me.game.HUD.setItemValue("EnemyHP", this.hp + ";rat;enemy");
+                if (this.target === null) {
+                    this.target = new Target(this.pos.x + 15, this.pos.y + 16, "red");
+                    me.game.add(this.target, 3);
+                    me.game.sort();
+                }
+            }
+        }
+        
+        if(targeted === false && this.target !== null){
+            me.game.remove(this.target);
+            this.target = null;
+        }
+        this.parent();
+        return true;
+    },
+    hurt: function(value) {
+        this.hp = this.hp - value;
+        if (this.hp <= 0) {
+            this.setCurrentAnimation("die");
+            me.game.getEntityByGUID(me.gamestat.getItemValue("player")).updateEXP(15);
+        } else {
+            this.flicker(20);
+        }
     }
 });
