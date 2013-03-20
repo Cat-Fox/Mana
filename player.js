@@ -2,10 +2,14 @@ var Player = me.ObjectEntity.extend({
     shadow: null,
     inventory: null,
     attacking: false,
-    invicible_timer: 0,
-    invicible: false,
     attack_box: null,
+    weapon: null,
+    weapon_id: null,
     target_box: null,
+    use_box: null,
+    use_box_timer: null,
+    attack: 5,
+    flipped: false,
     init: function(x, y, settings) {
         this.parent(x, y, settings);
         me.game.viewport.follow(this.pos, me.game.viewport.AXIS_BOTH);
@@ -26,39 +30,40 @@ var Player = me.ObjectEntity.extend({
         this.setCurrentAnimation("iddle_down");
 
         //store GUID
-        me.gamestat.add("player", this.GUID);
-
-        //set HP (which is already set)
-        //this.updateHP(50);
+        if (me.gamestat.getItemValue("player") === 0) {
+            me.gamestat.add("player", this.GUID);
+        } else {
+            console.log("Player old GUID " + me.gamestat.getItemValue("player") + " New GUID " + this.GUID);
+            me.gamestat.setValue("player", this.GUID);
+        }
+        this.type = "player";
 
         this.shadow = new Shadow(this.pos.x + 8, this.pos.y + 13);
         me.game.add(this.shadow, 4);
-        //this.inventory = new InventoryTiles(400 - 80, 220 - 80);
-        //me.game.add(this.inventory, 4);
         this.target_box = new CollisionBox(this.pos.x + 8, this.pos.y + 22, "human_target");
         me.game.add(this.target_box, 4);
         me.game.sort();
 
     },
     update: function() {
+        var last_vel = this.vel.clone();
         me.game.HUD.setItemValue("HP", me.gamestat.getItemValue("hp"));
-
-        if ((me.timer.getTime() - this.invicible_timer) > 3000) {
-            this.invicible = false;
-            this.invicible_timer = 0;
+        if (this.use_box !== null) {
+            if ((me.timer.getTime() - this.use_box_timer) > 200) {
+                this.destroyUse();
+            }
         }
 
         if (this.attacking) {
             if (this.getCurrentAnimationFrame() === 4) {
-                if(this.isCurrentAnimation("attack_up")){
+                if (this.isCurrentAnimation("attack_up")) {
                     this.setCurrentAnimation("iddle_up");
-                } else if(this.isCurrentAnimation("attack_down")){
+                } else if (this.isCurrentAnimation("attack_down")) {
                     this.setCurrentAnimation("iddle_down");
-                } else if(this.isCurrentAnimation("attack_right")){
+                } else if (this.isCurrentAnimation("attack_right")) {
                     this.setCurrentAnimation("iddle_right");
-                }
-                
-                console.log("stop attack");
+                }   
+
                 if (this.attack_box !== null) {
                     me.game.remove(this.attack_box);
                 }
@@ -73,15 +78,12 @@ var Player = me.ObjectEntity.extend({
             if ((this.isCurrentAnimation("up") === true) || (this.isCurrentAnimation("iddle_up") === true)) {
                 this.setCurrentAnimation("attack_up");
                 this.createAttack("up");
-                console.log("a_up");
             } else if ((this.isCurrentAnimation("down") === true) || (this.isCurrentAnimation("iddle_down") === true)) {
                 this.setCurrentAnimation("attack_down");
                 this.createAttack("down");
-                console.log("a_down");
             } else if ((this.isCurrentAnimation("right") === true) || (this.isCurrentAnimation("iddle_right") === true)) {
                 this.setCurrentAnimation("attack_right");
                 this.createAttack("right");
-                console.log("a_right");
             }
         } else {
             if (this.attacking === false) {
@@ -89,6 +91,7 @@ var Player = me.ObjectEntity.extend({
                     // flip the sprite on horizontal axis
                     this.setCurrentAnimation("right");
                     this.flipX(true);
+                    this.flipped = true;
                     // update the entity velocity
                     this.vel.x -= this.accel.x * me.timer.tick;
                     this.vel.y = 0;
@@ -96,6 +99,7 @@ var Player = me.ObjectEntity.extend({
                     this.setCurrentAnimation("right");
                     // unflip the sprite
                     this.flipX(false);
+                    this.flipped = false;
                     // update the entity velocity
                     this.vel.x += this.accel.x * me.timer.tick;
                     this.vel.y = 0;
@@ -108,10 +112,16 @@ var Player = me.ObjectEntity.extend({
                     this.setCurrentAnimation("down");
                     // unflip the sprite
                     this.flipX(false);
+                    this.flipped = false;
                     // update the entity velocity
                     this.vel.y += this.accel.y * me.timer.tick;
                     this.vel.x = 0;
                 } else {
+                    if (me.input.isKeyPressed('use')) {
+                        this.createUse();
+                    } else if (me.input.isKeyPressed('inventory')) {
+                        console.log(me.gamestat.getItemValue("inventory"));
+                    }
                     this.vel.x = 0;
                     this.vel.y = 0;
                     if (this.isCurrentAnimation('right')) {
@@ -132,8 +142,10 @@ var Player = me.ObjectEntity.extend({
                 if (res.x !== 0) {
                     // x axis
                     if (res.x < 0) {
-                        this.vel.x = -this.vel.x;
+                        //this.vel.x = -this.vel.x;
                         this.vel.y = 0;
+                        this.vel = last_vel;
+
                     } else {
                         this.vel.x = -this.vel.x;
                         this.vel.y = 0;
@@ -144,18 +156,16 @@ var Player = me.ObjectEntity.extend({
                     if (res.y < 0) {
                         this.vel.y = -this.vel.y;
                         this.vel.x = 0;
+
                     } else {
                         this.vel.y = -this.vel.y;
                         this.vel.x = 0;
                     }
                 }
             }
-            if ((res.obj.type === "fire" || res.obj.type === "cold") && this.invicible === false) {
+            if ((res.obj.type === "fire" || res.obj.type === "cold")) {
                 //ouch this hurts
-                this.updateHP(-10);
-                this.flicker(120);
-                this.invicible_timer = me.timer.getTime();
-                this.invicible = true;
+
             }
         }
 
@@ -163,6 +173,11 @@ var Player = me.ObjectEntity.extend({
         this.updateMovement();
         this.shadow.pos.x = this.pos.x + 8;
         this.shadow.pos.y = this.pos.y + 13;
+        if (this.weapon !== null) {
+            this.weapon.pos.x = this.pos.x;
+            this.weapon.pos.y = this.pos.y;
+            this.syncWeapon();
+        }
         this.updateTargetBox();
 
         // update object animation
@@ -170,9 +185,7 @@ var Player = me.ObjectEntity.extend({
         return true;
     },
     updateHP: function(value) {
-        console.log(me.gamestat.getItemValue("hp"));
         me.gamestat.updateValue("hp", value);
-        console.log(me.gamestat.getItemValue("hp"));
     },
     updateEXP: function(value) {
         me.gamestat.updateValue("exp", value);
@@ -195,6 +208,11 @@ var Player = me.ObjectEntity.extend({
 
     }, destroyAttack: function() {
         me.game.remove(this.attack_box);
+        this.use_box_timer = null;
+    }, destroyUse: function() {
+        me.game.remove(this.use_box);
+        this.use_box = null;
+        this.use_box_timer = me.timer.getTime();
     }, updateTargetBox: function() {
         if ((this.isCurrentAnimation("up") === true) || (this.isCurrentAnimation("iddle_up") === true)) {
             this.target_box.pos.x = this.pos.x + 10;
@@ -210,6 +228,85 @@ var Player = me.ObjectEntity.extend({
                 this.target_box.pos.x = this.pos.x + 10 + 12;
                 this.target_box.pos.y = this.pos.y + 8;
             }
+        }
+    }, createUse: function() {
+        if (this.use_box === null) {
+            this.use_box = new CollisionBox(this.target_box.pos.x, this.target_box.pos.y, "human_use");
+            me.game.add(this.use_box, 5);
+            me.game.sort();
+        }
+    }, hurt: function(damage) {
+        this.updateHP(-10);
+        if (this.hp >= 0) {
+            //DEAD
+        } else {
+            this.flicker(20);
+        }
+    }, equipWeapon: function(id) {
+        name = me.gamestat.getItemValue("inventory")[id];
+        if (this.weapon !== null) {
+            me.game.HUD.updateItemValue("inventory", id);
+            me.game.remove(this.weapon);
+            this.weapon = null;
+        }
+        if (this.weapon_id === id) {
+            this.weapon_id = null;
+        } else {
+            if (name === "item-sword1") {
+                this.weapon = new Sword1(this.pos.x, this.pos.y);
+                this.weapon_id = id;
+                me.game.add(this.weapon, 4);
+                me.game.sort();
+            }
+        }
+    }, countDMG: function(armor) {
+        if (this.weapon !== null) {
+            console.log(this.attack + " + " + this.weapon.attack + " - " + armor);
+            return this.attack + this.weapon.attack - armor;
+        } else {
+            console.log(this.attack + " - " + armor);
+            return this.attack - armor;
+        }
+    }, syncWeapon: function() {
+        if (this.isCurrentAnimation("up")) {
+            this.weapon.flipX(false);
+            this.weapon.setCurrentAnimation("up");
+        } else if (this.isCurrentAnimation("iddle_up")) {
+            this.weapon.flipX(false);
+            this.weapon.setCurrentAnimation("iddle_up");
+        } else if (this.isCurrentAnimation("down")) {
+            this.weapon.flipX(false);
+            this.weapon.setCurrentAnimation("down");
+        } else if (this.isCurrentAnimation("iddle_down")) {
+            this.weapon.flipX(false);
+            this.weapon.setCurrentAnimation("iddle_down");
+        } else if (this.isCurrentAnimation("right")) {
+            if (this.flipped) {
+                this.weapon.flipX(true);
+            } else {
+                this.weapon.flipX(false);
+            }
+            this.weapon.setCurrentAnimation("right");
+        } else if (this.isCurrentAnimation("iddle_right")) {
+            if (this.flipped) {
+                this.weapon.flipX(true);
+            } else {
+                this.weapon.flipX(false);
+            }
+            this.weapon.setCurrentAnimation("iddle_right");
+        } else if (this.isCurrentAnimation("attack_down")) {
+            this.weapon.flipX(false);
+            this.weapon.setCurrentAnimation("attack_down");
+        } else if (this.isCurrentAnimation("attack_right")) {
+            if (this.flipped) {
+                this.weapon.flipX(true);
+            } else {
+                this.weapon.flipX(false);
+            }
+            this.weapon.setCurrentAnimation("attack_right");
+        } else if (this.isCurrentAnimation("attack_up")) {
+            this.weapon.flipX(false);
+            this.weapon.setCurrentAnimation("attack_up");
         }
     }
 });
