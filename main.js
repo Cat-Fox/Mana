@@ -77,6 +77,22 @@ var g_resources = [{
     type: "image",
     src: "data/inventory_tile.png"
 },{
+    name: "message",
+    type: "image",
+    src: "data/message.png"
+},{
+    name: "particle",
+    type: "image",
+    src: "data/particle.png"
+},{
+    name: "particle2",
+    type: "image",
+    src: "data/particle2.png"
+},{
+    name: "particle3",
+    type: "image",
+    src: "data/particle3.png"
+},{
     name: "8x8Font",
     type: "image",
     src: "data/8x8Font-white.png"
@@ -143,9 +159,12 @@ var jsApp =
         me.entityPool.add("Smile", Smile);
         me.entityPool.add("Target", Target);
         me.entityPool.add("Item_sword1", Item_sword1);
-        me.entityPool.add("InventoryTiles", InventoryTiles);
+        me.entityPool.add("InventoryTile", InventoryTile);
         me.entityPool.add("Fire", Fire);
         me.entityPool.add("CollisionBox", CollisionBox);
+        me.entityPool.add("Message", Message);
+        me.entityPool.add("Icon", Icon);
+        me.entityPool.add("ParticleGenerator", ParticleGenerator);
         
         me.input.bindKey(me.input.KEY.LEFT, "left");
         me.input.bindKey(me.input.KEY.RIGHT, "right");
@@ -153,12 +172,14 @@ var jsApp =
         me.input.bindKey(me.input.KEY.DOWN, "down");
         me.input.bindKey(me.input.KEY.I, "inventory");
         me.input.bindKey(me.input.KEY.X, "attack");
+        me.input.bindKey(me.input.KEY.C, "use");
         
         me.gamestat.add("hp", 50);
         me.gamestat.add("exp", 0);
+        var inventory = new Array();
+        me.gamestat.add("inventory", inventory);
         
         //me.debug.renderHitBox = true;
-        
         
         // start the game 
         me.state.change(me.state.PLAY);
@@ -180,6 +201,7 @@ var PlayScreen = me.ScreenObject.extend(
         me.game.HUD.addItem("HP", new HP(5,210));
         me.game.HUD.setItemValue("HP", 0);
         me.game.HUD.addItem("EnemyHP", new EnemyHP(130,8));
+        me.game.HUD.addItem("Inventory", new InventoryItems(336, 156));
         me.game.sort();
     },
 	
