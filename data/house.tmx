@@ -19,39 +19,48 @@
   </data>
  </layer>
  <objectgroup name="entities" width="10" height="15">
-  <object name="me.LevelEntity" x="64" y="208" width="16" height="16">
+  <object name="me.LevelEntity" type="me.LevelEntity" x="48" y="208" width="48" height="32">
    <properties>
     <property name="duration" value="250"/>
     <property name="fade" value="#000000"/>
     <property name="to" value="test_map"/>
    </properties>
   </object>
-  <object name="Player" x="64" y="176" width="16" height="16">
+  <object name="Player" type="Player" x="64" y="176" width="16" height="16">
    <properties>
     <property name="image" value="human"/>
     <property name="spriteheight" value="32"/>
     <property name="spritewidth" value="32"/>
    </properties>
   </object>
-  <object name="Guard" x="32" y="32" width="16" height="16">
+  <object name="Guard" type="Ally_NPC" x="32" y="32" width="16" height="16">
    <properties>
     <property name="image" value="npc_guard"/>
     <property name="spriteheight" value="24"/>
     <property name="spritewidth" value="24"/>
    </properties>
   </object>
-  <object name="Guard" x="96" y="32" width="16" height="16">
+  <object name="Guard" type="Ally_NPC" x="96" y="32" width="16" height="16">
    <properties>
     <property name="image" value="npc_guard"/>
     <property name="spriteheight" value="24"/>
     <property name="spritewidth" value="24"/>
    </properties>
   </object>
-  <object name="Item_sword1" x="64" y="48" width="16" height="16">
+  <object name="Item_sword1" type="Collectable" x="64" y="48" width="16" height="16">
    <properties>
     <property name="image" value="item-sword1"/>
     <property name="spriteheight" value="16"/>
     <property name="spritewidth" value="16"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup name="entities-effects" width="10" height="15">
+  <object name="ParticleGenerator" type="Particles" x="64" y="208" width="16" height="16">
+   <properties>
+    <property name="image" value="particle2"/>
+    <property name="limit" value="10"/>
+    <property name="type" value="up"/>
    </properties>
   </object>
  </objectgroup>
