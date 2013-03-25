@@ -2,7 +2,8 @@ Mana
 ====
 Description:
 MelonJS RPG game
-
+State:
+waiting for new version of melonJS
 
 ##What is it?
 It's Javascript HTML5 Canvas 'Game'. It's written on MelonJS Engine.
