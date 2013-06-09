@@ -1,16 +1,17 @@
-var Burger = me.CollectableEntity.extend({
+game.Burger = me.CollectableEntity.extend({
     shadow: null,
     init: function(x, y, settings) {
+        console.log("creating burger");
         this.parent(x, y, settings);
-        this.addAnimation("always", [0, 1, 2, 3, 4, 5]);
-        this.setCurrentAnimation("always");
-        this.shadow = new Shadow(this.pos.x, this.pos.y + 7);
+        this.renderable.addAnimation("always", [0, 1, 2, 3, 4, 5]);
+        this.renderable.setCurrentAnimation("always");
+        this.shadow = new game.Shadow(this.pos.x, this.pos.y + 7);
         me.game.add(this.shadow, 4);
         me.game.sort();
     },
     onCollision: function() {
         me.audio.play("itempick2");
-        smile = new Smile(this.pos.x, this.pos.y - 5, "happy");
+        smile = new game.Smile(this.pos.x, this.pos.y - 5, "happy");
         me.game.add(smile, 3);
         me.game.sort();
         me.game.remove(this.shadow);
@@ -21,20 +22,21 @@ var Burger = me.CollectableEntity.extend({
 
 });
 
-var Sparks = me.CollectableEntity.extend({
+game.Sparks = me.CollectableEntity.extend({
     init: function(x, y) {
+        console.log("creating sparks");
         settings = {};
         settings.image = "sparks";
         settings.spritewidth = 16;
         settings.spriteheight = 16;
         this.parent(x, y, settings);
-        this.addAnimation("idle", [0, 1, 2, 3, 4]);
-        this.setCurrentAnimation("idle");
+        this.renderable.addAnimation("idle", [0, 1, 2, 3, 4]);
+        this.renderable.setCurrentAnimation("idle");
         this.collidable = true;
     },
     onCollision: function() {
         me.audio.play("exp_click");
-        smile = new Smile(this.pos.x, this.pos.y - 5, "wow");
+        smile = new game.Smile(this.pos.x, this.pos.y - 5, "wow");
         me.game.add(smile, 3);
         me.game.sort();
         me.game.remove(this);
@@ -43,13 +45,15 @@ var Sparks = me.CollectableEntity.extend({
     }
 });
 
-var CollectableShadow = me.CollectableEntity.extend({
+game.CollectableShadow = me.CollectableEntity.extend({
     shadow: null,
     init: function(x, y, settings) {
+        console.log("creating shadow Collectable");
         this.parent(x, y, settings);
-        this.shadow = new Shadow(this.pos.x, this.pos.y + 7);
+        this.shadow = new game.Shadow(this.pos.x, this.pos.y + 7);
         me.game.add(this.shadow, 4);
         me.game.sort();
+        
 
     },
     onDestroyEvent: function() {
@@ -57,15 +61,16 @@ var CollectableShadow = me.CollectableEntity.extend({
     }
 });
 
-var Item_sword1 = CollectableShadow.extend({
+game.Item_sword1 = game.CollectableShadow.extend({
     init: function(x, y, settings) {
+        console.log("creating Item_sword1");
         this.parent(x, y, settings);
-        this.addAnimation("always", [0, 1, 2, 3, 4]);
-        this.setCurrentAnimation("always");
+        this.renderable.addAnimation("always", [0, 1, 2, 3, 4]);
+        this.renderable.setCurrentAnimation("always");
     },
     onCollision: function() {
         me.audio.play("metal-clash");
-        smile = new Smile(this.pos.x, this.pos.y - 5, "wow");
+        smile = new game.Smile(this.pos.x, this.pos.y - 5, "wow");
         me.game.add(smile, 3);
         me.game.sort();
         me.game.remove(this.shadow);
@@ -75,21 +80,23 @@ var Item_sword1 = CollectableShadow.extend({
     }
 });
 
-var Target = me.ObjectEntity.extend({
+game.Target = me.ObjectEntity.extend({
     init: function(x, y, colour) {
+        console.log("creating target");
         settings = {};
         settings.image = "target";
         settings.spritewidth = 16;
         settings.spriteheight = 16;
         this.parent(x, y, settings);
-        this.addAnimation("green", [0, 1, 2, 3]);
-        this.addAnimation("red", [4, 5, 6, 7]);
-        this.setCurrentAnimation(colour);
+        this.renderable.addAnimation("green", [0, 1, 2, 3]);
+        this.renderable.addAnimation("red", [4, 5, 6, 7]);
+        this.renderable.setCurrentAnimation(colour);
     }
 });
 
-var Shadow = me.ObjectEntity.extend({
+game.Shadow = me.ObjectEntity.extend({
     init: function(x, y) {
+        console.log("creating shadow");
         settings = {};
         settings.image = "shadow16";
         settings.spritewidth = 16;
@@ -99,21 +106,22 @@ var Shadow = me.ObjectEntity.extend({
     }
 });
 
-var Smile = me.ObjectEntity.extend({
+game.Smile = me.ObjectEntity.extend({
     timer: null,
     init: function(x, y, smile) {
+        console.log("creating smile");
         settings = {};
         settings.image = "smiles16";
         settings.spritewidth = 16;
         settings.spriteheight = 16;
         this.parent(x, y, settings);
-        this.addAnimation("lick", [0]);
-        this.addAnimation("dead", [1]);
-        this.addAnimation("sleepy", [2]);
-        this.addAnimation("wow", [3]);
-        this.addAnimation("kill", [4]);
-        this.addAnimation("happy", [5]);
-        this.setCurrentAnimation(smile);
+        this.renderable.addAnimation("lick", [0]);
+        this.renderable.addAnimation("dead", [1]);
+        this.renderable.addAnimation("sleepy", [2]);
+        this.renderable.addAnimation("wow", [3]);
+        this.renderable.addAnimation("kill", [4]);
+        this.renderable.addAnimation("happy", [5]);
+        this.renderable.setCurrentAnimation(smile);
         this.timer = me.timer.getTime();
         this.setVelocity(1, 1);
         this.collidable = false;
@@ -127,10 +135,11 @@ var Smile = me.ObjectEntity.extend({
     }
 });
 
-var Fire = me.InvisibleEntity.extend({
+game.Fire = me.ObjectEntity.extend({
     attack_timer: null,
     attacking: false,
     init: function(x, y) {
+        console.log("creating fire");
         settings = {};
         settings.spritewidth = 16;
         settings.sriteheight = 16;
@@ -159,7 +168,7 @@ var Fire = me.InvisibleEntity.extend({
     }
 });
 
-var CollisionBox = me.InvisibleEntity.extend({
+game.CollisionBox = me.ObjectEntity.extend({
     init: function(x, y, type) {
         settings = {};
         settings.spritewidth = 16;
@@ -173,28 +182,29 @@ var CollisionBox = me.InvisibleEntity.extend({
     }
 });
 
-var Sword1 = me.ObjectEntity.extend({
+game.Sword1 = me.ObjectEntity.extend({
     attack: 3,
     description: "little sword",
     init: function(x, y) {
+        console.log("creating Sword1");
         settings = {};
         settings.spritewidth = 32;
         settings.spriteheight = 32;
         settings.image = "sword1";
         this.parent(x, y, settings);
-        this.addAnimation("attack_right", [0, 1, 2, 3, 4], 1);
-        this.addAnimation("right", [5, 6, 7, 8]);
-        this.addAnimation("iddle_right", [10, 11], 30);
-        this.addAnimation("attack_up", [15, 16, 17, 18, 19], 1);
-        this.addAnimation("up", [20, 21, 22, 23]);
-        this.addAnimation("iddle_up", [25, 26], 30);
-        this.addAnimation("attack_down", [30, 31, 32, 33, 34], 1);
-        this.addAnimation("down", [35, 36, 37, 38]);
-        this.addAnimation("iddle_down", [40, 41], 30);
+        this.renderable.addAnimation("attack_right", [0, 1, 2, 3, 4], 1);
+        this.renderable.addAnimation("right", [5, 6, 7, 8]);
+        this.renderable.addAnimation("iddle_right", [10, 11], 30);
+        this.renderable.addAnimation("attack_up", [15, 16, 17, 18, 19], 1);
+        this.renderable.addAnimation("up", [20, 21, 22, 23]);
+        this.renderable.addAnimation("iddle_up", [25, 26], 30);
+        this.renderable.addAnimation("attack_down", [30, 31, 32, 33, 34], 1);
+        this.renderable.addAnimation("down", [35, 36, 37, 38]);
+        this.renderable.addAnimation("iddle_down", [40, 41], 30);
     }
 });
 
-var Message = me.ObjectEntity.extend({
+game.Message = me.ObjectEntity.extend({
     timer: me.timer.getTime(),
     font: null,
     text: "",
@@ -224,7 +234,7 @@ var Message = me.ObjectEntity.extend({
     }
 });
 
-var Particle = me.SpriteObject.extend({
+game.Particle = me.SpriteObject.extend({
     timer: 0,
     live: 0,
     generator: 0,
@@ -264,19 +274,21 @@ var Particle = me.SpriteObject.extend({
     }
 });
 
-var ParticleGenerator = me.InvisibleEntity.extend({
+game.ParticleGenerator = me.ObjectEntity.extend({
     particles: null,
     limit: null,
     image: null,
     type: null,
     init: function(x, y, settings) {
-        settings.spritewidth = 16;
-        settings.spritewidth = 16;
+        console.log("Creating Particle Generator");
+        //settings.spritewidth = 16;
+        //settings.spritewidth = 16;
         this.parent(x, y, settings);
         this.limit = settings.limit;
         this.image = settings.image;
         this.particles = 0;
         this.type = settings.type;
+        this.renderable.setOpacity(0);
     },
     update: function() {
         for(var i = this.particles; i < this.limit; i++){
@@ -285,9 +297,9 @@ var ParticleGenerator = me.InvisibleEntity.extend({
             if(this.type === "up"){
                 pos_x = Math.floor(0 + (1 + 16 - 0) * Math.random());
             } else if(this.type === "fountain"){
-                pos_x = (this.width / 2);
+                pos_x = (this.renderable.width / 2);
             }
-            var particle = new Particle(this.pos.x + pos_x - 5, this.pos.y + 16, this.image, this.GUID, this.type);
+            var particle = new game.Particle(this.pos.x + pos_x - 5, this.pos.y + 16, this.image, this.GUID, this.type);
             me.game.add(particle, 4);
             me.game.sort();
         }
