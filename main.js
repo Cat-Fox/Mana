@@ -1,224 +1,242 @@
 /*!
- * 
+ *
  *   melonJS
  *   http://www.melonjs.org
- *		
+ *
  *   Step by step game creation tutorial
  *
  **/
 
-// game resources
-var g_resources = [{
-    name: "tilesheet",
-    type: "image",
-    src: "data/tilesheet.png"
-}, {
-    name: "test_map",
-    type: "tmx",
-    src: "data/test_map.tmx"
-}, {
-    name: "house",
-    type: "tmx",
-    src: "data/house.tmx"
-},  {
-    name: "human",
-    type: "image",
-    src: "data/human.png"
-}, {
-    name: "human_up",
-    type: "image",
-    src: "data/human_up.png"
-}, {
-    name: "human_right",
-    type: "image",
-    src: "data/human_right.png"
-}, {
-    name: "human_down",
-    type: "image",
-    src: "data/human_down.png"
-}, {
-    name: "burger",
-    type: "image",
-    src: "data/burger.png"
-}, {
-    name: "item-sword1",
-    type: "image",
-    src: "data/item-sword1.png"
-}, {
-    name: "sword1",
-    type: "image",
-    src: "data/sword1.png"
-}, {
-    name: "target",
-    type: "image",
-    src: "data/target.png"
-}, {
-    name: "npc_guard",
-    type: "image",
-    src: "data/npc_guard.png"
-}, {
-    name: "npc_rat",
-    type: "image",
-    src: "data/npc_rat.png"
-}, {
-    name: "shadow16",
-    type: "image",
-    src: "data/shadow16.png"
-}, {
-    name: "smiles16",
-    type: "image",
-    src: "data/smiles16.png"
-},{
-    name: "sparks",
-    type: "image",
-    src: "data/sparks.png"
-},{
-    name: "inventory_tile",
-    type: "image",
-    src: "data/inventory_tile.png"
-},{
-    name: "message",
-    type: "image",
-    src: "data/message.png"
-},{
-    name: "particle",
-    type: "image",
-    src: "data/particle.png"
-},{
-    name: "particle2",
-    type: "image",
-    src: "data/particle2.png"
-},{
-    name: "particle3",
-    type: "image",
-    src: "data/particle3.png"
-},{
-    name: "8x8Font",
-    type: "image",
-    src: "data/8x8Font-white.png"
-}, {
-    name: "itempick2",
-    type: "audio",
-    src: "data/sounds/"
-}, {
-    name: "metal-clash",
-    type: "audio",
-    src: "data/sounds/"
-}, {
-    name: "exp_click",
-    type: "audio",
-    src: "data/sounds/"
-}, {
-    name: "fire",
-    type: "audio",
-    src: "data/sounds/"
-},{
-    name: "pixfont",
-    type: "image",
-    src: "data/sprite/pixfont.png"
-}];
 
 
-
-var jsApp = 
-{	
-    screenWidth: 400,
-    screenHeight: 220,
-    onload: function()
-    {
-		
-        //webFonts are unasable for scale 2.0!!!
-        if (!me.video.init('jsapp', this.screenWidth, this.screenHeight, true, 2.0, true))
+var game =
         {
-            alert("Sorry but your browser does not support html 5 canvas.");
-            return;
-        }
-				
-        // initialize the "audio"
-        me.audio.init("mp3,ogg");
-        // set all resources to be loaded
-        me.loader.onload = this.loaded.bind(this);	
-        // set all resources to be loaded
-        me.loader.preload(g_resources);
-        // load everything & display a loading screen
-        me.state.change(me.state.LOADING);
+            screenWidth: 400,
+            screenHeight: 220,
+            onload: function()
+            {
+
+                //webFonts are unasable for scale 2.0!!!
+                if (!me.video.init('game', this.screenWidth, this.screenHeight, true, 2.0, true))
+                {
+                    alert("Sorry but your browser does not support html 5 canvas.");
+                    return;
+                }
+
+                // add "#debug" to the URL to enable the debug Panel
+                if (document.location.hash === "#debug") {
+                    window.onReady(function() {
+                        me.plugin.register.defer(debugPanel, "debug");
+                    });
+                }
+
+                // initialize the "audio"
+                me.audio.init("mp3,ogg");
+                // set all resources to be loaded
+                me.loader.onload = this.loaded.bind(this);
+                // set all resources to be loaded
+                me.loader.preload(game.resources);
+                // load everything & display a loading screen
+                me.state.change(me.state.LOADING);
+            },
+            /* ---callback when everything is loaded---*/
+            loaded: function()
+            {
+                // set the "Play/Ingame" Screen Object
+                me.state.set(me.state.PLAY, new game.PlayScreen());
+                me.state.set(me.state.MENU, new game.MenuScreen());
+                me.state.set(me.state.CREDITS, new game.CreditsScreen());
+
+                me.entityPool.add("Player", game.Player);
+                me.entityPool.add("Burger", game.Burger);
+                me.entityPool.add("Guard", game.Guard);
+                me.entityPool.add("Rat", game.Rat);
+                me.entityPool.add("Shadow", game.Shadow);
+                me.entityPool.add("Sparks", game.Sparks);
+                me.entityPool.add("Smile", game.Smile);
+                me.entityPool.add("Target", game.Target);
+                me.entityPool.add("Item_sword1", game.Item_sword1);
+                me.entityPool.add("InventoryTile", game.InventoryTile);
+                me.entityPool.add("Fire", game.Fire);
+                me.entityPool.add("CollisionBox", game.CollisionBox);
+                me.entityPool.add("Message", game.Message);
+                me.entityPool.add("Icon", game.Icon);
+                me.entityPool.add("ParticleGenerator", game.ParticleGenerator);
+
+                //player stuff
+                me.gamestat.add("hp", 50);
+                me.gamestat.add("maxhp", 50);
+                me.gamestat.add("exp", 0);
+                me.gamestat.add("level", 1);
+                me.gamestat.add("next_level", 100);
+                me.gamestat.add("str", 1);
+                me.gamestat.add("int", 1);
+                me.gamestat.add("agi", 1);
+                me.gamestat.add("end", 1);
+                me.gamestat.add("skill", 0);
+                var inventory = new Array();
+                me.gamestat.add("inventory", inventory);
+
+                //me.debug.renderHitBox = true;
+
+
+                // start the game
+                me.state.change(me.state.MENU);
+            }
+
+        };
+
+game.MenuScreen = me.ScreenObject.extend({
+    init: function() {
+        this.parent(true);
+
+        this.bloxxit_font = null;
+        this.geebee_font = null;
+        this.icon = null;
+
+        this.selection_options = null;
+        this.selection = 0;
+
     },
-	
-	
-    /* ---callback when everything is loaded---*/
-    loaded: function ()
-    {
-        // set the "Play/Ingame" Screen Object
-        me.state.set(me.state.PLAY, new PlayScreen());
-        me.entityPool.add("Player", Player);
-        me.entityPool.add("Burger", Burger);
-        me.entityPool.add("Guard", Guard);
-        me.entityPool.add("Rat", Rat);
-        me.entityPool.add("Shadow", Shadow);
-        me.entityPool.add("Sparks", Sparks);
-        me.entityPool.add("Smile", Smile);
-        me.entityPool.add("Target", Target);
-        me.entityPool.add("Item_sword1", Item_sword1);
-        me.entityPool.add("InventoryTile", InventoryTile);
-        me.entityPool.add("Fire", Fire);
-        me.entityPool.add("CollisionBox", CollisionBox);
-        me.entityPool.add("Message", Message);
-        me.entityPool.add("Icon", Icon);
-        me.entityPool.add("ParticleGenerator", ParticleGenerator);
+    onResetEvent: function() {
+        this.bloxxit_font = new me.BitmapFont("gold_8x8", 8, 1.0, "0x41");
+        this.geebee_font = new me.BitmapFont("geebeeyay-8x8", 8, 1.0);
+
+        this.icon = new game.Icon((game.screenWidth / 2) - 20, game.screenHeight / 2, "item-sword1");
+        me.game.add(this.icon, 8);
+        me.game.sort();
+
+        this.selection = 0;
+        this.selection_options = {
+            NEW: me.state.PLAY,
+            LOAD: me.state.PLAY,
+            CREDITS: me.state.CREDITS
+        };
+
+        me.input.bindKey(me.input.KEY.ENTER, "enter", true);
+        me.input.bindKey(me.input.KEY.UP, "up", true);
+        me.input.bindKey(me.input.KEY.DOWN, "down", true);
+    },
+    update: function() {
+        if (me.input.isKeyPressed('enter')) {
+            switch (this.selection) {
+                case 0 :
+                    me.state.change(me.state.PLAY);
+                    break
+                case 1 :
+                    me.state.change(me.state.PLAY);
+                    break
+                case 2 :
+                    me.state.change(me.state.CREDITS);
+                    break
+            }
+        }
+        if (me.input.isKeyPressed('up')) {
+            if (this.selection > 0) {
+                this.selection--;
+            } else {
+                this.selection = 2;
+            }
+        }
+
+        if (me.input.isKeyPressed('down')) {
+            if (this.selection < 2) {
+                this.selection++;
+            } else {
+                this.selection = 0;
+            }
+        }
+
+        this.icon.pos.y = (game.screenHeight / 2) + (this.selection * 10) - 3;
+        return true;
+    },
+    draw: function(context) {
+        this.parent(context);
+        context.fillStyle = "black";
+        context.fillRect(0, 0, 400, 220);
+        this.bloxxit_font.draw(context, "NEW", game.screenWidth / 2, game.screenHeight / 2);
+        this.bloxxit_font.draw(context, "LOAD", game.screenWidth / 2, game.screenHeight / 2 + 10);
+        this.bloxxit_font.draw(context, "CREDITS", game.screenWidth / 2, game.screenHeight / 2 + 20);
+        this.geebee_font.draw(context, "PRESS ENTER TO SELECT", 20, game.screenHeight - 10);
+        this.icon.draw(context);
+    },
+    onDestroyEvent: function() {
+        me.input.unbindKey(me.input.KEY.ENTER);
+        me.input.unbindKey(me.input.KEY.UP, "up", true);
+        me.input.unbindKey(me.input.KEY.DOWN, "down", true);
+    }
+});
+
+game.CreditsScreen = me.ScreenObject.extend({
+    init: function() {
+        this.parent(true);
+        this.gold_font = null;
+    },
+    onResetEvent: function() {
+        console.log("loading credits");
+        this.gold_font = new me.BitmapFont("geebeeyay-8x8", 8, 1.0);
+        me.input.bindKey(me.input.KEY.ENTER, "enter", true);
+    },
+    draw: function(context) {
+        this.parent(context);
         
+        context.fillStyle = "black";
+        context.fillRect(0, 0, 400, 220);
+        this.gold_font.draw(context, "AUTHOR NIKITA ZARAKA VANKU", (game.screenWidth / 2) -30 , 20);
+        this.gold_font.draw(context, "SPRITE TILESETS", game.screenWidth / 2, 40);
+        this.gold_font.draw(context, "MOZZILA BROWSERQUEST", game.screenWidth / 2, 50);
+        this.gold_font.draw(context, "OPENGAMEART.ORG", game.screenWidth / 2, 60);
+        
+        this.gold_font.draw(context, "PRESS ENTER TO GET BACK", 20, game.screenHeight - 10);
+    },
+    update: function() {
+        if (me.input.isKeyPressed('enter')) {
+            console.log("change!")
+            me.state.change(me.state.MENU);
+        }
+        return true;
+    },
+    onDestroyEvent: function() {
+        me.input.unbindKey(me.input.KEY.ENTER);
+    }
+});
+
+game.PlayScreen = me.ScreenObject.extend({
+    onResetEvent: function()
+    {
+        // stuff to reset on state change
+        // load a level
+        console.log("loading level");
+        me.levelDirector.loadLevel("test_map");
+        console.log("level loaded");
+
         me.input.bindKey(me.input.KEY.LEFT, "left");
         me.input.bindKey(me.input.KEY.RIGHT, "right");
         me.input.bindKey(me.input.KEY.UP, "up");
         me.input.bindKey(me.input.KEY.DOWN, "down");
-        me.input.bindKey(me.input.KEY.I, "inventory");
+        me.input.bindKey(me.input.KEY.B, "inventory");
         me.input.bindKey(me.input.KEY.X, "attack");
         me.input.bindKey(me.input.KEY.C, "use");
-        
-        me.gamestat.add("hp", 50);
-        me.gamestat.add("exp", 0);
-        var inventory = new Array();
-        me.gamestat.add("inventory", inventory);
-        
-        //me.debug.renderHitBox = true;
-        
-        // start the game 
-        me.state.change(me.state.PLAY);
-    }
 
-}; // jsApp
-
-/* the in game stuff*/
-var PlayScreen = me.ScreenObject.extend(
-{
-
-    onResetEvent: function()
-    {	
-        // stuff to reset on state change
-        // load a level
-        me.levelDirector.loadLevel("test_map");
-        
-        me.game.addHUD(0, 0, 400, 220);
-        me.game.HUD.addItem("HP", new HP(5,210));
-        me.game.HUD.setItemValue("HP", 0);
-        me.game.HUD.addItem("EnemyHP", new EnemyHP(130,8));
-        me.game.HUD.addItem("Inventory", new InventoryItems(336, 156));
-        me.game.sort();
     },
-	
-	
     /* ---action to perform when game is finished (state change)---*/
     onDestroyEvent: function()
     {
-	me.game.DisableHud();
+        me.input.unbindKey(me.input.KEY.LEFT, "left");
+        me.input.unbindKey(me.input.KEY.RIGHT, "right");
+        me.input.unbindKey(me.input.KEY.UP, "up");
+        me.input.unbindKey(me.input.KEY.DOWN, "down");
+        me.input.unbindKey(me.input.KEY.B, "inventory");
+        me.input.unbindKey(me.input.KEY.X, "attack");
+        me.input.unbindKey(me.input.KEY.C, "use");
     }
 
 });
 
 //bootstrap :)
-window.onReady(function() 
+window.onReady(function()
 {
-    jsApp.onload();
+    game.onload();
 });
 
 
-    
