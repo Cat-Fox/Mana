@@ -2,6 +2,7 @@ var HP = me.HUD_Item.extend({
     max: 100,
     min: 0,
     init: function(x, y, settings) {
+        console.log("creating HUD HP");
         this.parent(x, y, settings);
         //this.font = new me.Font("Arial", 9, "red");
         this.font = new me.BitmapFont("8x8Font", 8);
@@ -32,6 +33,7 @@ var EnemyHP = me.HUD_Item.extend({
     intValue: null,
     colour: null,
     init: function(x, y, settings) {
+        console.log("creating HUD EnemyHP");
         this.parent(x, y, settings);
         this.font = {};
         this.font['enemy'] = new me.Font("Arial", 9, "red");
@@ -50,49 +52,6 @@ var EnemyHP = me.HUD_Item.extend({
 });
 
 //TODO
-var InventoryTile = me.GUI_Object.extend({
-    id: null,
-    icon: null,
-    type: null,
-    init: function(x, y, id) {
-        settings = {};
-        settings.image = "inventory_tile";
-        settings.spritewidth = 16;
-        settings.spriteheight = 16;
-        this.parent(x, y, settings);
-        this.floating = true;
-        this.id = id;
-        this.isClickable = true;
-        this.isPersistent = true;
-    },
-    onClick: function() {
-        var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
-        if (this.type === "weapon") {
-            player.equipWeapon(this.id);
-        }
-    },
-    changeMode: function() {
-        if (this.type === "weapon") {
-            if (this.icon.isCurrentAnimation("active")) {
-                this.icon.setCurrentAnimation("inactive");
-            } else {
-                this.icon.setCurrentAinamtion("active");
-            }
-        }
-    },
-    update: function() {
-        if (this.icon === null && me.gamestat.getItemValue("inventory")[this.id] !== null) {
-            if (me.gamestat.getItemValue("inventory")[this.id] === "item-sword1") {
-                this.icon = new Icon(this.pos.x, this.pos.y, "item-sword1");
-                this.type = "weapon";
-                me.game.add(this.icon, 8);
-                me.game.sort();
-            }
-        }
-        this.parent();
-    }
-
-});
 
 var InventoryItems = me.HUD_Item.extend({
     tiles: null,
@@ -115,16 +74,5 @@ var InventoryItems = me.HUD_Item.extend({
         this.tiles[value].changeMode();
         this.updated = true;
         return true;
-    }
-});
-
-var Icon = me.AnimationSheet.extend({
-    init: function(x, y, image) {
-        this.parent(x, y, me.loader.getImage(image), 16, 16);
-        this.floating = true;
-        this.isPersistent = true;
-        this.addAnimation("active", [0, 1, 2, 3, 4]);
-        this.addAnimation("inactive", [2]);
-        this.setCurrentAnimation("inactive");
     }
 });
