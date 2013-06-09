@@ -3,21 +3,30 @@
 	<head>
 		<title>Mana</title>
 	</head>
-	<body bgcolor="black">
+	<body style="background-color: black">
 		<div id="info" style="width: 640px;">
-			<div id="jsapp">
-				<font color="#FFFFFF", style="position: absolute; font-size: 10px; font-family: Courier New">
-					<span id="framecounter">(0/0 fps)</span>
-				</font>
-				<script type="text/javascript" src="lib/melonJS-0.9.6.js"></script>
+			<div id="screen">
+				<script type="text/javascript" src="lib/melonJS-0.9.7.js"></script>
+                                <script type="text/javascript" src="lib/debugPanel.js"></script>
+                                
+                                <script type="text/javascript" src="main.js"></script>
+                                <script type="text/javascript" src="resources.js"></script>
+                                
                                 <script type="text/javascript" src="entities.js"></script>
                                 <script type="text/javascript" src="hud.js"></script>
                                 <script type="text/javascript" src="player.js"></script>
                                 <script type="text/javascript" src="guard.js"></script>
                                 <script type="text/javascript" src="rat.js"></script>                                
-				<script type="text/javascript" src="main.js"></script>
+				
 			</div>
 		</div>
-                Controls: Arrows/X
+                <span style="color: white">
+                <span id="framecounter">(0/0 fps)</span><br>
+                Controls: <br>
+                Arrows - move <br>
+                X - attack <br>
+                C - use <br>
+                B - backpack<br>
+                </span>
 	</body>
 </html>
