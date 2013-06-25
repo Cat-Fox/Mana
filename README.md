@@ -1,9 +1,9 @@
-Mana
+Mana 
 ====
 Description:
-MelonJS RPG game
+MelonJS RPG game http://zaraka.github.io/Mana
 State:
-waiting for new version of melonJS
+WORK IN PROGRESS
 
 ##What is it?
 It's Javascript HTML5 Canvas 'Game'. It's written on MelonJS Engine.
