@@ -13,12 +13,12 @@ var game =
         {
             screenWidth: 400,
             screenHeight: 220,
+            guiLayer: 15,
             onload: function()
             {
 
                 //webFonts are unasable for scale 2.0!!!
-                if (!me.video.init('screen', this.screenWidth, this.screenHeight, true, 2.0, true))
-                {
+                if (!me.video.init('screen', this.screenWidth, this.screenHeight, true, 2.0, true)) {
                     alert("Sorry but your browser does not support html 5 canvas.");
                     return;
                 }
@@ -50,18 +50,23 @@ var game =
                 me.entityPool.add("Player", game.Player);
                 me.entityPool.add("Burger", game.Burger);
                 me.entityPool.add("Guard", game.Guard);
-                me.entityPool.add("Rat", game.Rat);
-                me.entityPool.add("Shadow", game.Shadow);
-                me.entityPool.add("Sparks", game.Sparks);
-                me.entityPool.add("Smile", game.Smile);
-                me.entityPool.add("Target", game.Target);
+                me.entityPool.add("Rat", game.Rat, true);
+                me.entityPool.add("Shadow", game.Shadow, true);
+                me.entityPool.add("Sparks", game.Sparks, true);
+                me.entityPool.add("Smile", game.Smile, true);
+                me.entityPool.add("Target", game.Target, true);
                 me.entityPool.add("Item_sword1", game.Item_sword1);
-                me.entityPool.add("InventoryTile", game.InventoryTile);
+                me.entityPool.add("InventoryTile", game.InventoryTile, true);
                 me.entityPool.add("Fire", game.Fire);
-                me.entityPool.add("CollisionBox", game.CollisionBox);
+                me.entityPool.add("CollisionBox", game.CollisionBox, true);
                 me.entityPool.add("Message", game.Message);
                 me.entityPool.add("Icon", game.Icon);
                 me.entityPool.add("ParticleGenerator", game.ParticleGenerator);
+                me.entityPool.add("Particle", game.Particle);
+                me.entityPool.add("Backpack", game.Backpack, true);
+                me.entityPool.add("Button", game.Button, true);
+                me.entityPool.add("DropButton", game.DropButton);
+                me.entityPool.add("WalkerNPC", game.WalkerNPC);
 
                 //player stuff
                 me.gamestat.add("hp", 50);
@@ -191,7 +196,6 @@ game.CreditsScreen = me.ScreenObject.extend({
     },
     update: function() {
         if (me.input.isKeyPressed('enter')) {
-            console.log("change!")
             me.state.change(me.state.MENU);
         }
         return true;
@@ -210,6 +214,7 @@ game.AnimatedScreen = me.ScreenObject.extend({
         this.parent(true);
         this.isPersistent = true;
         this.animationspeed = animationspeed || this.animationspeed;
+        
     },
 
     "update" : function update() {
@@ -242,7 +247,8 @@ game.AnimatedScreen = me.ScreenObject.extend({
         return isDirty;
     },
 
-    "onLevelLoaded" : function onLevelLoaded() {
+    onResetEvent : function onResetEvent() {
+    console.log("loaded");
         var self = this;
         self.animations = {};
         self.keys = [];
@@ -278,11 +284,15 @@ game.AnimatedScreen = me.ScreenObject.extend({
 game.PlayScreen = game.AnimatedScreen.extend({
     onResetEvent: function()
     {
+        
         // stuff to reset on state change
         // load a level
         console.log("loading level");
         me.levelDirector.loadLevel("test_map");
         console.log("level loaded");
+        this.parent(); //animation
+        console.log(this.animations);
+        console.log(this.keys);
 
         me.input.bindKey(me.input.KEY.LEFT, "left");
         me.input.bindKey(me.input.KEY.RIGHT, "right");

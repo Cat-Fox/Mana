@@ -43,15 +43,15 @@ game.Player = me.ObjectEntity.extend({
             me.gamestat.setValue("player", this.GUID);
         }
         this.type = "player";
-
-        this.shadow = new game.Shadow(this.pos.x + 8, this.pos.y + 13);
+        
+        this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x + 8, this.pos.y + 13);
         me.game.add(this.shadow, 4);
         this.target_box = new game.CollisionBox(this.pos.x + 8, this.pos.y + 22, "human_target");
         me.game.add(this.target_box, 4);
         this.backpack_icon = new game.BackpackIcon(0, game.screenHeight - 16);
-        me.game.add(this.backpack_icon, 7);
+        me.game.add(this.backpack_icon, game.guiLayer);
         this.exp_bar = new game.ExpBar(game.screenWidth - 30, game.screenHeight - 10);
-        me.game.add(this.exp_bar, 7);
+        me.game.add(this.exp_bar, game.guiLayer);
         me.game.sort();
 
         this.hp_font = new me.Font("Arial", "1em", "red");
@@ -74,7 +74,6 @@ game.Player = me.ObjectEntity.extend({
                 return true;
             }
         }
-        var last_vel = this.vel.clone();
 
         // TODO:CHANGE
         //me.game.HUD.setItemValue("HP", me.gamestat.getItemValue("hp"));
@@ -165,6 +164,7 @@ game.Player = me.ObjectEntity.extend({
                 }
             }
         }
+       
 
         var res = me.game.collide(this, true);
         if (res.length >= 1) {
@@ -174,36 +174,26 @@ game.Player = me.ObjectEntity.extend({
                     if (res[i].x !== 0) {
                         // x axis
                         if (res[i].x < 0) {
-                            //this.vel.x = -this.vel.x;
-                            this.vel.y = 0;
-                            this.vel = last_vel;
+                            this.pos.x = this.pos.x + 3;
 
                         } else {
-                            this.vel.x = -this.vel.x;
-                            this.vel.y = 0;
+                            this.pos.x = this.pos.x - 3;
                         }
                     }
                     else {
                         // y axis
                         if (res[i].y < 0) {
-                            this.vel.y = -this.vel.y;
-                            this.vel.x = 0;
+                            this.pos.y = this.pos.y + 3;
 
                         } else {
-                            this.vel.y = -this.vel.y;
-                            this.vel.x = 0;
+                            this.pos.y = this.pos.y - 3;
                         }
                     }
                 }
-                if ((res[i].obj.type === "fire" || res[i].obj.type === "cold")) {
-                    //ouch this hurts
-
-                }
             }
         }
-
-
-        // check & update player movement
+        
+         // check & update player movement
         this.updateMovement();
         this.shadow.pos.x = this.pos.x + 8;
         this.shadow.pos.y = this.pos.y + 13;
@@ -282,7 +272,7 @@ game.Player = me.ObjectEntity.extend({
         }
     }, createUse: function() {
         if (this.use_box === null) {
-            this.use_box = new game.CollisionBox(this.target_box.pos.x, this.target_box.pos.y, "human_use");
+            this.use_box = me.entityPool.newInstanceOf("CollisionBox", this.target_box.pos.x, this.target_box.pos.y, "human_use");
             me.game.add(this.use_box, 5);
             me.game.sort();
         }
@@ -402,8 +392,8 @@ game.BackpackIcon = me.GUI_Object.extend({
     },
     triggerBackpack: function() {
         if (this.backpack === null) {
-            this.backpack = new game.Backpack();
-            me.game.add(this.backpack, 7);
+            this.backpack = me.entityPool.newInstanceOf("Backpack");
+            me.game.add(this.backpack, game.guiLayer);
             me.game.sort();
             me.audio.play("itempick2");
         } else {
@@ -424,6 +414,7 @@ game.Backpack = me.ObjectEntity.extend({
     armor_icon: null,
     artefact_icon: null,
     selected_tile: null,
+    entity_layer: game.guiLayer + 1,
     init: function() {
         settings = {};
         settings.image = me.video.createCanvas(350, 180);
@@ -452,8 +443,8 @@ game.Backpack = me.ObjectEntity.extend({
         }
         for (var row = 0; row < 4; row++) {
             for (var column = 0; column < 4; column++) {
-                this.tiles[row][column] = new game.InventoryTile(this.pos.x + 135 + (column * 16), this.pos.y + 15 + (row * 16), (row * 4) + column);
-                me.game.add(this.tiles[row][column], 8);
+                this.tiles[row][column] = me.entityPool.newInstanceOf("InventoryTile", this.pos.x + 135 + (column * 16), this.pos.y + 15 + (row * 16), (row * 4) + column)
+                me.game.add(this.tiles[row][column], this.entity_layer);
             }
         }
 
@@ -462,14 +453,14 @@ game.Backpack = me.ObjectEntity.extend({
         this.buttons.push(new game.Button(140 + (16 * 5) + 10, 50, "EQUIP", "equip an item!"));
         this.buttons.push(new game.Button(140 + (16 * 5) + 10, 65, "USE", "equip an item!"));
         for (var i = 0; i < this.buttons.length; i++) {
-            me.game.add(this.buttons[i], 8);
+            me.game.add(this.buttons[i], this.entity_layer);
         }
         this.armor_icon = new game.CharacterTile(36, 130);
-        me.game.add(this.armor_icon, 8);
+        me.game.add(this.armor_icon, this.entity_layer);
         this.weapon_icon = new game.CharacterTile(55, 130);
-        me.game.add(this.weapon_icon, 8);
+        me.game.add(this.weapon_icon, this.entity_layer);
         this.artefact_icon = new game.CharacterTile(75, 130);
-        me.game.add(this.artefact_icon, 8);
+        me.game.add(this.artefact_icon, this.entity_layer);
         me.game.sort();
 
         this.font = new me.Font("century gothic", "1em", "black");
@@ -588,7 +579,7 @@ game.InventoryTile = me.GUI_Object.extend({
     update: function() {
         if (this.icon === null && me.gamestat.getItemValue("inventory")[this.id] !== null) {
             if (me.gamestat.getItemValue("inventory")[this.id] === "item-sword1") {
-                this.icon = new game.Icon(this.pos.x, this.pos.y, "item-sword1");
+                this.icon = me.entityPool.newInstanceOf("Icon", this.pos.x, this.pos.y, "item-sword1");
                 this.type = "weapon";
                 me.game.add(this.icon, 9);
                 me.game.sort();

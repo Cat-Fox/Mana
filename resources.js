@@ -15,6 +15,10 @@
     name: "human",
     type: "image",
     src: "data/human.png"
+},  {
+    name: "firefox",
+    type: "image",
+    src: "data/firefox.png"
 }, {
     name: "burger",
     type: "image",
