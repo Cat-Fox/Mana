@@ -1,32 +1,76 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>Mana</title>
-	</head>
-	<body style="background-color: black">
-		<div id="info" style="width: 640px;">
-			<div id="screen">
-				<script type="text/javascript" src="lib/melonJS-0.9.7.js"></script>
-                                <script type="text/javascript" src="lib/debugPanel.js"></script>
-                                
-                                <script type="text/javascript" src="main.js"></script>
-                                <script type="text/javascript" src="resources.js"></script>
-                                
-                                <script type="text/javascript" src="entities.js"></script>
-                                <script type="text/javascript" src="hud.js"></script>
-                                <script type="text/javascript" src="player.js"></script>
-                                <script type="text/javascript" src="guard.js"></script>
-                                <script type="text/javascript" src="rat.js"></script>                                
-				
-			</div>
-		</div>
-                <span style="color: white">
+    <head>
+        <title>Mana</title>
+        <style type="text/css">
+            #console {
+                width: 400px;
+                float: left;
+                font-size: 70%;
+                color: white;
+            }
+
+            #debugDiv {
+                color: #33ff00;
+                height: 400px;
+                overflow-y: scroll;
+            }
+            
+            #debugDiv p{
+                margin: 0 0 0 0;
+            }
+
+            #screen {
+                float: left;
+                margin-left: 10px;
+                width: 800px;
+                height: 440px;
+                border: 5px solid #363636;
+            }
+        </style>
+    </head>
+    <body style="background-color: black">
+        <div id="info">
+            <div id="console">
                 <span id="framecounter">(0/0 fps)</span><br>
                 Controls: <br>
                 Arrows - move <br>
                 X - attack <br>
                 C - use <br>
                 B - backpack<br>
-                </span>
-	</body>
+                <div id="debugDiv">Console: </div>
+            </div>
+            <div id="screen">
+                <script type="text/javascript" src="lib/jquery-1.10.1.js"></script>
+                <script type="text/javascript">
+                    if (typeof console != "undefined")
+                        if (typeof console.log != 'undefined')
+                            console.olog = console.log;
+                        else
+                            console.olog = function() {
+                            };
+
+                    console.log = function(message) {
+                        console.olog(message);
+                        $('#debugDiv').append('<p>' + message + '</p>');
+                        $("#debugDiv").scrollTop($("#debugDiv")[0].scrollHeight);
+                    };
+                    console.error = console.debug = console.info = console.log
+                </script>
+                <script type="text/javascript" src="lib/melonJS-0.9.7.js"></script>
+                <script type="text/javascript" src="lib/debugPanel.js"></script>
+
+                <script type="text/javascript" src="main.js"></script>
+                <script type="text/javascript" src="resources.js"></script>
+
+                <script type="text/javascript" src="npc.js"></script>
+                <script type="text/javascript" src="entities.js"></script>
+                <script type="text/javascript" src="hud.js"></script>
+                <script type="text/javascript" src="player.js"></script>
+                <script type="text/javascript" src="guard.js"></script>
+                <script type="text/javascript" src="rat.js"></script>                                
+
+            </div>
+        </div>
+    </body>
 </html>

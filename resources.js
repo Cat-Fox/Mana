@@ -15,18 +15,10 @@
     name: "human",
     type: "image",
     src: "data/human.png"
-}, {
-    name: "human_up",
+},  {
+    name: "firefox",
     type: "image",
-    src: "data/human_up.png"
-}, {
-    name: "human_right",
-    type: "image",
-    src: "data/human_right.png"
-}, {
-    name: "human_down",
-    type: "image",
-    src: "data/human_down.png"
+    src: "data/firefox.png"
 }, {
     name: "burger",
     type: "image",

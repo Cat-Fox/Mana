@@ -1,21 +1,20 @@
 game.Burger = me.CollectableEntity.extend({
     shadow: null,
+    smile: null,
     init: function(x, y, settings) {
         console.log("creating burger");
         this.parent(x, y, settings);
         this.renderable.addAnimation("always", [0, 1, 2, 3, 4, 5]);
         this.renderable.setCurrentAnimation("always");
-        this.shadow = new game.Shadow(this.pos.x, this.pos.y + 7);
+        this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x, this.pos.y + 7);
         me.game.add(this.shadow, 4);
         me.game.sort();
     },
     onCollision: function() {
         me.audio.play("itempick2");
-        smile = new game.Smile(this.pos.x, this.pos.y - 5, "happy");
-        me.game.add(smile, 3);
-        me.game.sort();
         me.game.remove(this.shadow);
         me.game.remove(this);
+        me.game.sort();
         me.game.getEntityByGUID(me.gamestat.getItemValue("player")).updateHP(15);
         this.collidable = false;
     }
@@ -36,7 +35,8 @@ game.Sparks = me.CollectableEntity.extend({
     },
     onCollision: function() {
         me.audio.play("exp_click");
-        smile = new game.Smile(this.pos.x, this.pos.y - 5, "wow");
+        //smile = new game.Smile(this.pos.x, this.pos.y - 5, "wow");
+        smile = me.entityPool.newInstanceOf("Smile", this.pos.x, this.pos.y - 5, "wow");
         me.game.add(smile, 3);
         me.game.sort();
         me.game.remove(this);
@@ -50,7 +50,7 @@ game.CollectableShadow = me.CollectableEntity.extend({
     init: function(x, y, settings) {
         console.log("creating shadow Collectable");
         this.parent(x, y, settings);
-        this.shadow = new game.Shadow(this.pos.x, this.pos.y + 7);
+        this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x, this.pos.y + 7);
         me.game.add(this.shadow, 4);
         me.game.sort();
         
@@ -70,7 +70,7 @@ game.Item_sword1 = game.CollectableShadow.extend({
     },
     onCollision: function() {
         me.audio.play("metal-clash");
-        smile = new game.Smile(this.pos.x, this.pos.y - 5, "wow");
+        smile = me.entityPool.newInstanceOf("Smile", this.pos.x, this.pos.y - 5, "wow");
         me.game.add(smile, 3);
         me.game.sort();
         me.game.remove(this.shadow);
@@ -299,8 +299,8 @@ game.ParticleGenerator = me.ObjectEntity.extend({
             } else if(this.type === "fountain"){
                 pos_x = (this.renderable.width / 2);
             }
-            var particle = new game.Particle(this.pos.x + pos_x - 5, this.pos.y + 16, this.image, this.GUID, this.type);
-            me.game.add(particle, 4);
+            var particle = me.entityPool.newInstanceOf("Particle", this.pos.x + pos_x - 5, this.pos.y + 16, this.image, this.GUID, this.type);
+            me.game.add(particle, game.guiLayer - 1);
             me.game.sort();
         }
         return false;

@@ -13,12 +13,12 @@ var game =
         {
             screenWidth: 400,
             screenHeight: 220,
+            guiLayer: 15,
             onload: function()
             {
 
                 //webFonts are unasable for scale 2.0!!!
-                if (!me.video.init('game', this.screenWidth, this.screenHeight, true, 2.0, true))
-                {
+                if (!me.video.init('screen', this.screenWidth, this.screenHeight, true, 2.0, true)) {
                     alert("Sorry but your browser does not support html 5 canvas.");
                     return;
                 }
@@ -50,18 +50,23 @@ var game =
                 me.entityPool.add("Player", game.Player);
                 me.entityPool.add("Burger", game.Burger);
                 me.entityPool.add("Guard", game.Guard);
-                me.entityPool.add("Rat", game.Rat);
-                me.entityPool.add("Shadow", game.Shadow);
-                me.entityPool.add("Sparks", game.Sparks);
-                me.entityPool.add("Smile", game.Smile);
-                me.entityPool.add("Target", game.Target);
+                me.entityPool.add("Rat", game.Rat, true);
+                me.entityPool.add("Shadow", game.Shadow, true);
+                me.entityPool.add("Sparks", game.Sparks, true);
+                me.entityPool.add("Smile", game.Smile, true);
+                me.entityPool.add("Target", game.Target, true);
                 me.entityPool.add("Item_sword1", game.Item_sword1);
-                me.entityPool.add("InventoryTile", game.InventoryTile);
+                me.entityPool.add("InventoryTile", game.InventoryTile, true);
                 me.entityPool.add("Fire", game.Fire);
-                me.entityPool.add("CollisionBox", game.CollisionBox);
+                me.entityPool.add("CollisionBox", game.CollisionBox, true);
                 me.entityPool.add("Message", game.Message);
                 me.entityPool.add("Icon", game.Icon);
                 me.entityPool.add("ParticleGenerator", game.ParticleGenerator);
+                me.entityPool.add("Particle", game.Particle);
+                me.entityPool.add("Backpack", game.Backpack, true);
+                me.entityPool.add("Button", game.Button, true);
+                me.entityPool.add("DropButton", game.DropButton);
+                me.entityPool.add("WalkerNPC", game.WalkerNPC);
 
                 //player stuff
                 me.gamestat.add("hp", 50);
@@ -191,7 +196,6 @@ game.CreditsScreen = me.ScreenObject.extend({
     },
     update: function() {
         if (me.input.isKeyPressed('enter')) {
-            console.log("change!")
             me.state.change(me.state.MENU);
         }
         return true;
@@ -201,14 +205,94 @@ game.CreditsScreen = me.ScreenObject.extend({
     }
 });
 
-game.PlayScreen = me.ScreenObject.extend({
+/* Screen object supporting layer-animation */
+game.AnimatedScreen = me.ScreenObject.extend({
+    "animations" : {},
+    "keys" : [],
+
+    "init" : function init(animationspeed) {
+        this.parent(true);
+        this.isPersistent = true;
+        this.animationspeed = animationspeed || this.animationspeed;
+        
+    },
+
+    "update" : function update() {
+        var isDirty = false;
+        var self = this;
+
+        if (game.wantsResort) {
+            game.wantsResort = false;
+            me.game.sort.defer(game.sort);
+        }
+
+        if (!self.keys.length) {
+            return false;
+        }
+
+        self.keys.forEach(function forEach(key) {
+            var animation = self.animations[key];
+            if (++animation.count > animation.speed) {
+                animation.count = 0;
+
+                animation.layers[animation.idx].visible = false;
+                ++animation.idx;
+                animation.idx %= animation.layers.length;
+                animation.layers[animation.idx].visible = true;
+
+                isDirty = true;
+            }
+        });
+
+        return isDirty;
+    },
+
+    onResetEvent : function onResetEvent() {
+    console.log("loaded");
+        var self = this;
+        self.animations = {};
+        self.keys = [];
+
+        // Use `in` operator, so we can use 0, if we want. ;)
+        var speed = (("animationspeed" in me.game.currentLevel) ?
+            me.game.currentLevel.animationspeed :
+            (me.sys.fps / 10));
+
+        var layers = me.game.currentLevel.getLayers();
+        layers.forEach(function forEach(layer, idx) {
+            if (layer.name.toLowerCase().indexOf("animated ") === 0) {
+                var key = layer.name.substr(9).replace(/\d+$/, "").trim();
+
+                if (self.animations[key]) {
+                    layer.visible = false;
+                }
+                else {
+                    self.keys.push(key);
+                    self.animations[key] = {
+                        "speed" : me.game.currentLevel[key + " speed"] || speed,
+                        "layers" : [],
+                        "count" : 0,
+                        "idx" : 0
+                    };
+                }
+                self.animations[key].layers.push(layer);
+            }
+        });
+    }
+});
+
+game.PlayScreen = game.AnimatedScreen.extend({
     onResetEvent: function()
     {
+        
         // stuff to reset on state change
         // load a level
         console.log("loading level");
         me.levelDirector.loadLevel("test_map");
         console.log("level loaded");
+        this.parent(); //animation
+        console.log(this.animations);
+        console.log(this.keys);
 
         me.input.bindKey(me.input.KEY.LEFT, "left");
         me.input.bindKey(me.input.KEY.RIGHT, "right");
@@ -217,6 +301,8 @@ game.PlayScreen = me.ScreenObject.extend({
         me.input.bindKey(me.input.KEY.B, "inventory");
         me.input.bindKey(me.input.KEY.X, "attack");
         me.input.bindKey(me.input.KEY.C, "use");
+        
+        me.input.registerMouseEvent('mousemove', me.game.viewport, this.mouse);
 
     },
     /* ---action to perform when game is finished (state change)---*/
@@ -229,6 +315,10 @@ game.PlayScreen = me.ScreenObject.extend({
         me.input.unbindKey(me.input.KEY.B, "inventory");
         me.input.unbindKey(me.input.KEY.X, "attack");
         me.input.unbindKey(me.input.KEY.C, "use");
+        
+        me.input.releaseMouseEvent('mousemove', me.game.viewport);
+    }, mouse: function(){
+        //console.log(me.input.mouse.pos.x + " " + me.input.mouse.pos.y);
     }
 
 });
