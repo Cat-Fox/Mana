@@ -76,18 +76,11 @@
     <property name="spritewidth" value="16"/>
    </properties>
   </object>
-  <object name="Guard" type="Ally_NPC" x="592" y="432" width="16" height="16">
+  <object name="Guard" type="NPC_ALLY" x="592" y="432" width="16" height="16">
    <properties>
     <property name="image" value="npc_guard"/>
     <property name="spriteheight" value="24"/>
     <property name="spritewidth" value="24"/>
-   </properties>
-  </object>
-  <object name="Rat" type="Enemy_NPC" x="368" y="432" width="16" height="16">
-   <properties>
-    <property name="image" value="npc_rat"/>
-    <property name="spriteheight" value="48"/>
-    <property name="spritewidth" value="48"/>
    </properties>
   </object>
   <object name="me.LevelEntity" type="me.LevelEntity" x="352" y="592" width="16" height="16">
@@ -103,20 +96,6 @@
   <object name="Sparks" type="Collectable" x="368" y="64" width="16" height="16"/>
   <object name="Sparks" type="Collectable" x="496" y="160" width="16" height="16"/>
   <object name="Sparks" type="Collectable" x="464" y="96" width="16" height="16"/>
-  <object name="Rat" type="Enemy_NPC" x="288" y="368" width="16" height="16">
-   <properties>
-    <property name="image" value="npc_rat"/>
-    <property name="spriteheight" value="48"/>
-    <property name="spritewidth" value="48"/>
-   </properties>
-  </object>
-  <object name="Rat" type="Enemy_NPC" x="256" y="480" width="16" height="16">
-   <properties>
-    <property name="image" value="npc_rat"/>
-    <property name="spriteheight" value="48"/>
-    <property name="spritewidth" value="48"/>
-   </properties>
-  </object>
   <object name="Item_sword1" type="Collectable" x="592" y="464" width="16" height="16">
    <properties>
     <property name="image" value="item-sword1"/>
@@ -124,7 +103,22 @@
     <property name="spritewidth" value="16"/>
    </properties>
   </object>
-  <object name="WalkerNPC" x="288" y="416" width="16" height="16"/>
+  <object name="WalkerNPC" x="272" y="272" width="16" height="16">
+   <properties>
+    <property name="image" value="firefox"/>
+    <property name="spriteheight" value="32"/>
+    <property name="spritewidth" value="32"/>
+   </properties>
+  </object>
+  <object name="Spawn" type="SPAWN" x="288" y="368" width="96" height="96">
+   <properties>
+    <property name="limit" value="3"/>
+    <property name="npc" value="rat"/>
+    <property name="npc_height" value="32"/>
+    <property name="npc_width" value="32"/>
+    <property name="time" value="25"/>
+   </properties>
+  </object>
  </objectgroup>
  <objectgroup name="entities2" width="50" height="50">
   <object name="ParticleGenerator" type="Particles" x="352" y="592" width="16" height="16">

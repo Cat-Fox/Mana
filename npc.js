@@ -11,12 +11,20 @@ game.WalkerNPC = me.ObjectEntity.extend({
     duration_now: 0,
     walking: false,
     flipped: false,
-    init: function(x, y) {
+    max_hp: 100,
+    hp: 100,
+    targeted: false,
+    shadow: null,
+    modes: ["walking", "standing", "attacking", "dying"],
+    mode_select: "walking",
+    exp: 10,
+    armor: 0,
+    init: function(x, y, settings, c_shadow) {
         console.log("creating Walker");
-        settings = {};
-        settings.image = me.loader.getImage("firefox");
-        settings.spritewidth = 32;
-        settings.spriteheight = 32;
+        /*settings = {};
+         settings.image = me.loader.getImage("firefox");
+         settings.spritewidth = 32;
+         settings.spriteheight = 32;*/
         this.parent(x, y, settings);
         this.renderable.addAnimation("right", [8, 9, 10, 11], 10);
         this.renderable.addAnimation("up", [32, 33, 34, 35, 36, 37, 38, 39]);
@@ -27,15 +35,100 @@ game.WalkerNPC = me.ObjectEntity.extend({
         this.renderable.addAnimation("attack_down", [48, 49, 50, 51, 52], 3);
         this.renderable.addAnimation("attack_up", [24, 25, 26, 27, 28], 3);
         this.renderable.addAnimation("attack_right", [0, 1, 2, 3, 4], 3);
-        this.renderable.setCurrentAnimation("iddle_down");
+        this.renderable.setCurrentAnimation("iddle_right");
         this.setVelocity(0.5, 0.5);
         this.gravity = 0;
         this.newIddle();
         this.updateColRect(10, 12, 5, 22);
         this.collidable = true;
         this.type = "npc";
+        if (c_shadow) {
+            this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x + 15, this.pos.y + 15);
+            me.game.add(this.shadow, 3);
+            me.game.sort();
+        }
     },
     update: function() {
+        switch(this.mode_select){
+            case "walking":
+                this.modeWalking();
+                break;
+            case "attacking":
+                this.modeAttacking();
+                break;
+            case "dying":
+                this.modeDying();
+                break;
+        }
+
+        var res = me.game.collide(this, true);
+        if (res.length >= 1) {
+            for (var i = 0; i < res.length; i++) {
+                //this is quite horrible solution
+                if ((res[i].obj.type === "npc") || (res[i].obj.type === me.game.ENEMY_OBJECT)) {
+                    if (res[i].x !== 0) {
+                        // x axis
+                        if (res[i].x < 0) {
+                            this.pos.x = this.pos.x + 3;
+
+                        } else {
+                            this.pos.x = this.pos.x - 3;
+                        }
+                    }
+                    else {
+                        // y axis
+                        if (res[i].y < 0) {
+                            this.pos.y = this.pos.y + 3;
+
+                        } else {
+                            this.pos.y = this.pos.y - 3;
+                        }
+                    }
+                } else if (res[i].obj.type === "human_target") {
+                    this.onTarget();
+                } else if (res[i].obj.type === "human_use") {
+                    this.onUse();
+                } else if (res[i].obj.type === "human_attack") {
+                    this.onHit();
+                }
+            }
+        }
+        this.updateMovement();
+        if (this.shadow !== null) {
+            this.shadow.pos.x = this.pos.x + 15;
+            this.shadow.pos.y = this.pos.y + 15
+        }
+        this.parent();
+        return true;
+
+    },
+    newIddle: function() {
+        this.iddle_pick = Number.prototype.random(this.iddle_min, this.iddle_max);
+        this.iddle_now = me.timer.getTime();
+        this.iddling = true;
+    },
+    newDuration: function() {
+        this.duration_pick = Number.prototype.random(this.duration_min, this.duration_max);
+        this.duration_now = me.timer.getTime();
+        this.iddling = false;
+        this.walking = false;
+    },
+    onHit: function() {
+
+    },
+    onUse: function() {
+
+    },
+    onTarget: function() {
+
+    },
+    onDestroyEvent: function() {
+        this.collidable = false;
+        if (this.shadow !== null) {
+            me.game.remove(this.shadow);
+        }
+    },
+    modeWalking: function() {
         if (this.iddling) {
             this.vel.x = 0;
             this.vel.y = 0;
@@ -63,6 +156,7 @@ game.WalkerNPC = me.ObjectEntity.extend({
                     if (this.direction.second) {
                         this.vel.x += this.accel.x * me.timer.tick;
                         this.renderable.setCurrentAnimation("right");
+                        this.flipX(false);
                         this.flipped = false;
                     } else {
                         this.vel.x -= this.accel.x * me.timer.tick;
@@ -81,47 +175,15 @@ game.WalkerNPC = me.ObjectEntity.extend({
                 }
             }
         }
-
-        var res = me.game.collide(this, true);
-        if (res.length >= 1) {
-            for (var i = 0; i < res.length; i++) {
-                //this is quite horrible solution
-                if ((res[i].obj.type === "npc") || (res[i].obj.type === me.game.ENEMY_OBJECT)) {
-                    if (res[i].x !== 0) {
-                        // x axis
-                        if (res[i].x < 0) {
-                            this.pos.x = this.pos.x + 3;
-
-                        } else {
-                            this.pos.x = this.pos.x - 3;
-                        }
-                    }
-                    else {
-                        // y axis
-                        if (res[i].y < 0) {
-                            this.pos.y = this.pos.y + 3;
-
-                        } else {
-                            this.pos.y = this.pos.y - 3;
-                        }
-                    }
-                }
-            }
-        }
-        this.updateMovement();
-        this.parent();
-        return true;
+    },
+    modeAttacking: function() {
 
     },
-    newIddle: function() {
-        this.iddle_pick = Number.prototype.random(this.iddle_min, this.iddle_max);
-        this.iddle_now = me.timer.getTime();
-        this.iddling = true;
+    modeDying: function() {
+
     },
-    newDuration: function() {
-        this.duration_pick = Number.prototype.random(this.duration_min, this.duration_max);
-        this.duration_now = me.timer.getTime();
-        this.iddling = false;
-        this.walking = false;
+    initHP: function(hp){
+        this.hp = hp;
+        this.max_hp = hp;
     }
 });

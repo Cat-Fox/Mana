@@ -309,3 +309,23 @@ game.ParticleGenerator = me.ObjectEntity.extend({
         this.particles -= 1;
     }
 });
+
+game.SmallText = me.ObjectEntity.extend({
+    text: null,
+    font_o: null,
+    init: function(x, y, text, font, size, color){
+        settings = {};
+        settings.spritewidth = 0;
+        settings.spriteheight = 0;
+        this.parent(x, y, settings);
+        this.font_o = new me.Font(font, size, color);
+        this.text = text;
+        console.log("creating SmallText "+this.pos.x+" "+this.pos.y);
+    },
+    draw: function(context){
+        this.font_o.draw(context, this.text, this.pos.x, this.pos.y);
+    },
+    onDestroyEvent: function(){
+        delete this.font_o;
+    }
+});

@@ -66,7 +66,10 @@ var game =
                 me.entityPool.add("Backpack", game.Backpack, true);
                 me.entityPool.add("Button", game.Button, true);
                 me.entityPool.add("DropButton", game.DropButton);
-                me.entityPool.add("WalkerNPC", game.WalkerNPC);
+                me.entityPool.add("WalkerNPC", game.WalkerNPC, true);
+                me.entityPool.add("WalkerRat", game.WalkerRat, true);
+                me.entityPool.add("Spawn", game.Spawn);
+                me.entityPool.add("SmallText", game.SmallText, true);
 
                 //player stuff
                 me.gamestat.add("hp", 50);
@@ -291,8 +294,6 @@ game.PlayScreen = game.AnimatedScreen.extend({
         me.levelDirector.loadLevel("test_map");
         console.log("level loaded");
         this.parent(); //animation
-        console.log(this.animations);
-        console.log(this.keys);
 
         me.input.bindKey(me.input.KEY.LEFT, "left");
         me.input.bindKey(me.input.KEY.RIGHT, "right");
