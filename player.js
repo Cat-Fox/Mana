@@ -627,7 +627,6 @@ game.ExpBar = me.ObjectEntity.extend({
     },
     update: function() {
         this.percent = Math.floor((me.gamestat.getItemValue("exp") * 100) / me.gamestat.getItemValue("next_level"));
-        
         this.parent();
         return true;
     }
