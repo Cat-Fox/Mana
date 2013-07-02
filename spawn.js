@@ -53,7 +53,8 @@ game.Spawn = me.ObjectEntity.extend({
         var tmp;
         switch (this.npc) {
             case "rat":
-                tmp = me.entityPool.newInstanceOf("WalkerRat", r_pos.x, r_pos.y);
+                //tmp = me.entityPool.newInstanceOf("WalkerRat", r_pos.x, r_pos.y);
+                tmp = new game.WalkerRat(r_pos.x, r_pos.y);
                 break;
         }
         me.game.add(tmp, this.z);
