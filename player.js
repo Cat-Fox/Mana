@@ -1,8 +1,11 @@
 game.Player = me.ObjectEntity.extend({
     shadow: null,
     inventory: null,
+    //attacks
     attacking: false,
     attack_box: null,
+    attack_cooldown: 500,
+    attack_cooldown_run: null,
     weapon: null,
     weapon_id: null,
     armor: null,
@@ -29,11 +32,15 @@ game.Player = me.ObjectEntity.extend({
         this.renderable.addAnimation("attack_down", [30, 31, 32, 33, 34], 1);
         this.renderable.addAnimation("attack_up", [15, 16, 17, 18, 19], 1);
         this.renderable.addAnimation("attack_right", [0, 1, 2, 3, 4], 1);
+        
+        this.renderable.addAnimation("death", [0, 1, 2, 3, 4, 5], 8);
 
         this.setVelocity(1.5, 1.5);
         this.gravity = 0;
         this.updateColRect(10, 12, 5, 22);
         this.renderable.setCurrentAnimation("iddle_down");
+        
+        this.attack_cooldown_run = 0;
 
         //store GUID
         if (me.gamestat.getItemValue("player") === 0) {
@@ -44,6 +51,7 @@ game.Player = me.ObjectEntity.extend({
         }
         this.type = "player";
         
+        //creating shadow and GUI
         this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x + 8, this.pos.y + 13);
         me.game.add(this.shadow, 4);
         this.target_box = new game.CollisionBox(this.pos.x + 8, this.pos.y + 22, "human_target");
@@ -65,6 +73,9 @@ game.Player = me.ObjectEntity.extend({
         if (this.dying) {
             if (this.renderable.getCurrentAnimationFrame() === 5) {
                 me.game.remove(this);
+                var dieText = me.entityPool.newInstanceOf("BigText", "YOU HAVE DIED");
+                me.game.add(dieText, game.guiLayer);
+                me.game.sort();
             } else {
                 // update object animation
                 this.vel.x = 0;
@@ -96,11 +107,15 @@ game.Player = me.ObjectEntity.extend({
                 if (this.attack_box !== null) {
                     me.game.remove(this.attack_box);
                 }
+            }
+            if(me.timer.getTime() > (this.attack_cooldown_run + this.attack_cooldown)){
                 this.attacking = false;
+
             }
         }
 
         if (me.input.isKeyPressed('attack') && this.attacking === false) {
+            this.attack_cooldown_run = me.timer.getTime();
             this.vel.x = 0;
             this.vel.y = 0;
             this.attacking = true;
@@ -210,6 +225,7 @@ game.Player = me.ObjectEntity.extend({
     },
     onDestroyEvent: function() {
         me.game.remove(this.shadow);
+        me.game.remove(this.target);
     },
     updateHP: function(value) {
         if (me.gamestat.getItemValue("hp") + value > me.gamestat.getItemValue("maxhp")) {
@@ -220,12 +236,16 @@ game.Player = me.ObjectEntity.extend({
     },
     updateEXP: function(value) {
         if (me.gamestat.getItemValue("exp") + value >= me.gamestat.getItemValue("next_level")) {
+            //NEXT LEVEL
             var addition = me.gamestat.getItemValue("exp") + value - me.gamestat.getItemValue("next_level");
             me.gamestat.updateValue("level", 1);
             me.gamestat.setValue("exp", addition);
             me.gamestat.setValue("next_leve1l", Math.floor(me.gamestat.getItemValue("next_level") + me.gamestat.getItemValue("next_level") * 2.5));
             me.gamestat.updateValue("skill", 5);
             me.audio.play("level_up");
+            var bigText = me.entityPool.newInstanceOf("BigText", "YOU HAVE REACHED LEVEL " + me.gamestat.getItemValue("level"));
+            me.game.add(bigText, game.guiLayer);
+            me.game.sort();
         } else {
             me.gamestat.updateValue("exp", value);
         }
@@ -278,13 +298,15 @@ game.Player = me.ObjectEntity.extend({
         }
     }, hurt: function(damage) {
         this.updateHP(-damage);
+        this.hit_text = me.entityPool.newInstanceOf("HitText", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2), damage, "Arial", "1em", "red");
+        me.game.add(this.hit_text, this.z + 1);
+        me.game.sort();
         if (me.gamestat.getItemValue("hp") <= 0) {
             //just die already!)
             this.dying = true;
             this.image = me.loader.getImage("death");
             this.spritewidth = 24;
             this.spriteheight = 24;
-            this.renderable.addAnimation("death", [0, 1, 2, 3, 4, 5], 8);
             this.renderable.setCurrentAnimation("death");
         } else {
             this.renderable.flicker(20);

@@ -6,7 +6,6 @@ game.Spawn = me.ObjectEntity.extend({
     guids: [],
     width: null,
     height: null,
-    init: true,
     npc_width: null,
     npc_height: null,
     init: function(x, y, settings) {
@@ -22,7 +21,7 @@ game.Spawn = me.ObjectEntity.extend({
         this.npc_height = settings.npc_height;
         this.npc_width = settings.npc_width;
     },
-            update: function() {
+    update: function() {
         if (this.init) {
             for (var i = 0; i < this.limit; i++) {
                 this.createNPC();
@@ -33,13 +32,15 @@ game.Spawn = me.ObjectEntity.extend({
             if (me.game.getEntityByGUID(this.guids[i]).alive === false) {
                 this.guids.splice(i, 1);
                 this.respawn_timers.push(me.timer.getTime());
-                console.log("npc died");
+                console.log("npc " + this.npc + " died");
+                console.log(this.respawn_timers.length + " " + this.npc + " will be spawned");
             }
         }
 
         for (var i = 0; i < this.respawn_timers.length; i++) {
             if (me.timer.getTime() > (this.respawn_timers[i] + (this.respawn * 1000))) {
                 this.respawn_timers.splice(i, 1);
+                console.log(this.respawn_timers.length + " more " + this.npc + " will be spawned");
                 this.createNPC();
             }
         }
@@ -55,8 +56,8 @@ game.Spawn = me.ObjectEntity.extend({
                 tmp = me.entityPool.newInstanceOf("WalkerRat", r_pos.x, r_pos.y);
                 break;
         }
-        this.guids.push(tmp.GUID);
         me.game.add(tmp, this.z);
         me.game.sort();
+        this.guids.push(tmp.GUID);
     }
 });

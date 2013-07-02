@@ -3,6 +3,14 @@
     name: "tilesheet",
     type: "image",
     src: "data/tilesheet.png"
+},{
+    name: "cave_tilesheet",
+    type: "image",
+    src: "data/maps/cave_tilesheet.png"
+},{
+    name: "objects_tilesheet",
+    type: "image",
+    src: "data/maps/objects_tilesheet.png"
 }, {
     name: "test_map",
     type: "tmx",
@@ -11,6 +19,10 @@
     name: "house",
     type: "tmx",
     src: "data/maps/house.tmx"
+}, {
+    name: "cave",
+    type: "tmx",
+    src: "data/maps/cave.tmx"
 },  {
     name: "human",
     type: "image",

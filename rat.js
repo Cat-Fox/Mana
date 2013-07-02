@@ -30,6 +30,8 @@ game.WalkerRat = game.WalkerNPC.extend({
         this.type = me.game.ENEMY_OBJECT;
         this.initHP(30);
         this.attack_cooldown = 1500;
+        this.alive = true;
+        this.exp = 30;
     },
     update: function() {
         this.targeted = false;
@@ -65,9 +67,14 @@ game.WalkerRat = game.WalkerNPC.extend({
     },
     onHit: function() {
         var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
-        this.hurt(player.countDMG(this.armor));
+        var dmg = player.countDMG(this.armor)
+        this.hurt(dmg);
         console.log(this.hp);
         player.destroyAttack();
+
+        this.hit_text = me.entityPool.newInstanceOf("HitText", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2), dmg, "Arial", "1em", "lime");
+        me.game.add(this.hit_text, this.z + 1);
+        me.game.sort();
     },
     onUse: function() {
         this.use_text_t = true;
@@ -85,7 +92,7 @@ game.WalkerRat = game.WalkerNPC.extend({
                 me.game.getEntityByGUID(me.gamestat.getItemValue("player")).updateEXP(this.exp);
                 this.mode_select = "dying";
             } else {
-                this.renderable.flicker(20);
+                this.renderable.flicker(5);
                 if (this.mode_select !== "attacking") {
                     this.mode_select = "attacking";
                     smile = me.entityPool.newInstanceOf("Smile", this.pos.x + (this.renderable.width / 2), this.pos.y, "kill");
@@ -98,14 +105,18 @@ game.WalkerRat = game.WalkerNPC.extend({
     modeAttacking: function() {
         var this_vector = new me.Vector2d(this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2));
         var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
+        if(player === null){
+            this.mode_select = "walking";
+            return;
+        }
         var player_vector = new me.Vector2d(player.pos.x + (player.width / 2), player.pos.y + (player.height / 2));
         var angle = (this_vector.angle(player_vector) * (180 / Math.PI));
         this.vel.x = 0;
         this.vel.y = 0;
         //console.log(this_vector.distance(player_vector));
-        if(this_vector.distance(player_vector) < 25){
-            if(this.attack_cooldown_run){
-                if(me.timer.getTime() > (this.attack_time + this.attack_cooldown)){
+        if (this_vector.distance(player_vector) < 25) {
+            if (this.attack_cooldown_run) {
+                if (me.timer.getTime() > (this.attack_time + this.attack_cooldown)) {
                     this.attack_cooldown_run = false;
                 }
             } else {
@@ -122,7 +133,7 @@ game.WalkerRat = game.WalkerNPC.extend({
                 this.renderable.setCurrentAnimation("right");
             } else {
                 this.renderable.setCurrentAnimation("attack_right");
-            }            
+            }
         } else if (angle < -45 && angle >= -120) {
             //top
             if (this_vector.distance(player_vector) >= 25) {
@@ -139,12 +150,12 @@ game.WalkerRat = game.WalkerNPC.extend({
                 this.renderable.setCurrentAnimation("right");
             } else {
                 this.renderable.setCurrentAnimation("attack_right");
-            }            
+            }
         } else if (angle > 45 && angle <= 120) {
             //down
             if (this_vector.distance(player_vector) >= 25) {
                 this.vel.y += this.accel.x * me.timer.tick;
-                this.renderable.setCurrenAnimation("down");
+                this.renderable.setCurrentAnimation("down");
             } else {
                 this.renderable.setCurrentAnimation("attack_down");
             }
@@ -152,6 +163,15 @@ game.WalkerRat = game.WalkerNPC.extend({
     },
     modeDying: function() {
         this.alive = false;
+        if (this.target_text !== null) {
+            me.game.remove(this.target_text);
+            this.target_text = null;
+        }
+        if (this.target !== null) {
+            me.game.remove(this.target);
+            this.target = null;
+        }
+
         if (this.renderable.getCurrentAnimationFrame() === 7 && this.renderable.isCurrentAnimation("die")) {
             me.game.remove(this);
         }
