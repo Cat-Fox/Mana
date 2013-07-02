@@ -70,6 +70,8 @@ var game =
                 me.entityPool.add("WalkerRat", game.WalkerRat, true);
                 me.entityPool.add("Spawn", game.Spawn);
                 me.entityPool.add("SmallText", game.SmallText, true);
+                me.entityPool.add("BigText", game.BigText, true);
+                me.entityPool.add("HitText", game.HitText, true);
 
                 //player stuff
                 me.gamestat.add("hp", 50);
@@ -302,6 +304,7 @@ game.PlayScreen = game.AnimatedScreen.extend({
         me.input.bindKey(me.input.KEY.B, "inventory");
         me.input.bindKey(me.input.KEY.X, "attack");
         me.input.bindKey(me.input.KEY.C, "use");
+        me.input.bindKey(me.input.KEY.F, "f");
         
         me.input.registerMouseEvent('mousemove', me.game.viewport, this.mouse);
 

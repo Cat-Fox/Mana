@@ -49,7 +49,7 @@ game.WalkerNPC = me.ObjectEntity.extend({
         }
     },
     update: function() {
-        switch(this.mode_select){
+        switch (this.mode_select) {
             case "walking":
                 this.modeWalking();
                 break;
@@ -61,35 +61,37 @@ game.WalkerNPC = me.ObjectEntity.extend({
                 break;
         }
 
-        var res = me.game.collide(this, true);
-        if (res.length >= 1) {
-            for (var i = 0; i < res.length; i++) {
-                //this is quite horrible solution
-                if ((res[i].obj.type === "npc") || (res[i].obj.type === me.game.ENEMY_OBJECT)) {
-                    if (res[i].x !== 0) {
-                        // x axis
-                        if (res[i].x < 0) {
-                            this.pos.x = this.pos.x + 3;
+        if (this.mode_select !== "dying") {
+            var res = me.game.collide(this, true);
+            if (res.length >= 1) {
+                for (var i = 0; i < res.length; i++) {
+                    //this is quite horrible solution
+                    if ((res[i].obj.type === "npc") || (res[i].obj.type === me.game.ENEMY_OBJECT)) {
+                        if (res[i].x !== 0) {
+                            // x axis
+                            if (res[i].x < 0) {
+                                this.pos.x = this.pos.x + 3;
 
-                        } else {
-                            this.pos.x = this.pos.x - 3;
+                            } else {
+                                this.pos.x = this.pos.x - 3;
+                            }
                         }
-                    }
-                    else {
-                        // y axis
-                        if (res[i].y < 0) {
-                            this.pos.y = this.pos.y + 3;
+                        else {
+                            // y axis
+                            if (res[i].y < 0) {
+                                this.pos.y = this.pos.y + 3;
 
-                        } else {
-                            this.pos.y = this.pos.y - 3;
+                            } else {
+                                this.pos.y = this.pos.y - 3;
+                            }
                         }
+                    } else if (res[i].obj.type === "human_target") {
+                        this.onTarget();
+                    } else if (res[i].obj.type === "human_use") {
+                        this.onUse();
+                    } else if (res[i].obj.type === "human_attack") {
+                        this.onHit();
                     }
-                } else if (res[i].obj.type === "human_target") {
-                    this.onTarget();
-                } else if (res[i].obj.type === "human_use") {
-                    this.onUse();
-                } else if (res[i].obj.type === "human_attack") {
-                    this.onHit();
                 }
             }
         }
@@ -182,7 +184,7 @@ game.WalkerNPC = me.ObjectEntity.extend({
     modeDying: function() {
 
     },
-    initHP: function(hp){
+    initHP: function(hp) {
         this.hp = hp;
         this.max_hp = hp;
     }
