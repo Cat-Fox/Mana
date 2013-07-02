@@ -30,8 +30,8 @@ game.WalkerRat = game.WalkerNPC.extend({
         this.type = me.game.ENEMY_OBJECT;
         this.initHP(30);
         this.attack_cooldown = 1500;
-        this.alive = true;
         this.exp = 30;
+        console.log(this.alive);
     },
     update: function() {
         this.targeted = false;
