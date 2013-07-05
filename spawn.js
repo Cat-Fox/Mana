@@ -32,7 +32,6 @@ game.Spawn = me.ObjectEntity.extend({
             if (me.game.getEntityByGUID(this.guids[i]).alive === false) {
                 this.guids.splice(i, 1);
                 this.respawn_timers.push(me.timer.getTime());
-                console.log("npc " + this.npc + " died");
                 console.log(this.respawn_timers.length + " " + this.npc + " will be spawned");
             }
         }
