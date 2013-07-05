@@ -16,8 +16,6 @@ var game =
             guiLayer: 15,
             onload: function()
             {
-
-                //webFonts are unasable for scale 2.0!!!
                 if (!me.video.init('screen', this.screenWidth, this.screenHeight, true, 2.0, true)) {
                     alert("Sorry but your browser does not support html 5 canvas.");
                     return;
@@ -57,6 +55,7 @@ var game =
                 me.entityPool.add("Target", game.Target, true);
                 me.entityPool.add("Item_sword1", game.Item_sword1);
                 me.entityPool.add("InventoryTile", game.InventoryTile, true);
+                me.entityPool.add("CharacterTile", game.CharacterTile, true);
                 me.entityPool.add("Fire", game.Fire);
                 me.entityPool.add("CollisionBox", game.CollisionBox, true);
                 me.entityPool.add("Message", game.Message);
@@ -64,7 +63,6 @@ var game =
                 me.entityPool.add("ParticleGenerator", game.ParticleGenerator);
                 me.entityPool.add("Particle", game.Particle);
                 me.entityPool.add("Backpack", game.Backpack, true);
-                me.entityPool.add("Button", game.Button, true);
                 me.entityPool.add("DropButton", game.DropButton);
                 me.entityPool.add("WalkerNPC", game.WalkerNPC, true);
                 me.entityPool.add("WalkerRat", game.WalkerRat, true);
@@ -72,6 +70,12 @@ var game =
                 me.entityPool.add("SmallText", game.SmallText, true);
                 me.entityPool.add("BigText", game.BigText, true);
                 me.entityPool.add("HitText", game.HitText, true);
+                me.entityPool.add("DeathSmoke", game.DeathSmoke, true);
+                me.entityPool.add("Button", game.Button, true);
+                me.entityPool.add("DropButton", game.DropButton, true);
+                me.entityPool.add("EquipButton", game.EquipButton, true);
+                me.entityPool.add("PlusSkillButton", game.PlusSkillButton, true);
+                
 
                 //player stuff
                 me.gamestat.add("hp", 50);
@@ -189,14 +193,14 @@ game.CreditsScreen = me.ScreenObject.extend({
     },
     draw: function(context) {
         this.parent(context);
-        
+
         context.fillStyle = "black";
         context.fillRect(0, 0, 400, 220);
-        this.gold_font.draw(context, "AUTHOR NIKITA ZARAKA VANKU", (game.screenWidth / 2) -30 , 20);
+        this.gold_font.draw(context, "AUTHOR NIKITA ZARAKA VANKU", (game.screenWidth / 2) - 30, 20);
         this.gold_font.draw(context, "SPRITE TILESETS", game.screenWidth / 2, 40);
         this.gold_font.draw(context, "MOZZILA BROWSERQUEST", game.screenWidth / 2, 50);
         this.gold_font.draw(context, "OPENGAMEART.ORG", game.screenWidth / 2, 60);
-        
+
         this.gold_font.draw(context, "PRESS ENTER TO GET BACK", 20, game.screenHeight - 10);
     },
     update: function() {
@@ -212,17 +216,15 @@ game.CreditsScreen = me.ScreenObject.extend({
 
 /* Screen object supporting layer-animation */
 game.AnimatedScreen = me.ScreenObject.extend({
-    "animations" : {},
-    "keys" : [],
-
-    "init" : function init(animationspeed) {
+    "animations": {},
+    "keys": [],
+    "init": function init(animationspeed) {
         this.parent(true);
         this.isPersistent = true;
         this.animationspeed = animationspeed || this.animationspeed;
-        
-    },
 
-    "update" : function update() {
+    },
+    "update": function update() {
         var isDirty = false;
         var self = this;
 
@@ -251,17 +253,16 @@ game.AnimatedScreen = me.ScreenObject.extend({
 
         return isDirty;
     },
-
-    onResetEvent : function onResetEvent() {
-    console.log("loaded");
+    onResetEvent: function onResetEvent() {
+        console.log("loaded");
         var self = this;
         self.animations = {};
         self.keys = [];
 
         // Use `in` operator, so we can use 0, if we want. ;)
         var speed = (("animationspeed" in me.game.currentLevel) ?
-            me.game.currentLevel.animationspeed :
-            (me.sys.fps / 10));
+                me.game.currentLevel.animationspeed :
+                (me.sys.fps / 10));
 
         var layers = me.game.currentLevel.getLayers();
         layers.forEach(function forEach(layer, idx) {
@@ -274,10 +275,10 @@ game.AnimatedScreen = me.ScreenObject.extend({
                 else {
                     self.keys.push(key);
                     self.animations[key] = {
-                        "speed" : me.game.currentLevel[key + " speed"] || speed,
-                        "layers" : [],
-                        "count" : 0,
-                        "idx" : 0
+                        "speed": me.game.currentLevel[key + " speed"] || speed,
+                        "layers": [],
+                        "count": 0,
+                        "idx": 0
                     };
                 }
                 self.animations[key].layers.push(layer);
@@ -289,7 +290,7 @@ game.AnimatedScreen = me.ScreenObject.extend({
 game.PlayScreen = game.AnimatedScreen.extend({
     onResetEvent: function()
     {
-        
+
         // stuff to reset on state change
         // load a level
         console.log("loading level");
@@ -305,7 +306,7 @@ game.PlayScreen = game.AnimatedScreen.extend({
         me.input.bindKey(me.input.KEY.X, "attack");
         me.input.bindKey(me.input.KEY.C, "use");
         me.input.bindKey(me.input.KEY.F, "f");
-        
+
         me.input.registerMouseEvent('mousemove', me.game.viewport, this.mouse);
 
     },
@@ -319,9 +320,9 @@ game.PlayScreen = game.AnimatedScreen.extend({
         me.input.unbindKey(me.input.KEY.B, "inventory");
         me.input.unbindKey(me.input.KEY.X, "attack");
         me.input.unbindKey(me.input.KEY.C, "use");
-        
+
         me.input.releaseMouseEvent('mousemove', me.game.viewport);
-    }, mouse: function(){
+    }, mouse: function() {
         //console.log(me.input.mouse.pos.x + " " + me.input.mouse.pos.y);
     }
 

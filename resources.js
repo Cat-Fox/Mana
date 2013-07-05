@@ -28,6 +28,10 @@
     type: "image",
     src: "data/human.png"
 },  {
+    name: "clotharmor",
+    type: "image",
+    src: "data/clotharmor.png"
+},  {
     name: "firefox",
     type: "image",
     src: "data/firefox.png"

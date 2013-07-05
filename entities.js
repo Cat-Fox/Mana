@@ -35,9 +35,6 @@ game.Sparks = me.CollectableEntity.extend({
     },
     onCollision: function() {
         me.audio.play("exp_click");
-        //smile = new game.Smile(this.pos.x, this.pos.y - 5, "wow");
-        smile = me.entityPool.newInstanceOf("Smile", this.pos.x, this.pos.y - 5, "wow");
-        me.game.add(smile, 3);
         me.game.sort();
         me.game.remove(this);
         me.game.getEntityByGUID(me.gamestat.getItemValue("player")).updateEXP(5);
@@ -70,9 +67,6 @@ game.Item_sword1 = game.CollectableShadow.extend({
     },
     onCollision: function() {
         me.audio.play("metal-clash");
-        smile = me.entityPool.newInstanceOf("Smile", this.pos.x, this.pos.y - 5, "wow");
-        me.game.add(smile, 3);
-        me.game.sort();
         me.game.remove(this.shadow);
         me.game.remove(this);
         this.collidable = false;
@@ -307,5 +301,24 @@ game.ParticleGenerator = me.ObjectEntity.extend({
     },
     killParticle: function() {
         this.particles -= 1;
+    }
+});
+
+game.DeathSmoke = me.ObjectEntity.extend({
+    init: function(x, y){
+        settings = {};
+        settings.spritewidth = 24;
+        settings.spritewidth = 24;
+        settings.image = me.loader.getImage('death');
+        this.parent(x, y, settings);
+        this.renderable.addAnimation("death", [0, 1, 2, 3, 4, 5, 5], 4);
+        this.renderable.setCurrentAnimation("death");
+    }, update: function(){
+        if(this.renderable.getCurrentAnimationFrame() === 6){
+            me.game.remove(this);
+        }
+        
+        this.parent();
+        return true;
     }
 });
