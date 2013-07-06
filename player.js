@@ -7,9 +7,6 @@ game.Player = me.ObjectEntity.extend({
     attack_cooldown: 500,
     attack_cooldown_run: null,
     weapon: null,
-    weapon_id: null,
-    armor: null,
-    artefact: null,
     target_box: null,
     use_box: null,
     use_box_timer: null,
@@ -159,8 +156,6 @@ game.Player = me.ObjectEntity.extend({
                 } else {
                     if (me.input.isKeyPressed('use')) {
                         this.createUse();
-                    } else if (me.input.isKeyPressed('inventory')) {
-                        console.log(me.gamestat.getItemValue("inventory"));
                     }
                     this.vel.x = 0;
                     this.vel.y = 0;
@@ -204,12 +199,16 @@ game.Player = me.ObjectEntity.extend({
         }
 
         // check & update player movement
+        var old_pos = this.pos.clone();
         this.updateMovement();
-        this.shadow.pos.x = this.pos.x + 8;
-        this.shadow.pos.y = this.pos.y + 13;
+        var pos_change = this.pos.clone();
+        pos_change.x -= old_pos.x;
+        pos_change.y -= old_pos.y;
+        this.shadow.pos.x += pos_change.x;
+        this.shadow.pos.y += pos_change.y;
         if (this.weapon !== null) {
-            this.weapon.pos.x = this.pos.x;
-            this.weapon.pos.y = this.pos.y;
+            this.weapon.pos.x += pos_change.x;
+            this.weapon.pos.y += pos_change.y;
             this.syncWeapon();
         }
         this.updateTargetBox();
@@ -294,28 +293,30 @@ game.Player = me.ObjectEntity.extend({
         } else {
             this.renderable.flicker(20);
         }
-    }, equipWeapon: function(id) {
-        name = me.gamestat.getItemValue("inventory")[id];
+    }, equipWeapon: function() {
         if (this.weapon !== null) {
-            // TODO:CHANGE
-            //me.game.HUD.updateItemValue("inventory", id);
             me.game.remove(this.weapon);
             this.weapon = null;
         }
-        if (this.weapon_id === id) {
-            this.weapon_id = null;
-        } else {
-            if (name === "item-sword1") {
-                this.weapon = new game.Sword1(this.pos.x, this.pos.y);
-                this.weapon_id = id;
-                me.game.add(this.weapon, 4);
-                me.game.sort();
-            }
+        var weapon = me.gamestat.getItemValue("inventory")[me.gamestat.getItemValue("equip").weapon];
+        switch (weapon.attributes.image_size) {
+            case "small":
+                this.weapon = new game.weapons[weapon.attributes.object_name](this.pos.x, this.pos.y);
+                break;
+            case "big":
+                this.weapon = new game.weapons[weapon.attributes.object_name](this.pos.x - 8, this.pos.y - 10);
+                break;
+            default:
+                console.log("error");
+                break;
         }
+        me.game.add(this.weapon, this.z + 1);
+        me.game.sort();
     }, countDMG: function(armor) {
+        var weapon = me.gamestat.getItemValue("inventory")[me.gamestat.getItemValue("equip").weapon];
         if (this.weapon !== null) {
-            console.log(this.attack + " + " + this.weapon.attack + " - " + armor);
-            return this.attack + this.weapon.attack - armor;
+            console.log(this.attack + " + " + weapon.attributes.dmg + " - " + armor);
+            return this.attack + weapon.attributes.dmg - armor;
         } else {
             console.log(this.attack + " - " + armor);
             return this.attack - armor;
@@ -483,11 +484,11 @@ game.Backpack = me.ObjectEntity.extend({
         for (var i = 0; i < this.buttons.length; i++) {
             me.game.add(this.buttons[i], this.entity_layer);
         }
-        this.armor_tile = me.entityPool.newInstanceOf("CharacterTile", 30, 130);
+        this.armor_tile = me.entityPool.newInstanceOf("CharacterTile", 30, 130, "armor");
         me.game.add(this.armor_tile, this.entity_layer);
-        this.weapon_tile = me.entityPool.newInstanceOf("CharacterTile", 70, 130);
+        this.weapon_tile = me.entityPool.newInstanceOf("CharacterTile", 70, 130, "weapon");
         me.game.add(this.weapon_tile, this.entity_layer);
-        this.artefact_tile = me.entityPool.newInstanceOf("CharacterTile", 110, 130);
+        this.artefact_tile = me.entityPool.newInstanceOf("CharacterTile", 110, 130, "artefact");
         me.game.add(this.artefact_tile, this.entity_layer);
 
         this.font = new me.Font("century gothic", "1em", "black");
@@ -507,6 +508,8 @@ game.Backpack = me.ObjectEntity.extend({
             }
         }
         me.game.sort();
+
+        console.log(me.gamestat.getItemValue("inventory"));
     }, update: function() {
         if (me.gamestat.getItemValue("skill") === 0 && this.buttons_add !== null) {
             me.game.remove(this.buttons_add.str);
@@ -586,22 +589,33 @@ game.Backpack = me.ObjectEntity.extend({
 
 game.CharacterTile = me.GUI_Object.extend({
     icon: null,
-    init: function(x, y) {
+    type: null,
+    init: function(x, y, type) {
         settings = {};
         settings.image = "inventory_tile";
         settings.spritewidth = 16;
         settings.spriteheight = 16;
         this.parent(x, y, settings);
         this.floating = true;
+        this.type = type;
 
+        if (me.gamestat.getItemValue("equip")[this.type] !== null) {
+            this.addIcon(me.gamestat.getItemValue("equip")[this.type]);
+        }
     }, onDestroyEvent: function() {
-        this.removeIcon;
-    }, addIcon: function(icon_name) {
-        this.removeIcon;
-        console.log(icon_name);
-        this.icon = me.entityPool.newInstanceOf("Icon", this.pos.x, this.pox.y, icon_name);
+        this.removeIcon();
+    }, addIcon: function(id) {
+        this.removeIcon();
+
+        me.gamestat.getItemValue("equip")[this.type] = id;
+        me.game.getEntityByGUID(me.gamestat.getItemValue("player")).equipWeapon();
+        var object = me.gamestat.getItemValue("inventory")[id];
+        //this.icon = me.entityPool.newInstanceOf("Icon", this.pos.x, this.pox.y, icon_name);
+        this.icon = new game.Icon(this.pos.x, this.pos.y, object.icon_name);
         me.game.add(this.icon, this.z + 1);
         me.game.sort();
+
+
     }, removeIcon: function() {
         if (this.icon !== null) {
             me.game.remove(this.icon);
@@ -615,8 +629,6 @@ game.CharacterTile = me.GUI_Object.extend({
 game.InventoryTile = me.GUI_Object.extend({
     id: null,
     icon: null,
-    type: null,
-    name: null,
     click_timer: 25,
     click_timer_run: null,
     init: function(x, y, id) {
@@ -629,8 +641,6 @@ game.InventoryTile = me.GUI_Object.extend({
         this.id = id;
         this.isClickable = true;
         this.isPersistent = true;
-        this.type = "";
-        this.name = "";
         this.click_timer_run = 0;
     },
     onDestroyEvent: function() {
@@ -642,7 +652,7 @@ game.InventoryTile = me.GUI_Object.extend({
     onClick: function() {
         if (this.click_timer_run === 0) {
             this.click_timer_run = me.timer.getTime();
-            console.log("clicked tile " + this.id + " this:" + this.type + " gamestat: " + me.gamestat.getItemValue("inventory")[this.id]);
+            console.log("clicked tile " + this.id);
             if (this.icon !== null) {
                 var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
                 if (player.backpack_icon.backpack.selected_tile === null) {
@@ -653,7 +663,8 @@ game.InventoryTile = me.GUI_Object.extend({
                     this.icon.renderable.setCurrentAnimation("inactive");
                 } else {
                     var last_active = player.backpack_icon.backpack.getTileFromID(player.backpack_icon.backpack.selected_tile);
-                    player.backpack_icon.backpack.tiles[last_active.row][last_active.column].renderable.setCurrentAnimation("inactive");
+                    console.log(last_active);
+                    player.backpack_icon.backpack.tiles[last_active.row][last_active.column].icon.renderable.setCurrentAnimation("inactive");
                     player.backpack_icon.backpack.selected_tile = this.id;
                     this.icon.renderable.setCurrentAnimation("active");
                 }
@@ -663,22 +674,15 @@ game.InventoryTile = me.GUI_Object.extend({
         }
     },
     update: function() {
-        if (this.icon === null && me.gamestat.getItemValue("inventory")[this.id] !== null) {
-            if (me.gamestat.getItemValue("inventory")[this.id] === "item-sword1") {
-                this.icon = me.entityPool.newInstanceOf("Icon", this.pos.x, this.pos.y, "item-sword1");
-                this.type = "weapon";
-                this.name = "item-sword1";
-                me.game.add(this.icon, this.z + 1);
-                me.game.sort();
-            }
+        if (this.icon === null && typeof me.gamestat.getItemValue("inventory")[this.id] !== "undefined") {
+            this.icon = me.entityPool.newInstanceOf("Icon", this.pos.x, this.pos.y, me.gamestat.getItemValue("inventory")[this.id].icon_name);
+            me.game.add(this.icon, this.z + 1);
+            me.game.sort();
         } else if (this.icon !== null && typeof me.gamestat.getItemValue("inventory")[this.id] == "undefined") {
             me.game.remove(this.icon);
             this.icon = null;
-            this.type = "";
-            this.name = "";
             console.log("removing icon");
         }
-
         this.parent();
         return true;
     }
@@ -831,13 +835,12 @@ game.EquipButton = game.Button.extend({
         var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
         if (player.backpack_icon.backpack.selected_tile !== null) {
             console.log("equip item on tile " + player.backpack_icon.backpack.selected_tile);
-            var selected = player.backpack_icon.backpack.getTileFromID(player.backpack_icon.backpack.selected_tile);
-            var selected = player.backpack_icon.backpack.tiles[selected.row][selected.column];
+            var selected = me.gamestat.getItemValue("inventory")[player.backpack_icon.backpack.selected_tile];
             switch (selected.type) {
                 case "armor":
                     break;
                 case "weapon":
-                    player.backpack_icon.backpack.weapon_tile.addIcon(selected.name);
+                    player.backpack_icon.backpack.weapon_tile.addIcon(player.backpack_icon.backpack.selected_tile);
                     break;
                 case "artefact":
                     break;

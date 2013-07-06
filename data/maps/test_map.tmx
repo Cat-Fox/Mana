@@ -133,6 +133,13 @@
     <property name="to" value="cave"/>
    </properties>
   </object>
+  <object name="Item_sword2" type="Collectable" x="592" y="496" width="16" height="16">
+   <properties>
+    <property name="image" value="item-sword2"/>
+    <property name="spriteheight" value="16"/>
+    <property name="spritewidth" value="16"/>
+   </properties>
+  </object>
  </objectgroup>
  <objectgroup name="entities2" width="50" height="50">
   <object name="ParticleGenerator" type="Particles" x="352" y="592" width="16" height="16">

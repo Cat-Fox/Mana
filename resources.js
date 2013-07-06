@@ -44,9 +44,41 @@
     type: "image",
     src: "data/item-sword1.png"
 }, {
+    name: "item-sword2",
+    type: "image",
+    src: "data/item-sword2.png"
+}, {
+    name: "item-bluesword",
+    type: "image",
+    src: "data/item-bluesword.png"
+}, {
+    name: "item-redsword",
+    type: "image",
+    src: "data/item-redsword.png"
+}, {
+    name: "item-goldensword",
+    type: "image",
+    src: "data/item-goldensword.png"
+}, {
     name: "sword1",
     type: "image",
-    src: "data/sword1.png"
+    src: "data/weapon-sword1.png"
+}, {
+    name: "sword2",
+    type: "image",
+    src: "data/weapon-sword2.png"
+}, {
+    name: "bluesword",
+    type: "image",
+    src: "data/weapon-bluesword.png"
+}, {
+    name: "redsword",
+    type: "image",
+    src: "data/weapon-redsword.png"
+}, {
+    name: "goldensword",
+    type: "image",
+    src: "data/weapon-goldensword.png"
 }, {
     name: "target",
     type: "image",

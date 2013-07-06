@@ -14,6 +14,7 @@ var game =
             screenWidth: 400,
             screenHeight: 220,
             guiLayer: 15,
+            weapons: {},
             onload: function()
             {
                 if (!me.video.init('screen', this.screenWidth, this.screenHeight, true, 2.0, true)) {
@@ -46,31 +47,37 @@ var game =
                 me.state.set(me.state.CREDITS, new game.CreditsScreen());
 
                 me.entityPool.add("Player", game.Player);
+                //------------------ITEMS------------------------
                 me.entityPool.add("Burger", game.Burger);
-                me.entityPool.add("Guard", game.Guard);
-                me.entityPool.add("Rat", game.Rat, true);
+                me.entityPool.add("Item_sword1", game.Item_sword1);
+                me.entityPool.add("Item_sword2", game.Item_sword2);
+                //------------------Entities---------------------------
                 me.entityPool.add("Shadow", game.Shadow, true);
                 me.entityPool.add("Sparks", game.Sparks, true);
                 me.entityPool.add("Smile", game.Smile, true);
                 me.entityPool.add("Target", game.Target, true);
-                me.entityPool.add("Item_sword1", game.Item_sword1);
-                me.entityPool.add("InventoryTile", game.InventoryTile, true);
-                me.entityPool.add("CharacterTile", game.CharacterTile, true);
                 me.entityPool.add("Fire", game.Fire);
                 me.entityPool.add("CollisionBox", game.CollisionBox, true);
                 me.entityPool.add("Message", game.Message);
-                me.entityPool.add("Icon", game.Icon);
+                //Particles
                 me.entityPool.add("ParticleGenerator", game.ParticleGenerator);
-                me.entityPool.add("Particle", game.Particle);
-                me.entityPool.add("Backpack", game.Backpack, true);
-                me.entityPool.add("DropButton", game.DropButton);
+                me.entityPool.add("Particle", game.Particle, true);
+                //NPCS
                 me.entityPool.add("WalkerNPC", game.WalkerNPC, true);
                 me.entityPool.add("WalkerRat", game.WalkerRat, true);
+                me.entityPool.add("Guard", game.Guard);
                 me.entityPool.add("Spawn", game.Spawn);
+                //---------------------GUI--------------------------------
+                me.entityPool.add("Backpack", game.Backpack, true);
+                me.entityPool.add("Icon", game.Icon, true);
+                me.entityPool.add("InventoryTile", game.InventoryTile, true);
+                me.entityPool.add("CharacterTile", game.CharacterTile, true);
+                //Texts
                 me.entityPool.add("SmallText", game.SmallText, true);
                 me.entityPool.add("BigText", game.BigText, true);
                 me.entityPool.add("HitText", game.HitText, true);
                 me.entityPool.add("DeathSmoke", game.DeathSmoke, true);
+                //Buttons
                 me.entityPool.add("Button", game.Button, true);
                 me.entityPool.add("DropButton", game.DropButton, true);
                 me.entityPool.add("EquipButton", game.EquipButton, true);
@@ -90,7 +97,8 @@ var game =
                 me.gamestat.add("skill", 0);
                 var inventory = new Array();
                 me.gamestat.add("inventory", inventory);
-
+                var equip = {weapon: null, armor: null, artefact: null};
+                me.gamestat.add("equip", equip);
                 //me.debug.renderHitBox = true;
 
 
