@@ -58,6 +58,8 @@ game.Player = me.ObjectEntity.extend({
         me.game.sort();
 
         this.hp_font = new me.Font("Arial", "1em", "red");
+        
+        //console.log(me.loader.getBinary("arakis10"));
 
     },
     draw: function(context) {
@@ -199,22 +201,20 @@ game.Player = me.ObjectEntity.extend({
         }
 
         // check & update player movement
-        var old_pos = this.pos.clone();
         this.updateMovement();
-        var pos_change = this.pos.clone();
-        pos_change.x -= old_pos.x;
-        pos_change.y -= old_pos.y;
-        this.shadow.pos.x += pos_change.x;
-        this.shadow.pos.y += pos_change.y;
-        if (this.weapon !== null) {
-            this.weapon.pos.x += pos_change.x;
-            this.weapon.pos.y += pos_change.y;
-            this.syncWeapon();
-        }
+        this.shadow.pos.x = this.pos.x + 8;
+        this.shadow.pos.y = this.pos.y + 13;
         this.updateTargetBox();
 
         // update object animation
         this.parent();
+        
+        if (this.weapon !== null) {
+            var weapon = me.gamestat.getItemValue("inventory")[me.gamestat.getItemValue("equip").weapon];
+            this.weapon.pos.x = this.pos.x + weapon.attributes.offset_x;
+            this.weapon.pos.y = this.pos.y + weapon.attributes.offset_y;
+            this.syncWeapon();
+        }
         return true;
     },
     onDestroyEvent: function() {
@@ -299,17 +299,7 @@ game.Player = me.ObjectEntity.extend({
             this.weapon = null;
         }
         var weapon = me.gamestat.getItemValue("inventory")[me.gamestat.getItemValue("equip").weapon];
-        switch (weapon.attributes.image_size) {
-            case "small":
-                this.weapon = new game.weapons[weapon.attributes.object_name](this.pos.x, this.pos.y);
-                break;
-            case "big":
-                this.weapon = new game.weapons[weapon.attributes.object_name](this.pos.x - 8, this.pos.y - 10);
-                break;
-            default:
-                console.log("error");
-                break;
-        }
+        this.weapon = new game.weapons[weapon.attributes.object_name](this.pos.x + weapon.attributes.offset_x, this.pos.y + weapon.attributes.offset_y);
         me.game.add(this.weapon, this.z + 1);
         me.game.sort();
     }, countDMG: function(armor) {
@@ -480,7 +470,7 @@ game.Backpack = me.ObjectEntity.extend({
         this.buttons = [];
         this.buttons.push(new game.DropButton(140 + (16 * 5) + 10, 35, "DROP", "drop an item!"));
         this.buttons.push(new game.EquipButton(140 + (16 * 5) + 10, 50, "EQUIP", "equip an item!"));
-        this.buttons.push(new game.Button(140 + (16 * 5) + 10, 65, "USE", "use an item!"));
+        this.buttons.push(new game.UseButton(140 + (16 * 5) + 10, 65, "USE", "use an item!"));
         for (var i = 0; i < this.buttons.length; i++) {
             me.game.add(this.buttons[i], this.entity_layer);
         }
@@ -495,17 +485,15 @@ game.Backpack = me.ObjectEntity.extend({
         this.bm_font = new me.BitmapFont("geebeeyay-8x8", 8);
 
         if (me.gamestat.getItemValue("skill") > 0) {
-            if (this.buttons_add === null) {
-                this.buttons_add = {};
-                this.buttons_add.str = me.entityPool.newInstanceOf("PlusSkillButton", 25, 60, "str");
-                me.game.add(this.buttons_add.str, this.entity_layer);
-                this.buttons_add.agi = me.entityPool.newInstanceOf("PlusSkillButton", 25, 60, "agi");
-                me.game.add(this.buttons_add.agi, this.entity_layer);
-                this.buttons_add.end = me.entityPool.newInstanceOf("PlusSkillButton", 25, 60, "end");
-                me.game.add(this.buttons_add.end, this.entity_layer);
-                this.buttons_add.int = me.entityPool.newInstanceOf("PlusSkillButton", 25, 60, "int");
-                me.game.add(this.buttons_add.int, this.entity_layer);
-            }
+            this.buttons_add = {};
+            this.buttons_add.str = me.entityPool.newInstanceOf("PlusSkillButton", 25, 60, "str");
+            me.game.add(this.buttons_add.str, this.entity_layer);
+            this.buttons_add.agi = me.entityPool.newInstanceOf("PlusSkillButton", 25, 60, "agi");
+            me.game.add(this.buttons_add.agi, this.entity_layer);
+            this.buttons_add.end = me.entityPool.newInstanceOf("PlusSkillButton", 25, 60, "end");
+            me.game.add(this.buttons_add.end, this.entity_layer);
+            this.buttons_add.int = me.entityPool.newInstanceOf("PlusSkillButton", 25, 60, "int");
+            me.game.add(this.buttons_add.int, this.entity_layer);
         }
         me.game.sort();
 
@@ -806,7 +794,6 @@ game.Button = me.GUI_Object.extend({
             this.font.draw(context, this.text, this.pos.x + 4, this.pos.y + 3);
         }
     }, onClick: function() {
-        console.log(this.title);
     }
 });
 
@@ -818,9 +805,7 @@ game.DropButton = game.Button.extend({
         this.parent();
         var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
         if (player.backpack_icon.backpack.selected_tile !== null) {
-            console.log("drop this shit!");
             me.gamestat.getItemValue("inventory").splice(player.backpack_icon.backpack.selected_tile, 1);
-            console.log(me.gamestat.getItemValue("inventory"));
         }
 
     }
@@ -849,7 +834,31 @@ game.EquipButton = game.Button.extend({
                     break;
             }
         }
+    }
+});
 
+game.UseButton = game.Button.extend({
+    init: function(x, y, text, title) {
+        this.parent(x, y, text, title);
+    },
+    onClick: function() {
+        this.parent();
+        var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
+        if (player.backpack_icon.backpack.selected_tile !== null) {
+            console.log("use item on tile " + player.backpack_icon.backpack.selected_tile);
+            var selected = me.gamestat.getItemValue("inventory")[player.backpack_icon.backpack.selected_tile];
+            switch (selected.type) {
+                case "consumable":
+                    if (typeof selected.attributes.heal !== "undefined") {
+                        player.updateHP(selected.attributes.heal);
+                    }
+                    me.gamestat.getItemValue("inventory").splice(player.backpack_icon.backpack.selected_tile, 1);
+                    break;
+                case "default":
+                    console.log("nothing");
+                    break;
+            }
+        }
     }
 });
 
