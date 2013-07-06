@@ -1,3 +1,15 @@
+game.ItemObject = Object.extend({
+    name: null,
+    icon_name: null,
+    type: null,
+    attributes: null,
+    init: function(name, icon_name, type, attributes) {
+        this.name = name;
+        this.icon_name = icon_name;
+        this.type = type;         //weapon, armor, artefact, consumable, others
+        this.attributes = attributes; //Hash
+    }
+});
 game.Burger = me.CollectableEntity.extend({
     shadow: null,
     smile: null,
@@ -50,8 +62,6 @@ game.CollectableShadow = me.CollectableEntity.extend({
         this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x, this.pos.y + 7);
         me.game.add(this.shadow, 4);
         me.game.sort();
-        
-
     },
     onDestroyEvent: function() {
         me.game.remove(this.shadow);
@@ -60,7 +70,6 @@ game.CollectableShadow = me.CollectableEntity.extend({
 
 game.Item_sword1 = game.CollectableShadow.extend({
     init: function(x, y, settings) {
-        console.log("creating Item_sword1");
         this.parent(x, y, settings);
         this.renderable.addAnimation("always", [0, 1, 2, 3, 4]);
         this.renderable.setCurrentAnimation("always");
@@ -70,7 +79,56 @@ game.Item_sword1 = game.CollectableShadow.extend({
         me.game.remove(this.shadow);
         me.game.remove(this);
         this.collidable = false;
-        me.gamestat.getItemValue("inventory").push("item-sword1");
+        var item_sword = new game.ItemObject("Short sword", "item-sword1", "weapon", {dmg: 4, object_name: "Sword1", image_size: "small"});
+        me.gamestat.getItemValue("inventory").push(item_sword);
+    }
+});
+
+game.Item_sword2 = game.CollectableShadow.extend({
+    init: function(x, y, settings) {
+        this.parent(x, y, settings);
+        this.renderable.addAnimation("always", [0, 1, 2, 3, 4]);
+        this.renderable.setCurrentAnimation("always");
+    },
+    onCollision: function() {
+        me.audio.play("metal-clash");
+        me.game.remove(this.shadow);
+        me.game.remove(this);
+        this.collidable = false;
+        var item_sword = new game.ItemObject("Long sword", "item-sword2", "weapon", {dmg: 10, object_name: "Sword2", image_size: "big"});
+        me.gamestat.getItemValue("inventory").push(item_sword);
+    }
+});
+
+game.Item_bluesword = game.CollectableShadow.extend({
+    init: function(x, y, settings) {
+        this.parent(x, y, settings);
+        this.renderable.addAnimation("always", [0, 1, 2, 3, 4]);
+        this.renderable.setCurrentAnimation("always");
+    },
+    onCollision: function() {
+        me.audio.play("metal-clash");
+        me.game.remove(this.shadow);
+        me.game.remove(this);
+        this.collidable = false;
+        var item_sword = new game.ItemObject("Blue sword", "item-bluesword", "weapon", {dmg: 25, object_name: "Sword2", image_size: "big"});
+        me.gamestat.getItemValue("inventory").push(item_sword);
+    }
+});
+
+game.Item_redsword = game.CollectableShadow.extend({
+    init: function(x, y, settings) {
+        this.parent(x, y, settings);
+        this.renderable.addAnimation("always", [0, 1, 2, 3, 4]);
+        this.renderable.setCurrentAnimation("always");
+    },
+    onCollision: function() {
+        me.audio.play("metal-clash");
+        me.game.remove(this.shadow);
+        me.game.remove(this);
+        this.collidable = false;
+        var item_sword = new game.ItemObject("Red sword", "item-redsword", "weapon", {dmg: 25, object_name: "Sword2", image_size: "big"});
+        me.gamestat.getItemValue("inventory").push(item_sword);
     }
 });
 
@@ -176,9 +234,7 @@ game.CollisionBox = me.ObjectEntity.extend({
     }
 });
 
-game.Sword1 = me.ObjectEntity.extend({
-    attack: 3,
-    description: "little sword",
+game.weapons.Sword1 = me.ObjectEntity.extend({
     init: function(x, y) {
         console.log("creating Sword1");
         settings = {};
@@ -197,6 +253,28 @@ game.Sword1 = me.ObjectEntity.extend({
         this.renderable.addAnimation("iddle_down", [40, 41], 30);
     }
 });
+
+game.weapons.Sword2 = me.ObjectEntity.extend({
+    init: function(x, y) {
+        console.log("creating Sword1");
+        settings = {};
+        settings.spritewidth = 48;
+        settings.spriteheight = 48;
+        settings.image = "sword2";
+        this.parent(x, y, settings);
+        this.renderable.addAnimation("attack_right", [0, 1, 2, 3, 4], 1);
+        this.renderable.addAnimation("right", [5, 6, 7, 8]);
+        this.renderable.addAnimation("iddle_right", [10, 11], 30);
+        this.renderable.addAnimation("attack_up", [15, 16, 17, 18, 19], 1);
+        this.renderable.addAnimation("up", [20, 21, 22, 23]);
+        this.renderable.addAnimation("iddle_up", [25, 26], 30);
+        this.renderable.addAnimation("attack_down", [30, 31, 32, 33, 34], 1);
+        this.renderable.addAnimation("down", [35, 36, 37, 38]);
+        this.renderable.addAnimation("iddle_down", [40, 41], 30);
+    }
+});
+
+
 
 game.Message = me.ObjectEntity.extend({
     timer: me.timer.getTime(),
@@ -237,18 +315,18 @@ game.Particle = me.SpriteObject.extend({
         this.parent(x, y, me.loader.getImage(image), 8, 8);
         this.type = type;
         var vel_x, vel_y;
-        if(this.type === "up"){
+        if (this.type === "up") {
             vel_x = 0;
-            vel_y = Number.prototype.random(2,5) / 10;
-        } else if(this.type === "fountain"){
-            vel_x = Number.prototype.random(-3,3) / 10;
-            vel_y = Number.prototype.random(8,10) / 10;
+            vel_y = Number.prototype.random(2, 5) / 10;
+        } else if (this.type === "fountain") {
+            vel_x = Number.prototype.random(-3, 3) / 10;
+            vel_y = Number.prototype.random(8, 10) / 10;
         }
         this.vel = new me.Vector2d(vel_x, vel_y);
         this.timer = me.timer.getTime();
         this.live = Math.floor(500 + (1 + 1100 - 500) * Math.random());
         this.generator = guid_generator;
-        
+
 
     },
     update: function() {
@@ -256,11 +334,11 @@ game.Particle = me.SpriteObject.extend({
             me.game.remove(this);
             me.game.getEntityByGUID(this.generator).killParticle();
         }
-        if(this.type === "up"){
+        if (this.type === "up") {
             this.pos.y -= this.vel.y * me.timer.tick;
-        } else if(this.type === "fountain"){
+        } else if (this.type === "fountain") {
             this.pos.y -= this.vel.y * me.timer.tick;
-            if((me.timer.getTime() - this.timer) > (this.live * 0.6)){
+            if ((me.timer.getTime() - this.timer) > (this.live * 0.6)) {
                 this.pos.x += this.vel.x * me.timer.tick;
             }
         }
@@ -285,12 +363,12 @@ game.ParticleGenerator = me.ObjectEntity.extend({
         this.renderable.setOpacity(0);
     },
     update: function() {
-        for(var i = this.particles; i < this.limit; i++){
+        for (var i = this.particles; i < this.limit; i++) {
             this.particles += 1;
             var pos_x;
-            if(this.type === "up"){
+            if (this.type === "up") {
                 pos_x = Math.floor(0 + (1 + 16 - 0) * Math.random());
-            } else if(this.type === "fountain"){
+            } else if (this.type === "fountain") {
                 pos_x = (this.renderable.width / 2);
             }
             var particle = me.entityPool.newInstanceOf("Particle", this.pos.x + pos_x - 5, this.pos.y + 16, this.image, this.GUID, this.type);
@@ -305,7 +383,7 @@ game.ParticleGenerator = me.ObjectEntity.extend({
 });
 
 game.DeathSmoke = me.ObjectEntity.extend({
-    init: function(x, y){
+    init: function(x, y) {
         settings = {};
         settings.spritewidth = 24;
         settings.spritewidth = 24;
@@ -313,11 +391,11 @@ game.DeathSmoke = me.ObjectEntity.extend({
         this.parent(x, y, settings);
         this.renderable.addAnimation("death", [0, 1, 2, 3, 4, 5, 5], 4);
         this.renderable.setCurrentAnimation("death");
-    }, update: function(){
-        if(this.renderable.getCurrentAnimationFrame() === 6){
+    }, update: function() {
+        if (this.renderable.getCurrentAnimationFrame() === 6) {
             me.game.remove(this);
         }
-        
+
         this.parent();
         return true;
     }
