@@ -1,15 +1,3 @@
-game.ItemObject = Object.extend({
-    name: null,
-    icon_name: null,
-    type: null,
-    attributes: null,
-    init: function(name, icon_name, type, attributes) {
-        this.name = name;
-        this.icon_name = icon_name;
-        this.type = type;         //weapon, armor, artefact, consumable, others
-        this.attributes = attributes; //Hash
-    }
-});
 game.Burger = me.CollectableEntity.extend({
     shadow: null,
     smile: null,

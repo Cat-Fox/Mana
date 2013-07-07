@@ -16,6 +16,8 @@ var game =
             guiLayer: 15,
             weapons: {},
             consumables: {},
+            gui: {},
+            fonts: {},
             onload: function()
             {
                 if (!me.video.init('screen', this.screenWidth, this.screenHeight, true, 2.0, true)) {
@@ -101,6 +103,8 @@ var game =
                 me.gamestat.add("inventory", inventory);
                 var equip = {weapon: null, armor: null, artefact: null};
                 me.gamestat.add("equip", equip);
+                
+                
                 //me.debug.renderHitBox = true;
 
 

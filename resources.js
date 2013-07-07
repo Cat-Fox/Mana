@@ -147,10 +147,6 @@
     name: "gold_8x8",
     type: "image",
     src: "data/fonts/gold_8x8.png"
-},{
-    name: "arakis10",
-    type: "binary",
-    src: "data/fonts/arakis10.bmf"
 },
 //--------------------------SOUNDS-----------------------
     {
