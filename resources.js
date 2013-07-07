@@ -40,6 +40,10 @@
     type: "image",
     src: "data/burger.png"
 }, {
+    name: "item-flask-red",
+    type: "image",
+    src: "data/item-flask-red.png"
+}, {
     name: "item-sword1",
     type: "image",
     src: "data/item-sword1.png"
@@ -143,7 +147,9 @@
     name: "gold_8x8",
     type: "image",
     src: "data/fonts/gold_8x8.png"
-}, {
+},
+//--------------------------SOUNDS-----------------------
+    {
     name: "itempick2",
     type: "audio",
     src: "data/sounds/"
@@ -165,6 +171,10 @@
     src: "data/sounds/"
 }, {
     name: "swing",
+    type: "audio",
+    src: "data/sounds/"
+}, {
+    name: "bottle",
     type: "audio",
     src: "data/sounds/"
 }];

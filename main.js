@@ -15,6 +15,9 @@ var game =
             screenHeight: 220,
             guiLayer: 15,
             weapons: {},
+            consumables: {},
+            gui: {},
+            fonts: {},
             onload: function()
             {
                 if (!me.video.init('screen', this.screenWidth, this.screenHeight, true, 2.0, true)) {
@@ -48,9 +51,10 @@ var game =
 
                 me.entityPool.add("Player", game.Player);
                 //------------------ITEMS------------------------
-                me.entityPool.add("Burger", game.Burger);
-                me.entityPool.add("Item_sword1", game.Item_sword1);
-                me.entityPool.add("Item_sword2", game.Item_sword2);
+                me.entityPool.add("Burger", game.Burger, true);
+                me.entityPool.add("Item_sword1", game.Item_sword1, true);
+                me.entityPool.add("Item_sword2", game.Item_sword2, true);
+                me.entityPool.add("HealthPotion", game.consumables.HealthPotion, true);
                 //------------------Entities---------------------------
                 me.entityPool.add("Shadow", game.Shadow, true);
                 me.entityPool.add("Sparks", game.Sparks, true);
@@ -99,6 +103,8 @@ var game =
                 me.gamestat.add("inventory", inventory);
                 var equip = {weapon: null, armor: null, artefact: null};
                 me.gamestat.add("equip", equip);
+                
+                
                 //me.debug.renderHitBox = true;
 
 
@@ -315,7 +321,7 @@ game.PlayScreen = game.AnimatedScreen.extend({
         me.input.bindKey(me.input.KEY.C, "use");
         me.input.bindKey(me.input.KEY.F, "f");
 
-        me.input.registerMouseEvent('mousemove', me.game.viewport, this.mouse);
+        me.input.registerPointerEvent('mousemove', me.game.viewport, this.mouse);
 
     },
     /* ---action to perform when game is finished (state change)---*/
@@ -329,7 +335,7 @@ game.PlayScreen = game.AnimatedScreen.extend({
         me.input.unbindKey(me.input.KEY.X, "attack");
         me.input.unbindKey(me.input.KEY.C, "use");
 
-        me.input.releaseMouseEvent('mousemove', me.game.viewport);
+        me.input.releasePointerEvent('mousemove', me.game.viewport);
     }, mouse: function() {
         //console.log(me.input.mouse.pos.x + " " + me.input.mouse.pos.y);
     }
