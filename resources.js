@@ -8,6 +8,10 @@
     type: "image",
     src: "data/maps/cave_tilesheet.png"
 },{
+    name: "sewer_tilesheet",
+    type: "image",
+    src: "data/maps/sewer_tilesheet.png"
+},{
     name: "objects_tilesheet",
     type: "image",
     src: "data/maps/objects_tilesheet.png"
@@ -23,6 +27,10 @@
     name: "cave",
     type: "tmx",
     src: "data/maps/cave.tmx"
+}, {
+    name: "sewers",
+    type: "tmx",
+    src: "data/maps/sewers.tmx"
 },  {
     name: "human",
     type: "image",
