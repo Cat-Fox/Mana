@@ -258,7 +258,7 @@ game.InventoryTile = me.GUI_Object.extend({
             me.game.remove(this.icon);
             this.icon = null;
         }
-        if(this.tooltip !== null){
+        if (this.tooltip !== null) {
             me.game.remove(this.tooltip);
             this.tooltip = null;
         }
@@ -297,36 +297,36 @@ game.InventoryTile = me.GUI_Object.extend({
             this.icon = null;
             console.log("removing icon");
         }
-        
-        
+
+
         var trigger = false;
         if (me.input.mouse.pos.x >= this.pos.x && me.input.mouse.pos.x <= this.pos.x + this.width) {
             if (me.input.mouse.pos.y >= this.pos.y && me.input.mouse.pos.y <= this.pos.y + this.height) {
                 trigger = true;
             }
         }
-        
-        if(trigger){
+
+        if (trigger) {
             this.onMouseOver();
         } else {
             this.onMouseOut();
         }
-        
+
         this.parent();
         return true;
     },
-    onMouseOver: function(){
-        if(this.tooltip === null &&  this.icon !== null){
+    onMouseOver: function() {
+        if (this.tooltip === null && this.icon !== null) {
             var object = me.gamestat.getItemValue("inventory")[this.id];
-            if(object.tooltip_text !== null){
+            if (object.tooltip_text !== null) {
                 this.tooltip = new game.gui.Tooltip(this.pos.x + this.width, this.pos.y, object.tooltip_text);
                 me.game.add(this.tooltip, this.z + 1);
                 me.game.sort();
             }
         }
     },
-    onMouseOut: function(){
-        if(this.tooltip !== null){
+    onMouseOut: function() {
+        if (this.tooltip !== null) {
             me.game.remove(this.tooltip);
             this.tooltip = null;
         }
@@ -402,35 +402,29 @@ game.Button = me.GUI_Object.extend({
     text: null,
     title: null,
     font: null,
+    outline: null,
+    inline: null,
+    fill: null,
     init: function(x, y, text, title) {
         this.text = text;
         this.title = title;
         this.font = new me.Font("century gothic", "0.8em", "black");
-        var size = this.font.measureText(me.video.getScreenContext(), text);
         settings = {};
-        settings.spritewidth = size.width;
-        settings.spriteheight = size.height + 12;
+        settings.spritewidth = 45;
+        settings.spriteheight = 13;
         settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
 
         var context = settings.image.getContext("2d");
-        context.fillStyle = "#D83939";
-        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
-        context.strokeStyle = "#C02727";
-        context.lineWidth = 1;
-        context.moveTo(0, settings.spriteheight);
-        context.lineTo(0, 0);
-        context.lineTo(settings.spritewidth, 0);
-        context.stroke();
-        context.strokeStyle = "#E26D6D";
-        context.lineTo(settings.spritewidth, settings.spriteheight);
-        context.lineTo(0, settings.spriteheight);
-        context.stroke();
-        this.font.draw(context, text, 4, 3);
-
         this.parent(x, y, settings);
+
+        this.outline = "black";
+        this.inline = "#E26D6D";
+        this.fill = "#D83939";
+        this.drawContext(context);
+
+
         this.floating = true;
-    }, draw: function(context) {
-        this.parent(context);
+    }, update: function() {
         var trigger = false;
         if (me.input.mouse.pos.x >= this.pos.x && me.input.mouse.pos.x <= this.pos.x + this.width) {
             if (me.input.mouse.pos.y >= this.pos.y && me.input.mouse.pos.y <= this.pos.y + this.height) {
@@ -438,33 +432,46 @@ game.Button = me.GUI_Object.extend({
             }
         }
 
+        var context = this.image.getContext("2d");
         if (trigger) {
             this.onHover();
-            context.fillStyle = "#981F1F";
-            context.fillRect(this.pos.x, this.pos.y, this.width, this.height);
-            context.strokeStyle = "#C02727";
-            this.font.draw(context, this.text, this.pos.x + 4, this.pos.y + 3);
+            this.outline = "black";
+            this.inline = "black";
+            this.fill = "#D83939";
+
+            this.drawContext(this.image.getContext("2d"));
+
         } else {
             this.onHoverOut();
-            context.clearRect(this.pos.x, this.pos.y, this.width, this.height);
-            context.fillStyle = "#white";
-            context.fillRect(this.pos.x, this.pos.y, this.width, this.height);
-            context.strokeStyle = "#C02727";
-            context.lineWidth = 1;
-            context.moveTo(this.pos.x + 1, this.pos.y + this.height - 1);
-            context.lineTo(this.pos.x + 1, this.pos.y + 1);
-            context.lineTo(this.pos.x + this.width - 1, this.pos.y + 1);
-            context.stroke();
-            context.strokeStyle = "#E26D6D";
-            context.lineTo(this.pos.x + this.width - 1, this.pos.y + this.height - 1);
-            context.lineTo(this.pos.x + 1, this.pos.y + this.height - 1);
-            context.stroke();
-            this.font.draw(context, this.text, this.pos.x + 4, this.pos.y + 3);
+            this.outline = "black";
+            this.inline = "#E26D6D";
+            this.fill = "#D83939";
+
+            this.drawContext(this.image.getContext("2d"));
         }
     }, onClick: function() {
-    }, onHover: function() {   
+    }, onHover: function() {
     }, onHoverOut: function() {
-        
+
+    }, drawContext: function(context) {
+        context.clearRect(0, 0, this.width, this.height);
+        context.fillStyle = this.fill;
+        context.fillRect(1, 1, this.width - 1, this.height - 1);
+        //context.strokeStyle = "#C02727";
+        //context.clearRect(0,0,2,settings.spriteheight);
+        context.strokeStyle = this.outline;
+        context.globalAlpha = 1;
+        context.lineWidth = 1;
+        context.moveTo(0, this.height);
+        context.lineTo(0, 0);
+        context.lineTo(this.width, 0);
+        context.stroke();
+        context.strokeStyle = this.inline;
+        context.moveTo(this.width, 1);
+        context.lineTo(this.width, this.height);
+        context.lineTo(1, this.height);
+        context.stroke();
+        this.font.draw(context, this.text, 5, 4);
     }
 });
 
@@ -569,7 +576,7 @@ game.PlusSkillButton = game.Button.extend({
 game.gui.TextLine = Object.extend({
     text: null,
     font: null,
-    init: function(text, font){
+    init: function(text, font) {
         this.text = text;
         this.font = font;
     }
@@ -577,27 +584,27 @@ game.gui.TextLine = Object.extend({
 
 game.gui.Tooltip = me.ObjectEntity.extend({
     lines: null,
-    init: function(x_pos, y_pos, text_lines){
+    init: function(x_pos, y_pos, text_lines) {
 
         //creating context
         settings = {};
         var height = 6;
-        for(var i = 0; i < text_lines.length; i++){
+        for (var i = 0; i < text_lines.length; i++) {
             height += text_lines[i].font.measureText(me.video.getScreenContext(), text_lines[i].text).height;
             height += 10;
         }
         settings.spriteheight = height;
         settings.spritewidth = 100;
         settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
-        
+
         //drawing to context
         var context = settings.image.getContext("2d");
         context.fillStyle = "#958686";
-        context.fillRect(0,0, settings.spritewidth, settings.spriteheight);
+        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
         context.strokeStyle = "black";
-        context.strokeRect(0,0, settings.spritewidth, settings.spriteheight);
+        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
         var y = 3;
-        for(var i = 0; i < text_lines.length; i++){
+        for (var i = 0; i < text_lines.length; i++) {
             text_lines[i].font.draw(context, text_lines[i].text, 3, y);
             y += text_lines[i].font.measureText(context, text_lines[i].text).height;
             y += 10;
@@ -606,6 +613,6 @@ game.gui.Tooltip = me.ObjectEntity.extend({
         this.lines = text_lines;
         this.floating = true;
         this.renderable.setOpacity(0.85);
-        console.log("creating tooltip "+this.pos.x+" "+this.pos.y);
+        console.log("creating tooltip " + this.pos.x + " " + this.pos.y);
     }
 });
