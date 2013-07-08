@@ -48,6 +48,10 @@
     type: "image",
     src: "data/burger.png"
 }, {
+    name: "money-1",
+    type: "image",
+    src: "data/money-1.png"
+}, {
     name: "item-flask-red",
     type: "image",
     src: "data/item-flask-red.png"

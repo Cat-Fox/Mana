@@ -138,6 +138,7 @@
     <property name="spritewidth" value="16"/>
    </properties>
   </object>
+  <object name="Money" type="COLLECTABLE" x="480" y="464" width="16" height="16"/>
  </objectgroup>
  <objectgroup name="entities2" width="50" height="50">
   <object name="ParticleGenerator" type="Particles" x="352" y="592" width="16" height="16">

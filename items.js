@@ -13,8 +13,9 @@ game.ItemObject = Object.extend({
     }
 });
 
+/*
 game.consumables.HealthPotion = game.CollectableShadow.extend({
-        init: function(x, y) {
+    init: function(x, y) {
         settings = {};
         settings.spritewidth = 16;
         settings.spriteheight = 16;
@@ -34,8 +35,60 @@ game.consumables.HealthPotion = game.CollectableShadow.extend({
         var item = new game.ItemObject("Health Potion", "item-flask-red", "consumable", {heal: 75}, tooltip_text);
         me.gamestat.getItemValue("inventory").push(item);
     }
+});*/
+
+game.consumables.HealthPotion = game.ShadowObject.extend({
+    tooltip: null,
+    init: function(x, y) {
+        settings = {};
+        settings.spritewidth = 16;
+        settings.spriteheight = 16;
+        settings.image = "item-flask-red";
+        this.parent(x, y, settings);
+        this.renderable.addAnimation("always", [0, 1, 2, 3, 4]);
+        this.renderable.setCurrentAnimation("always");
+        this.tooltip = null;
+        this.collidable = true;
+    }, update: function() {
+        var res = me.game.collide(this, true);
+        if (res.length >= 1) {
+            for (var i = 0; i < res.length; i++) {
+                //this is quite horrible solution
+                if (res[i].obj.type === "human_target") {
+                    this.showTooltip();
+                } else if (res[i].obj.type === "human_use") {
+                    
+                }
+            }
+        }
+
+        this.parent();
+        return true;
+    },
+    showTooltip: function(){
+        if(this.tooltip === null){
+            this.tooltip = new game.DropTooltip(this.x - (this.renderable.width / 2), this.y - 5, "Health Potion","normal");
+            me.game.add(this.tooltip, this.z);
+            me.game.sort();
+            console.log("tooltip");
+        }
+    }
 });
 
+
+game.consumables.Money = game.ShadowObject.extend({
+    init: function(x, y) {
+        settings = {};
+        settings.spritewidth = 16;
+        settings.spriteheight = 16;
+        settings.image = "money-1";
+        this.parent(x, y, settings);
+        this.renderable.addAnimation("always", [0, 1, 2, 3, 4]);
+        this.renderable.setCurrentAnimation("always");
+        this.tooltip = null;
+        this.collidable = true;
+    }
+});
 
 game.Item_sword1 = game.CollectableShadow.extend({
     init: function(x, y) {

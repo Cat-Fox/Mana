@@ -56,6 +56,19 @@ game.CollectableShadow = me.CollectableEntity.extend({
     }
 });
 
+game.ShadowObject = me.ObjectEntity.extend({
+    shadow: null,
+    init: function(x, y, settings) {
+        this.parent(x, y, settings);
+        this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x, this.pos.y + 7);
+        me.game.add(this.shadow, this.z);
+        me.game.sort();
+    },
+    onDestroyEvent: function() {
+        me.game.remove(this.shadow);
+    }
+});
+
 game.Target = me.ObjectEntity.extend({
     init: function(x, y, colour) {
         console.log("creating target");
@@ -322,5 +335,34 @@ game.DeathSmoke = me.ObjectEntity.extend({
 
         this.parent();
         return true;
+    }
+});
+
+game.DropTooltip = me.ObjectEntity.extend({
+    text: null,
+    type: null,
+    init: function(x, y, text, type){
+        this.text = text;
+        this.type = type;
+        settings = {};
+        settings.spritewidth = 45;
+        settings.spriteheight = 13;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+        
+        var context = settings.image.getContext("2d");
+        context.fillStyle = "#404040";
+        context.fillRect(0,0,settings.spritewidth, settings.spriteheight);
+        this.drawText(context, settings.spritewidth);
+        
+        this.parent(x, y, settings);
+        
+        this.renderable.setOpacity(0.7);
+    },
+    drawText: function(context, width){
+        switch(this.type){
+            case "normal":
+                game.fonts.white.draw(context, this.text, (width / 2) - (game.fonts.white.measureText(context, this.text).width / 2), 2);
+                break;
+        }
     }
 });

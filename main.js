@@ -1,14 +1,3 @@
-/*!
- *
- *   melonJS
- *   http://www.melonjs.org
- *
- *   Step by step game creation tutorial
- *
- **/
-
-
-
 var game =
         {
             screenWidth: 400,
@@ -55,6 +44,7 @@ var game =
                 me.entityPool.add("Item_sword1", game.Item_sword1, true);
                 me.entityPool.add("Item_sword2", game.Item_sword2, true);
                 me.entityPool.add("HealthPotion", game.consumables.HealthPotion, true);
+                me.entityPool.add("Money", game.consumables.Money, true);
                 //------------------Entities---------------------------
                 me.entityPool.add("Shadow", game.Shadow, true);
                 me.entityPool.add("Sparks", game.Sparks, true);
@@ -99,6 +89,7 @@ var game =
                 me.gamestat.add("agi", 1);
                 me.gamestat.add("end", 1);
                 me.gamestat.add("skill", 0);
+                me.gamestat.add("money", 0);
                 var inventory = new Array();
                 me.gamestat.add("inventory", inventory);
                 var equip = {weapon: null, armor: null, artefact: null};

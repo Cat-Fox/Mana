@@ -432,6 +432,79 @@ game.Button = me.GUI_Object.extend({
             }
         }
 
+        if (trigger) {
+            this.onHover();
+            this.outline = "black";
+            this.inline = "black";
+            this.fill = "#D83939";
+
+            this.drawContext(this.image.getContext("2d"));
+
+        } else {
+            this.onHoverOut();
+            this.outline = "black";
+            this.inline = "#E26D6D";
+            this.fill = "#D83939";
+
+            this.drawContext(this.image.getContext("2d"));
+        }
+    }, onClick: function() {
+    }, onHover: function() {
+    }, onHoverOut: function() {
+    }, drawContext: function(context) {
+        context.clearRect(0, 0, this.width, this.height);
+        context.fillStyle = this.fill;
+        context.fillRect(1, 1, this.width - 1, this.height - 1);
+        context.strokeStyle = this.outline;
+        context.globalAlpha = 1;
+        context.lineWidth = 1;
+        context.moveTo(0, this.height);
+        context.lineTo(0, 0);
+        context.lineTo(this.width, 0);
+        context.stroke();
+        context.strokeStyle = this.inline;
+        context.moveTo(this.width, 1);
+        context.lineTo(this.width, this.height);
+        context.lineTo(1, this.height);
+        context.stroke();
+        this.font.draw(context, this.text, 5, 4);
+    }
+});
+
+game.SmallButton = me.GUI_Object.extend({
+    text: null,
+    title: null,
+    font: null,
+    outline: null,
+    inline: null,
+    fill: null,
+    init: function(x, y, text, title) {
+        this.text = text;
+        this.title = title;
+        this.font = new me.Font("century gothic", "0.8em", "black");
+        settings = {};
+        settings.spritewidth = 11;
+        settings.spriteheight = 11;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+
+        var context = settings.image.getContext("2d");
+        this.parent(x, y, settings);
+
+        this.outline = "black";
+        this.inline = "#E26D6D";
+        this.fill = "#D83939";
+        this.drawContext(context);
+
+
+        this.floating = true;
+    }, update: function() {
+        var trigger = false;
+        if (me.input.mouse.pos.x >= this.pos.x && me.input.mouse.pos.x <= this.pos.x + this.width) {
+            if (me.input.mouse.pos.y >= this.pos.y && me.input.mouse.pos.y <= this.pos.y + this.height) {
+                trigger = true;
+            }
+        }
+
         var context = this.image.getContext("2d");
         if (trigger) {
             this.onHover();
@@ -452,13 +525,10 @@ game.Button = me.GUI_Object.extend({
     }, onClick: function() {
     }, onHover: function() {
     }, onHoverOut: function() {
-
     }, drawContext: function(context) {
         context.clearRect(0, 0, this.width, this.height);
         context.fillStyle = this.fill;
         context.fillRect(1, 1, this.width - 1, this.height - 1);
-        //context.strokeStyle = "#C02727";
-        //context.clearRect(0,0,2,settings.spriteheight);
         context.strokeStyle = this.outline;
         context.globalAlpha = 1;
         context.lineWidth = 1;
@@ -471,7 +541,7 @@ game.Button = me.GUI_Object.extend({
         context.lineTo(this.width, this.height);
         context.lineTo(1, this.height);
         context.stroke();
-        this.font.draw(context, this.text, 5, 4);
+        this.font.draw(context, this.text, 2, 2);
     }
 });
 
@@ -543,7 +613,7 @@ game.UseButton = game.Button.extend({
 });
 
 
-game.PlusSkillButton = game.Button.extend({
+game.PlusSkillButton = game.SmallButton.extend({
     skill: null,
     init: function(x, y, skill, title) {
         this.parent(x, y, "+", title);

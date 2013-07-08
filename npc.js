@@ -83,19 +83,19 @@ game.WalkerNPC = me.ObjectEntity.extend({
                         if (res[i].x !== 0) {
                             // x axis
                             if (res[i].x < 0) {
-                                this.pos.x = this.pos.x + 3;
+                                this.pos.x = this.pos.x + this.accel.x;
 
                             } else {
-                                this.pos.x = this.pos.x - 3;
+                                this.pos.x = this.pos.x - this.accel.x;
                             }
                         }
                         else {
                             // y axis
                             if (res[i].y < 0) {
-                                this.pos.y = this.pos.y + 3;
+                                this.pos.y = this.pos.y + this.accel.y;
 
                             } else {
-                                this.pos.y = this.pos.y - 3;
+                                this.pos.y = this.pos.y - this.accel.y;
                             }
                         }
                     } else if (res[i].obj.type === "human_target") {
