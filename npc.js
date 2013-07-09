@@ -31,6 +31,7 @@ game.WalkerNPC = me.ObjectEntity.extend({
     exp: 10,
     armor: 0,
     drop: null,
+    value: null,
     init: function(x, y, settings, c_shadow) {
         console.log("creating Walker");
         /*settings = {};
@@ -54,6 +55,7 @@ game.WalkerNPC = me.ObjectEntity.extend({
         this.updateColRect(10, 12, 5, 22);
         this.collidable = true;
         this.type = "npc";
+        this.value = 1;
         if (c_shadow) {
             this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x + 15, this.pos.y + 15);
             me.game.add(this.shadow, 3);
@@ -144,15 +146,7 @@ game.WalkerNPC = me.ObjectEntity.extend({
         }
         
         if(this.drop !== null){
-            for(var i = 0; i < this.drop.length; i++){
-                var chance = Number.prototype.random(0, 100);
-                if(chance <= this.drop[i].chance){
-                    console.log(this.drop[i].item_name);
-                    var item = me.entityPool.newInstanceOf(this.drop[i].item_name, this.pos.x, this.pos.y);
-                    me.game.add(item, this.z);
-                }
-            }
-            me.game.sort();
+            game.mechanic.drop(this.pos.x, this.pos.y, this.value, this.drop);
         }
     },
     modeWalking: function() {

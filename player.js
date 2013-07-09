@@ -16,6 +16,8 @@ game.Player = me.ObjectEntity.extend({
     backpack_icon: null,
     exp_bar: null,
     dying: false,
+    //efects
+    magic_find: null,
     init: function(x, y, settings) {
         this.parent(x, y, settings);
         me.game.viewport.follow(this.pos, me.game.viewport.AXIS_BOTH);
@@ -59,7 +61,8 @@ game.Player = me.ObjectEntity.extend({
 
         this.hp_font = new me.Font("Arial", "1em", "red");
         
-        //console.log(me.loader.getBinary("arakis10"));
+        //efects
+        this.magic_find = 0;
 
     },
     draw: function(context) {

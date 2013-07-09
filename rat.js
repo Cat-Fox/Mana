@@ -31,7 +31,8 @@ game.WalkerRat = game.WalkerNPC.extend({
         this.initHP(30);
         this.attack_cooldown = 1500;
         this.exp = 30;
-        this.drop = [new game.DropNPC("HealthPotion", 75, 1)];
+        this.drop = new game.mechanic.DropTable(200, 0, 200);
+        this.value = 15;
     },
     update: function() {
         this.targeted = false;
@@ -178,6 +179,7 @@ game.WalkerRat = game.WalkerNPC.extend({
     },
     onDestroyEvent: function() {
         this.parent();
+        
         if (this.target !== null) {
             me.game.remove(this.target);
         }

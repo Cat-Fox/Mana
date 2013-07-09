@@ -62,7 +62,7 @@ game.consumables.Layout = game.ShadowObject.extend({
     showTooltip: function() {
         if (this.tooltip === null) {
             this.tooltip = new game.DropTooltip(this.pos.x - (this.renderable.width / 2), this.pos.y - 5, this.name, this.rarity);
-            me.game.add(this.tooltip, this.z + 1);
+            me.game.add(this.tooltip, game.guiLayer);
             me.game.sort();
         }
     },
@@ -116,17 +116,54 @@ game.consumables.HealthPotion = game.consumables.Layout.extend({
 });
 
 game.consumables.Money = game.consumables.Layout.extend({
+    value: null,
+    init: function(x, y, value) {
+        this.value = value;
+        settings = {};
+        settings.spritewidth = 16;
+        settings.spriteheight = 16;
+        if(value < 6){
+            settings.image = "money-1";
+        } else if (value < 26){
+            settings.image = "money-2";
+        } else if (value < 101) {
+            settings.image = "money-3";
+        } else {
+            settings.image = "money-4";
+        }
+        
+        this.parent(x, y, settings, true, this.value + " Gold", "gold");
+    },
+    onUse: function() {
+        me.audio.play("coins");
+        me.gamestat.updateValue("money", this.value);
+        me.game.remove(this);
+        this.collidable = false;
+    }
+});
+
+game.Axe = game.consumables.Layout.extend({
     init: function(x, y) {
         settings = {};
         settings.spritewidth = 16;
         settings.spriteheight = 16;
-        settings.image = "money-4";
-        this.parent(x, y, settings, true, "Gold", "gold");
+        settings.image = "item-axe";
+        this.parent(x, y, settings, false, "Axe", "normal");
+        ;
+    },
+    onUse: function() {
+        me.audio.play("metal-clash");
+        var tooltip_text = [];
+        tooltip_text.push(new game.gui.TextLine("Axe", game.fonts.basic));
+        tooltip_text.push(new game.gui.TextLine("DMG 4", game.fonts.bad_red));
+        var item_sword = new game.ItemObject("Axe", "item-sword1", "weapon", {dmg: 4, object_name: "Axe1", offset_x: 0, offset_y: 0}, tooltip_text);
+        me.gamestat.getItemValue("inventory").push(item_sword);
+        me.game.remove(this);
+        this.collidable = false;
     }
-
 });
 
-game.Item_sword1 = game.consumables.Layout.extend({
+game.items.Item_sword1 = game.consumables.Layout.extend({
     init: function(x, y) {
         settings = {};
         settings.spritewidth = 16;
@@ -147,7 +184,7 @@ game.Item_sword1 = game.consumables.Layout.extend({
     }
 });
 
-game.Item_sword2 = game.consumables.Layout.extend({
+game.items.Item_sword2 = game.consumables.Layout.extend({
     init: function(x, y) {
         settings = {};
         settings.spritewidth = 16;
@@ -167,7 +204,7 @@ game.Item_sword2 = game.consumables.Layout.extend({
     }
 });
 
-game.Item_bluesword = game.consumables.Layout.extend({
+game.items.Item_bluesword = game.consumables.Layout.extend({
     init: function(x, y) {
         settings = {};
         settings.spritewidth = 16;
@@ -184,7 +221,7 @@ game.Item_bluesword = game.consumables.Layout.extend({
     }
 });
 
-game.Item_redsword = game.consumables.Layout.extend({
+game.items.Item_redsword = game.consumables.Layout.extend({
     init: function(x, y) {
         settings = {};
         settings.spritewidth = 16;
@@ -201,6 +238,23 @@ game.Item_redsword = game.consumables.Layout.extend({
     }
 });
 
+game.items.Morningstar = game.consumables.Layout.extend({
+    init: function(x, y) {
+        settings = {};
+        settings.spritewidth = 16;
+        settings.spriteheight = 16;
+        settings.image = "item-morningstar";
+        this.parent(x, y, settings, false, "Morningstar", "normal");
+    },
+    onUse: function() {
+        me.audio.play("metal-clash");
+        var item = new game.ItemObject("Morningstar", "item-morningstar", "weapon", {dmg: 25, object_name: "Sword2", offset_x: -8, offset_y: -10});
+        me.gamestat.getItemValue("inventory").push(item);
+        me.game.remove(this);
+        this.collidable = false;
+    }
+});
+
 game.items.LeatherArmor = game.consumables.Layout.extend({
 init: function(x, y) {
         settings = {};
@@ -210,9 +264,29 @@ init: function(x, y) {
         this.parent(x, y, settings, false, "Leather Armor", "normal");
     },
     onUse: function() {
-        me.audio.play("itempick2");
+        me.audio.play("leather");
         var tooltip_text = [];
         tooltip_text.push(new game.gui.TextLine("Leather Armor", game.fonts.basic));
+        tooltip_text.push(new game.gui.TextLine("Armor X", game.fonts.basic));
+        var item = new game.ItemObject("Leather Armor", "item-leatherarmor", "armor", {}, tooltip_text);
+        me.gamestat.getItemValue("inventory").push(item);
+        me.game.remove(this);
+        this.collidable = false;
+    }    
+});
+
+game.items.MailArmor = game.consumables.Layout.extend({
+init: function(x, y) {
+        settings = {};
+        settings.spritewidth = 16;
+        settings.spriteheight = 16;
+        settings.image = "item-mailarmor";
+        this.parent(x, y, settings, false, "Mail Armor", "normal");
+    },
+    onUse: function() {
+        me.audio.play("itempick2");
+        var tooltip_text = [];
+        tooltip_text.push(new game.gui.TextLine("Mail Armor", game.fonts.basic));
         tooltip_text.push(new game.gui.TextLine("Armor X", game.fonts.basic));
         var item = new game.ItemObject("Leather Armor", "item-leatherarmor", "armor", {}, tooltip_text);
         me.gamestat.getItemValue("inventory").push(item);

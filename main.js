@@ -10,6 +10,8 @@ var game =
             gui: {},
             fonts: {},
             destroyable: {},
+            mechanic: {},
+            object_layer: 4,
             onload: function()
             {
                 if (!me.video.init('screen', this.screenWidth, this.screenHeight, true, 2.0, true)) {
@@ -44,11 +46,16 @@ var game =
                 me.entityPool.add("Player", game.Player);
                 //------------------ITEMS------------------------
                 me.entityPool.add("Burger", game.Burger, true);
-                me.entityPool.add("Item_sword1", game.Item_sword1, true);
-                me.entityPool.add("Item_sword2", game.Item_sword2, true);
+                me.entityPool.add("Axe", game.items.Axe, true);
+                me.entityPool.add("Item_sword1", game.items.Item_sword1, true);
+                me.entityPool.add("LongSword", game.items.Item_sword1, true);
+                me.entityPool.add("ShortSword", game.items.Item_sword2, true);
+                me.entityPool.add("Item_sword2", game.items.Item_sword2, true);
+                me.entityPool.add("Morningstar", game.items.Morningstar, true);
                 me.entityPool.add("HealthPotion", game.consumables.HealthPotion, true);
-                me.entityPool.add("Money", game.consumables.Money, true);
+                me.entityPool.add("Gold", game.consumables.Money, true);
                 me.entityPool.add("LeatherArmor", game.items.LeatherArmor, true);
+                me.entityPool.add("MailArmor", game.items.MailArmor, true);
                 //------------------Entities---------------------------
                 me.entityPool.add("Shadow", game.Shadow, true);
                 me.entityPool.add("Sparks", game.Sparks, true);

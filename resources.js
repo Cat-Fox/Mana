@@ -70,6 +70,14 @@
     type: "image",
     src: "data/item-flask-red.png"
 }, {
+    name: "item-axe",
+    type: "image",
+    src: "data/item-axe.png"
+}, {
+    name: "item-morningstar",
+    type: "image",
+    src: "data/item-morningstar.png"
+}, {
     name: "item-sword1",
     type: "image",
     src: "data/item-sword1.png"
@@ -101,6 +109,10 @@
     name: "item-platearmor",
     type: "image",
     src: "data/item-platearmor.png"
+}, {
+    name: "axe",
+    type: "image",
+    src: "data/weapon-axe.png"
 }, {
     name: "sword1",
     type: "image",
@@ -196,6 +208,10 @@
     type: "audio",
     src: "data/sounds/"
 }, {
+    name: "leather",
+    type: "audio",
+    src: "data/sounds/"
+}, {
     name: "metal-clash",
     type: "audio",
     src: "data/sounds/"
@@ -217,6 +233,10 @@
     src: "data/sounds/"
 }, {
     name: "bottle",
+    type: "audio",
+    src: "data/sounds/"
+}, {
+    name: "coins",
     type: "audio",
     src: "data/sounds/"
 }];
