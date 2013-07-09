@@ -43,7 +43,9 @@
     name: "firefox",
     type: "image",
     src: "data/firefox.png"
-}, {
+}
+//-------------------------ITEMS--------------------------
+    , {
     name: "burger",
     type: "image",
     src: "data/burger.png"
@@ -51,6 +53,18 @@
     name: "money-1",
     type: "image",
     src: "data/money-1.png"
+}, {
+    name: "money-2",
+    type: "image",
+    src: "data/money-2.png"
+}, {
+    name: "money-3",
+    type: "image",
+    src: "data/money-3.png"
+}, {
+    name: "money-4",
+    type: "image",
+    src: "data/money-4.png"
 }, {
     name: "item-flask-red",
     type: "image",

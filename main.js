@@ -311,6 +311,7 @@ game.PlayScreen = game.AnimatedScreen.extend({
         me.input.bindKey(me.input.KEY.X, "attack");
         me.input.bindKey(me.input.KEY.C, "use");
         me.input.bindKey(me.input.KEY.F, "f");
+        me.input.bindKey(me.input.KEY.ALT, "alt");
 
         me.input.registerPointerEvent('mousemove', me.game.viewport, this.mouse);
 

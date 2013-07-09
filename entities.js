@@ -47,7 +47,7 @@ game.CollectableShadow = me.CollectableEntity.extend({
     init: function(x, y, settings) {
         console.log("creating shadow Collectable");
         this.parent(x, y, settings);
-        this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x, this.pos.y + 7);
+        this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x, this.pos.y + 5);
         me.game.add(this.shadow, 4);
         me.game.sort();
     },
@@ -60,8 +60,8 @@ game.ShadowObject = me.ObjectEntity.extend({
     shadow: null,
     init: function(x, y, settings) {
         this.parent(x, y, settings);
-        this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x, this.pos.y + 7);
-        me.game.add(this.shadow, this.z);
+        this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x, this.pos.y + 5);
+        me.game.add(this.shadow, 4);
         me.game.sort();
     },
     onDestroyEvent: function() {
@@ -345,7 +345,7 @@ game.DropTooltip = me.ObjectEntity.extend({
         this.text = text;
         this.type = type;
         settings = {};
-        settings.spritewidth = 45;
+        settings.spritewidth = 80;
         settings.spriteheight = 13;
         settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
         
@@ -355,14 +355,33 @@ game.DropTooltip = me.ObjectEntity.extend({
         this.drawText(context, settings.spritewidth);
         
         this.parent(x, y, settings);
+        console.log("tooltip init");
         
-        this.renderable.setOpacity(0.7);
+        this.renderable.setOpacity(0.85);
     },
     drawText: function(context, width){
         switch(this.type){
             case "normal":
                 game.fonts.white.draw(context, this.text, (width / 2) - (game.fonts.white.measureText(context, this.text).width / 2), 2);
                 break;
+            case "magic":
+                game.fonts.magic_blue.draw(context, this.text, (width / 2) - (game.fonts.white.measureText(context, this.text).width / 2), 2);
+                break;
+            case "rare":
+                game.fonts.rare_purple.draw(context, this.text, (width / 2) - (game.fonts.white.measureText(context, this.text).width / 2), 2);
+                break;
+            case "epic":
+                game.fonts.good_green.draw(context, this.text, (width / 2) - (game.fonts.white.measureText(context, this.text).width / 2), 2);
+                break;
+            case "gold":
+                game.fonts.gold.draw(context, this.text, (width / 2) - (game.fonts.white.measureText(context, this.text).width / 2), 2);
+                break;
+            default:
+                console.log("Error choosing rarity tooltip");
         }
+    },
+    update: function(){
+        this.parent();
+        return true;
     }
 });
