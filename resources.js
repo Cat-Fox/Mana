@@ -90,6 +90,18 @@
     type: "image",
     src: "data/item-goldensword.png"
 }, {
+    name: "item-leatherarmor",
+    type: "image",
+    src: "data/item-leatherarmor.png"
+}, {
+    name: "item-mailarmor",
+    type: "image",
+    src: "data/item-mailarmor.png"
+}, {
+    name: "item-platearmor",
+    type: "image",
+    src: "data/item-platearmor.png"
+}, {
     name: "sword1",
     type: "image",
     src: "data/weapon-sword1.png"
@@ -133,6 +145,10 @@
     name: "sparks",
     type: "image",
     src: "data/sparks.png"
+},{
+    name: "barrel",
+    type: "image",
+    src: "data/barrel.png"
 },{
     name: "inventory_tile",
     type: "image",

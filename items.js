@@ -200,3 +200,23 @@ game.Item_redsword = game.consumables.Layout.extend({
         this.collidable = false;
     }
 });
+
+game.items.LeatherArmor = game.consumables.Layout.extend({
+init: function(x, y) {
+        settings = {};
+        settings.spritewidth = 16;
+        settings.spriteheight = 16;
+        settings.image = "item-leatherarmor";
+        this.parent(x, y, settings, false, "Leather Armor", "normal");
+    },
+    onUse: function() {
+        me.audio.play("itempick2");
+        var tooltip_text = [];
+        tooltip_text.push(new game.gui.TextLine("Leather Armor", game.fonts.basic));
+        tooltip_text.push(new game.gui.TextLine("Armor X", game.fonts.basic));
+        var item = new game.ItemObject("Leather Armor", "item-leatherarmor", "armor", {}, tooltip_text);
+        me.gamestat.getItemValue("inventory").push(item);
+        me.game.remove(this);
+        this.collidable = false;
+    }    
+});

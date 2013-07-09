@@ -216,9 +216,16 @@ game.CharacterTile = me.GUI_Object.extend({
         this.removeIcon();
 
         me.gamestat.getItemValue("equip")[this.type] = id;
-        me.game.getEntityByGUID(me.gamestat.getItemValue("player")).equipWeapon();
+        
         var object = me.gamestat.getItemValue("inventory")[id];
-        //this.icon = me.entityPool.newInstanceOf("Icon", this.pos.x, this.pox.y, icon_name);
+        switch(object.type){
+            case "weapon":
+                me.game.getEntityByGUID(me.gamestat.getItemValue("player")).equipWeapon();
+                break;
+            case "armor":
+                break;
+        }
+        
         this.icon = new game.Icon(this.pos.x, this.pos.y, object.icon_name);
         me.game.add(this.icon, this.z + 1);
         me.game.sort();
@@ -571,6 +578,7 @@ game.EquipButton = game.Button.extend({
             var selected = me.gamestat.getItemValue("inventory")[player.backpack_icon.backpack.selected_tile];
             switch (selected.type) {
                 case "armor":
+                     player.backpack_icon.backpack.armor_tile.addIcon(player.backpack_icon.backpack.selected_tile);
                     break;
                 case "weapon":
                     player.backpack_icon.backpack.weapon_tile.addIcon(player.backpack_icon.backpack.selected_tile);

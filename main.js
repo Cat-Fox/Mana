@@ -5,8 +5,11 @@ var game =
             guiLayer: 15,
             weapons: {},
             consumables: {},
+            armors: {},
+            items: {},
             gui: {},
             fonts: {},
+            destroyable: {},
             onload: function()
             {
                 if (!me.video.init('screen', this.screenWidth, this.screenHeight, true, 2.0, true)) {
@@ -45,6 +48,7 @@ var game =
                 me.entityPool.add("Item_sword2", game.Item_sword2, true);
                 me.entityPool.add("HealthPotion", game.consumables.HealthPotion, true);
                 me.entityPool.add("Money", game.consumables.Money, true);
+                me.entityPool.add("LeatherArmor", game.items.LeatherArmor, true);
                 //------------------Entities---------------------------
                 me.entityPool.add("Shadow", game.Shadow, true);
                 me.entityPool.add("Sparks", game.Sparks, true);
@@ -61,6 +65,8 @@ var game =
                 me.entityPool.add("WalkerRat", game.WalkerRat, true);
                 me.entityPool.add("Guard", game.Guard);
                 me.entityPool.add("Spawn", game.Spawn);
+                //Destroyable
+                me.entityPool.add("Barrel", game.destroyable.Barrel, true);
                 //---------------------GUI--------------------------------
                 me.entityPool.add("Backpack", game.Backpack, true);
                 me.entityPool.add("Icon", game.Icon, true);

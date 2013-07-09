@@ -177,7 +177,7 @@ game.Player = me.ObjectEntity.extend({
         if (res.length >= 1) {
             for (var i = 0; i < res.length; i++) {
                 //this is quite horrible solution
-                if ((res[i].obj.type === "npc") || (res[i].obj.type === me.game.ENEMY_OBJECT)) {
+                if ((res[i].obj.type === "npc") || (res[i].obj.type === me.game.ENEMY_OBJECT) || (res[i].obj.type == "solid_object")) {
                     if (res[i].x !== 0) {
                         // x axis
                         if (res[i].x < 0) {
