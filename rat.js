@@ -31,7 +31,8 @@ game.WalkerRat = game.WalkerNPC.extend({
         this.initHP(30);
         this.attack_cooldown = 1500;
         this.exp = 30;
-        this.drop = [new game.DropNPC("HealthPotion", 75, 1)];
+        this.drop = new game.mechanic.DropTable(200, 0, 200);
+        this.value = 15;
     },
     update: function() {
         this.targeted = false;
@@ -59,7 +60,7 @@ game.WalkerRat = game.WalkerNPC.extend({
         this.targeted = true;
         if (this.target === null) {
             this.target = me.entityPool.newInstanceOf("Target", this.pos.x + 15, this.pos.y + 16, "red");
-            this.target_text = me.entityPool.newInstanceOf("SmallText", this.pos.x + (this.renderable.width / 4), this.pos.y + (this.renderable.height / 1.5), this.hp + "/" + this.max_hp, "Arial", "1em", "red");
+            this.target_text = me.entityPool.newInstanceOf("SmallText", this.pos.x + (this.renderable.width / 4), this.pos.y + (this.renderable.height / 1.5), this.hp + "/" + this.max_hp, game.fonts.bad_red);
             me.game.add(this.target, this.z - 1);
             me.game.add(this.target_text, this.z + 1);
             me.game.sort();
@@ -72,14 +73,14 @@ game.WalkerRat = game.WalkerNPC.extend({
         console.log(this.hp);
         player.destroyAttack();
 
-        this.hit_text = me.entityPool.newInstanceOf("HitText", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2), dmg, "Arial", "1em", "lime");
+        this.hit_text = me.entityPool.newInstanceOf("HitText", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2), dmg, game.fonts.good_green);
         me.game.add(this.hit_text, this.z + 1);
         me.game.sort();
     },
     onUse: function() {
         this.use_text_t = true;
         if (this.use_text === null) {
-            this.use_text = me.entityPool.newInstanceOf("SmallText", this.pos.x + 10, this.pos.y, "sqeeak!", "Arial", "1em", "white");
+            this.use_text = me.entityPool.newInstanceOf("SmallText", this.pos.x + 10, this.pos.y, "sqeeak!", game.fonts.white);
             me.game.add(this.use_text, this.z + 1);
             me.game.sort();
         }
@@ -172,14 +173,17 @@ game.WalkerRat = game.WalkerNPC.extend({
             this.target = null;
         }
 
+        if (this.use_text !== null) {
+            me.game.remove(this.use_text);
+            this.use_text = null;
+        }
+        
         if (this.renderable.getCurrentAnimationFrame() === 7 && this.renderable.isCurrentAnimation("die")) {
             me.game.remove(this);
         }
     },
     onDestroyEvent: function() {
-        this.parent();
-        if (this.target !== null) {
-            me.game.remove(this.target);
-        }
+        this.parent();       
+        
     }
 });

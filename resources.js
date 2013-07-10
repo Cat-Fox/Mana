@@ -8,6 +8,10 @@
     type: "image",
     src: "data/maps/cave_tilesheet.png"
 },{
+    name: "sewer_tilesheet",
+    type: "image",
+    src: "data/maps/sewer_tilesheet.png"
+},{
     name: "objects_tilesheet",
     type: "image",
     src: "data/maps/objects_tilesheet.png"
@@ -23,8 +27,12 @@
     name: "cave",
     type: "tmx",
     src: "data/maps/cave.tmx"
+}, {
+    name: "sewers",
+    type: "tmx",
+    src: "data/maps/sewers.tmx"
 },  {
-    name: "human",
+    name: "leatherarmor",
     type: "image",
     src: "data/human.png"
 },  {
@@ -32,17 +40,47 @@
     type: "image",
     src: "data/clotharmor.png"
 },  {
+    name: "mailarmor",
+    type: "image",
+    src: "data/mailarmor.png"
+},  {
     name: "firefox",
     type: "image",
     src: "data/firefox.png"
-}, {
+}
+//-------------------------ITEMS--------------------------
+    , {
     name: "burger",
     type: "image",
     src: "data/burger.png"
 }, {
+    name: "money-1",
+    type: "image",
+    src: "data/money-1.png"
+}, {
+    name: "money-2",
+    type: "image",
+    src: "data/money-2.png"
+}, {
+    name: "money-3",
+    type: "image",
+    src: "data/money-3.png"
+}, {
+    name: "money-4",
+    type: "image",
+    src: "data/money-4.png"
+}, {
     name: "item-flask-red",
     type: "image",
     src: "data/item-flask-red.png"
+}, {
+    name: "item-axe",
+    type: "image",
+    src: "data/item-axe.png"
+}, {
+    name: "item-morningstar",
+    type: "image",
+    src: "data/item-morningstar.png"
 }, {
     name: "item-sword1",
     type: "image",
@@ -63,6 +101,22 @@
     name: "item-goldensword",
     type: "image",
     src: "data/item-goldensword.png"
+}, {
+    name: "item-leatherarmor",
+    type: "image",
+    src: "data/item-leatherarmor.png"
+}, {
+    name: "item-mailarmor",
+    type: "image",
+    src: "data/item-mailarmor.png"
+}, {
+    name: "item-platearmor",
+    type: "image",
+    src: "data/item-platearmor.png"
+}, {
+    name: "axe",
+    type: "image",
+    src: "data/weapon-axe.png"
 }, {
     name: "sword1",
     type: "image",
@@ -107,6 +161,10 @@
     name: "sparks",
     type: "image",
     src: "data/sparks.png"
+},{
+    name: "barrel",
+    type: "image",
+    src: "data/barrel.png"
 },{
     name: "inventory_tile",
     type: "image",
@@ -154,6 +212,10 @@
     type: "audio",
     src: "data/sounds/"
 }, {
+    name: "leather",
+    type: "audio",
+    src: "data/sounds/"
+}, {
     name: "metal-clash",
     type: "audio",
     src: "data/sounds/"
@@ -175,6 +237,10 @@
     src: "data/sounds/"
 }, {
     name: "bottle",
+    type: "audio",
+    src: "data/sounds/"
+}, {
+    name: "coins",
     type: "audio",
     src: "data/sounds/"
 }];

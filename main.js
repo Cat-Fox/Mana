@@ -1,14 +1,3 @@
-/*!
- *
- *   melonJS
- *   http://www.melonjs.org
- *
- *   Step by step game creation tutorial
- *
- **/
-
-
-
 var game =
         {
             screenWidth: 400,
@@ -16,8 +5,13 @@ var game =
             guiLayer: 15,
             weapons: {},
             consumables: {},
+            armors: {},
+            items: {},
             gui: {},
             fonts: {},
+            destroyable: {},
+            mechanic: {},
+            object_layer: 4,
             onload: function()
             {
                 if (!me.video.init('screen', this.screenWidth, this.screenHeight, true, 2.0, true)) {
@@ -52,9 +46,16 @@ var game =
                 me.entityPool.add("Player", game.Player);
                 //------------------ITEMS------------------------
                 me.entityPool.add("Burger", game.Burger, true);
-                me.entityPool.add("Item_sword1", game.Item_sword1, true);
-                me.entityPool.add("Item_sword2", game.Item_sword2, true);
+                me.entityPool.add("Axe", game.items.Axe, true);
+                me.entityPool.add("Item_sword1", game.items.Item_sword1, true);
+                me.entityPool.add("LongSword", game.items.Item_sword1, true);
+                me.entityPool.add("ShortSword", game.items.Item_sword2, true);
+                me.entityPool.add("Item_sword2", game.items.Item_sword2, true);
+                me.entityPool.add("Morningstar", game.items.Morningstar, true);
                 me.entityPool.add("HealthPotion", game.consumables.HealthPotion, true);
+                me.entityPool.add("Gold", game.consumables.Money, true);
+                me.entityPool.add("LeatherArmor", game.items.LeatherArmor, true);
+                me.entityPool.add("MailArmor", game.items.MailArmor, true);
                 //------------------Entities---------------------------
                 me.entityPool.add("Shadow", game.Shadow, true);
                 me.entityPool.add("Sparks", game.Sparks, true);
@@ -71,6 +72,8 @@ var game =
                 me.entityPool.add("WalkerRat", game.WalkerRat, true);
                 me.entityPool.add("Guard", game.Guard);
                 me.entityPool.add("Spawn", game.Spawn);
+                //Destroyable
+                me.entityPool.add("Barrel", game.destroyable.Barrel, true);
                 //---------------------GUI--------------------------------
                 me.entityPool.add("Backpack", game.Backpack, true);
                 me.entityPool.add("Icon", game.Icon, true);
@@ -99,6 +102,7 @@ var game =
                 me.gamestat.add("agi", 1);
                 me.gamestat.add("end", 1);
                 me.gamestat.add("skill", 0);
+                me.gamestat.add("money", 0);
                 var inventory = new Array();
                 me.gamestat.add("inventory", inventory);
                 var equip = {weapon: null, armor: null, artefact: null};
@@ -320,6 +324,7 @@ game.PlayScreen = game.AnimatedScreen.extend({
         me.input.bindKey(me.input.KEY.X, "attack");
         me.input.bindKey(me.input.KEY.C, "use");
         me.input.bindKey(me.input.KEY.F, "f");
+        me.input.bindKey(me.input.KEY.ALT, "alt");
 
         me.input.registerPointerEvent('mousemove', me.game.viewport, this.mouse);
 

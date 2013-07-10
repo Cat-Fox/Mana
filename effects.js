@@ -6,15 +6,13 @@ game.SmallText = me.ObjectEntity.extend({
         settings.spritewidth = 0;
         settings.spriteheight = 0;
         this.parent(x, y, settings);
-        this.font_o = new me.Font(font, size, color);
+        this.font_o = font;
         this.text = text;
         //console.log("creating SmallText " + this.pos.x + " " + this.pos.y);
     },
     draw: function(context) {
+        this.parent(context);
         this.font_o.draw(context, this.text, this.pos.x, this.pos.y);
-    },
-    onDestroyEvent: function() {
-        delete this.font_o;
     }
 });
 
@@ -59,8 +57,8 @@ game.HitText = game.SmallText.extend({
     slower: null,
     direction: null,
     start_pos: null,
-    init: function(x, y, text, font, size, color) {
-        this.parent(x, y, text, font, size, color);
+    init: function(x, y, text, font) {
+        this.parent(x, y, text, font);
         this.local_pos = new me.Vector2d(0, 0);
         this.slower = true;
         this.direction = Number.prototype.random(0, 1);

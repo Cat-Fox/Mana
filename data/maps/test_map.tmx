@@ -138,6 +138,9 @@
     <property name="spritewidth" value="16"/>
    </properties>
   </object>
+  <object name="Barrel" x="528" y="464" width="16" height="16"/>
+  <object name="LeatherArmor" type="Collectable" x="592" y="528" width="16" height="16"/>
+  <object name="MailArmor" type="Collectable" x="592" y="560" width="16" height="16"/>
  </objectgroup>
  <objectgroup name="entities2" width="50" height="50">
   <object name="ParticleGenerator" type="Particles" x="352" y="592" width="16" height="16">

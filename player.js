@@ -16,7 +16,13 @@ game.Player = me.ObjectEntity.extend({
     backpack_icon: null,
     exp_bar: null,
     dying: false,
-    init: function(x, y, settings) {
+    //efects
+    magic_find: null,
+    init: function(x, y) {
+        settings = {};
+        settings.spritewidth = 32;
+        settings.spriteheight = 32;
+        settings.image = "clotharmor";
         this.parent(x, y, settings);
         me.game.viewport.follow(this.pos, me.game.viewport.AXIS_BOTH);
         console.log("creating player");
@@ -58,8 +64,13 @@ game.Player = me.ObjectEntity.extend({
         me.game.sort();
 
         this.hp_font = new me.Font("Arial", "1em", "red");
+
+        //armor & weapon
+        this.equipArmor();
+        this.equipWeapon();
         
-        //console.log(me.loader.getBinary("arakis10"));
+        //efects
+        this.magic_find = 0;
 
     },
     draw: function(context) {
@@ -177,23 +188,23 @@ game.Player = me.ObjectEntity.extend({
         if (res.length >= 1) {
             for (var i = 0; i < res.length; i++) {
                 //this is quite horrible solution
-                if ((res[i].obj.type === "npc") || (res[i].obj.type === me.game.ENEMY_OBJECT)) {
+                if ((res[i].obj.type === "npc") || (res[i].obj.type === me.game.ENEMY_OBJECT) || (res[i].obj.type == "solid_object")) {
                     if (res[i].x !== 0) {
                         // x axis
                         if (res[i].x < 0) {
-                            this.pos.x = this.pos.x + 3;
+                            this.pos.x = this.pos.x + this.accel.x;
 
                         } else {
-                            this.pos.x = this.pos.x - 3;
+                            this.pos.x = this.pos.x - this.accel.y;
                         }
                     }
                     else {
                         // y axis
                         if (res[i].y < 0) {
-                            this.pos.y = this.pos.y + 3;
+                            this.pos.y = this.pos.y + this.accel.x;
 
                         } else {
-                            this.pos.y = this.pos.y - 3;
+                            this.pos.y = this.pos.y - this.accel.y;
                         }
                     }
                 }
@@ -214,8 +225,8 @@ game.Player = me.ObjectEntity.extend({
 
         // update object animation
         this.parent();
-        
-        
+
+
         return true;
     },
     onDestroyEvent: function() {
@@ -285,7 +296,7 @@ game.Player = me.ObjectEntity.extend({
         }
     }, hurt: function(damage) {
         this.updateHP(-damage);
-        this.hit_text = me.entityPool.newInstanceOf("HitText", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2), damage, "Arial", "1em", "red");
+        this.hit_text = me.entityPool.newInstanceOf("HitText", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2), damage, game.fonts.bad_red);
         me.game.add(this.hit_text, this.z + 1);
         me.game.sort();
         if (me.gamestat.getItemValue("hp") <= 0) {
@@ -299,10 +310,20 @@ game.Player = me.ObjectEntity.extend({
             me.game.remove(this.weapon);
             this.weapon = null;
         }
-        var weapon = me.gamestat.getItemValue("inventory")[me.gamestat.getItemValue("equip").weapon];
-        this.weapon = new game.weapons[weapon.attributes.object_name](this.pos.x + weapon.attributes.offset_x, this.pos.y + weapon.attributes.offset_y);
-        me.game.add(this.weapon, this.z + 1);
-        me.game.sort();
+        if (me.gamestat.getItemValue("equip").weapon !== null) {
+            var weapon = me.gamestat.getItemValue("inventory")[me.gamestat.getItemValue("equip").weapon];
+            this.weapon = new game.weapons[weapon.attributes.object_name](this.pos.x + weapon.attributes.offset_x, this.pos.y + weapon.attributes.offset_y);
+            me.game.add(this.weapon, this.z + 1);
+            me.game.sort();
+        }
+    }, equipArmor: function() {
+        if (me.gamestat.getItemValue("equip").armor === null) {
+            this.renderable.image = me.loader.getImage("clotharmor");
+        } else {
+            var armor = me.gamestat.getItemValue("inventory")[me.gamestat.getItemValue("equip").armor];
+            this.renderable.image = me.loader.getImage(armor.attributes.image_name);
+        }
+
     }, countDMG: function(armor) {
         var weapon = me.gamestat.getItemValue("inventory")[me.gamestat.getItemValue("equip").weapon];
         if (this.weapon !== null) {

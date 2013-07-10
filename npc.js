@@ -1,14 +1,3 @@
-game.DropNPC = Object.extend({
-    chance: null,
-    item_name: null,
-    quantity: null,
-    init: function(item_name, chance, quantity){
-        this.item_name = item_name;
-        this.chance = chance;
-        this.quantity = quantity;
-    }
-});
-
 game.WalkerNPC = me.ObjectEntity.extend({
     iddle_min: 5000,
     iddle_max: 10000,
@@ -31,6 +20,7 @@ game.WalkerNPC = me.ObjectEntity.extend({
     exp: 10,
     armor: 0,
     drop: null,
+    value: null,
     init: function(x, y, settings, c_shadow) {
         console.log("creating Walker");
         /*settings = {};
@@ -54,6 +44,7 @@ game.WalkerNPC = me.ObjectEntity.extend({
         this.updateColRect(10, 12, 5, 22);
         this.collidable = true;
         this.type = "npc";
+        this.value = 1;
         if (c_shadow) {
             this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x + 15, this.pos.y + 15);
             me.game.add(this.shadow, 3);
@@ -83,19 +74,19 @@ game.WalkerNPC = me.ObjectEntity.extend({
                         if (res[i].x !== 0) {
                             // x axis
                             if (res[i].x < 0) {
-                                this.pos.x = this.pos.x + 3;
+                                this.pos.x = this.pos.x + this.accel.x;
 
                             } else {
-                                this.pos.x = this.pos.x - 3;
+                                this.pos.x = this.pos.x - this.accel.x;
                             }
                         }
                         else {
                             // y axis
                             if (res[i].y < 0) {
-                                this.pos.y = this.pos.y + 3;
+                                this.pos.y = this.pos.y + this.accel.y;
 
                             } else {
-                                this.pos.y = this.pos.y - 3;
+                                this.pos.y = this.pos.y - this.accel.y;
                             }
                         }
                     } else if (res[i].obj.type === "human_target") {
@@ -141,18 +132,11 @@ game.WalkerNPC = me.ObjectEntity.extend({
         this.collidable = false;
         if (this.shadow !== null) {
             me.game.remove(this.shadow);
+            this.shadow = null;
         }
         
         if(this.drop !== null){
-            for(var i = 0; i < this.drop.length; i++){
-                var chance = Number.prototype.random(0, 100);
-                if(chance <= this.drop[i].chance){
-                    console.log(this.drop[i].item_name);
-                    var item = me.entityPool.newInstanceOf(this.drop[i].item_name, this.pos.x, this.pos.y);
-                    me.game.add(item, this.z);
-                }
-            }
-            me.game.sort();
+            game.mechanic.drop(this.pos.x, this.pos.y, this.value, this.drop);
         }
     },
     modeWalking: function() {
