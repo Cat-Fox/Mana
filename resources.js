@@ -32,13 +32,17 @@
     type: "tmx",
     src: "data/maps/sewers.tmx"
 },  {
-    name: "human",
+    name: "leatherarmor",
     type: "image",
     src: "data/human.png"
 },  {
     name: "clotharmor",
     type: "image",
     src: "data/clotharmor.png"
+},  {
+    name: "mailarmor",
+    type: "image",
+    src: "data/mailarmor.png"
 },  {
     name: "firefox",
     type: "image",

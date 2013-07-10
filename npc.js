@@ -1,14 +1,3 @@
-game.DropNPC = Object.extend({
-    chance: null,
-    item_name: null,
-    quantity: null,
-    init: function(item_name, chance, quantity){
-        this.item_name = item_name;
-        this.chance = chance;
-        this.quantity = quantity;
-    }
-});
-
 game.WalkerNPC = me.ObjectEntity.extend({
     iddle_min: 5000,
     iddle_max: 10000,
@@ -143,6 +132,7 @@ game.WalkerNPC = me.ObjectEntity.extend({
         this.collidable = false;
         if (this.shadow !== null) {
             me.game.remove(this.shadow);
+            this.shadow = null;
         }
         
         if(this.drop !== null){
