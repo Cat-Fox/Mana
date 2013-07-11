@@ -149,7 +149,7 @@ game.consumables.Money = game.consumables.Layout.extend({
     }
 });
 
-game.Axe = game.consumables.Layout.extend({
+game.items.Axe = game.consumables.Layout.extend({
     init: function(x, y) {
         settings = {};
         settings.spritewidth = 16;
@@ -162,7 +162,7 @@ game.Axe = game.consumables.Layout.extend({
         var tooltip_text = [];
         tooltip_text.push(new game.gui.TextLine("Axe", game.fonts.basic));
         tooltip_text.push(new game.gui.TextLine("DMG 4", game.fonts.bad_red));
-        var item = new game.ItemObject("Axe", "item-sword1", "weapon", {dmg: 4, object_name: "Axe1", offset_x: 0, offset_y: 0, sound: "metal-clash"}, tooltip_text);
+        var item = new game.ItemObject("Axe", "item-sword1", "weapon", {dmg: 4, object_name: "Axe", offset_x: 0, offset_y: 0, sound: "metal-clash"}, tooltip_text);
 
         this.onPickup(item);
     }

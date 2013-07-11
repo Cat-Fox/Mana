@@ -1,13 +1,14 @@
 game.Spawn = me.ObjectEntity.extend({
     limit: null,
     respawn: null,
-    respawn_timers: [],
+    respawn_timers: null,
     npc: null,
-    guids: [],
+    guids: null,
     width: null,
     height: null,
     npc_width: null,
     npc_height: null,
+    init: null,
     init: function(x, y, settings) {
         settings.spritewidth = settings.width;
         settings.spriteheight = settings.height;
@@ -20,6 +21,9 @@ game.Spawn = me.ObjectEntity.extend({
         this.width = settings.width;
         this.npc_height = settings.npc_height;
         this.npc_width = settings.npc_width;
+        this.guids = [];
+        this.respawn_timers = [];
+        this.init = true;
     },
     update: function() {
         if (this.init) {

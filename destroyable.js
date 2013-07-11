@@ -2,6 +2,7 @@ game.destroyable.Barrel = me.ObjectEntity.extend({
     target_box: null,
     destryoing: null,
     drop_table: null,
+    shadow: null,
     init: function(x, y) {
         settings = {};
         settings.spritewidth = 16;
@@ -15,6 +16,9 @@ game.destroyable.Barrel = me.ObjectEntity.extend({
         this.collidable = true;
         this.type = "solid_object"
         this.drop_table = new game.mechanic.DropTable(200, 0, 200);
+        this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x, this.pos.y + 2);
+        me.game.add(this.shadow, 4);
+        me.game.sort();
     }, update: function() {
         if (this.destroying) {
             if (this.renderable.getCurrentAnimationFrame() === 4) {
@@ -68,6 +72,10 @@ game.destroyable.Barrel = me.ObjectEntity.extend({
     onDestroyEvent: function() {
         this.destroyTargetBox();
         this.dropLoot();
+        if(this.shadow !== null){
+            me.game.remove(this.shadow);
+            this.shadow = null;
+        }
     },
     dropLoot: function(){
         game.mechanic.drop(this.pos.x, this.pos.y, 10, this.drop_table);

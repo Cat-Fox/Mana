@@ -39,16 +39,16 @@ game.mechanic.drop = function(x, y, container_value, drop_table){
             var weapon_type = Number.prototype.random(0, 9);
             if(weapon_type < 3){
                 //SHORT SWORD
-                equip = me.entityPool.newInstanceOf("ShortSword", x, y);
+                equip = me.entityPool.newInstanceOf("ShortSword", x + 16, y);
             } else if(weapon_type < 6) {
                 //LONG SWORD
-                equip = me.entityPool.newInstanceOf("LongSword", x, y);
+                equip = me.entityPool.newInstanceOf("LongSword", x + 16, y);
             } else if(weapon_type < 9){
                 //AXE
-                equip = me.entityPool.newInstanceOf("Axe", x, y);
+                equip = me.entityPool.newInstanceOf("Axe", x + 16, y);
             } else {
                 //MACE
-                equip = me.entityPoolnewInstanceOf("Morningstar", x, y);
+                equip = me.entityPoolnewInstanceOf("Morningstar", x + 16, y);
             }
         } else {
             //ARTEFACT
@@ -63,7 +63,7 @@ game.mechanic.drop = function(x, y, container_value, drop_table){
     //Drop Consumable
     var chance_consumable = Number.prototype.random(0, 1000);
     if(chance_consumable <= drop_table.consumable){
-        var consumable = me.entityPool.newInstanceOf("HealthPotion", x, y);
+        var consumable = me.entityPool.newInstanceOf("HealthPotion", x, y + 16);
         me.game.add(consumable, game.object_layer);
         drop = true;
     }

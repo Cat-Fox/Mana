@@ -1,7 +1,7 @@
 game.SmallText = me.ObjectEntity.extend({
     text: null,
     font_o: null,
-    init: function(x, y, text, font, size, color) {
+    init: function(x, y, text, font) {
         settings = {};
         settings.spritewidth = 0;
         settings.spriteheight = 0;
@@ -51,6 +51,23 @@ game.BigText = me.ObjectEntity.extend({
     }
 });
 
+game.BigStaticText = me.ObjectEntity.extend({
+    text: null,
+    font: null,
+    init: function(x, y,text, font) {
+        settings = {};
+        settings.spritewidth = 0;
+        settings.spriteheight = 0;
+        this.parent(x,y, settings);
+        this.text = text;
+        this.font = font;
+        this.floating = true;
+    }, draw: function(context) {
+        this.parent(context);
+        this.font.draw(context, this.text, this.pos.x, this.pos.y);
+    }
+});
+
 game.HitText = game.SmallText.extend({
     timer: 0,
     local_pos: null,
@@ -86,5 +103,69 @@ game.HitText = game.SmallText.extend({
         this.slower = !this.slower;
         this.parent();
         return true;
+    }
+});
+
+game.DropTooltip = me.ObjectEntity.extend({
+    text: null,
+    type: null,
+    init: function(x, y, text, type){
+        this.text = text;
+        this.type = type;
+        settings = {};
+        settings.spritewidth = 80;
+        settings.spriteheight = 13;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+        
+        var context = settings.image.getContext("2d");
+        context.fillStyle = "#404040";
+        context.fillRect(0,0,settings.spritewidth, settings.spriteheight);
+        this.drawText(context, settings.spritewidth);
+        
+        this.parent(x, y, settings);
+        console.log("tooltip init");
+        
+        this.renderable.setOpacity(0.85);
+    },
+    drawText: function(context, width){
+        switch(this.type){
+            case "normal":
+                game.fonts.white.draw(context, this.text, (width / 2) - (game.fonts.white.measureText(context, this.text).width / 2), 2);
+                break;
+            case "magic":
+                game.fonts.magic_blue.draw(context, this.text, (width / 2) - (game.fonts.white.measureText(context, this.text).width / 2), 2);
+                break;
+            case "rare":
+                game.fonts.rare_purple.draw(context, this.text, (width / 2) - (game.fonts.white.measureText(context, this.text).width / 2), 2);
+                break;
+            case "epic":
+                game.fonts.good_green.draw(context, this.text, (width / 2) - (game.fonts.white.measureText(context, this.text).width / 2), 2);
+                break;
+            case "gold":
+                game.fonts.gold.draw(context, this.text, (width / 2) - (game.fonts.white.measureText(context, this.text).width / 2), 2);
+                break;
+            default:
+                console.log("Error choosing rarity tooltip");
+        }
+    },
+    update: function(){
+        this.parent();
+        return true;
+    }
+});
+
+game.effects.RedScreen = me.ObjectEntity.extend({
+    init: function(){
+        settings.spritewidth = game.screenWidth;
+        settings.spriteheight = game.screenHeight;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+        
+        var context = settings.image.getContext("2d");
+        context.fillStyle = "red";
+        context.fillRect(0,0, settings.spritewidth, settings.spriteheight);
+       
+        this.parent(0, 0, settings);
+        this.floating = true;
+        this.renderable.setOpacity(0.45);
     }
 });
