@@ -31,6 +31,10 @@
     name: "sewers",
     type: "tmx",
     src: "data/maps/sewers.tmx"
+}, {
+    name: "sewers_menu",
+    type: "tmx",
+    src: "data/maps/sewers_menu.tmx"
 },  {
     name: "leatherarmor",
     type: "image",

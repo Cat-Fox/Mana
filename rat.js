@@ -12,7 +12,6 @@ game.WalkerRat = game.WalkerNPC.extend({
         settings.spritewidth = 48;
         settings.spriteheight = 48;
         this.parent(x, y, settings, true);
-        console.log("creating WalkerRat");
         this.image = me.loader.getImage("rat");
         this.renderable.anim = [];
         this.renderable.addAnimation("iddle_right", [18, 19], 30);
@@ -24,15 +23,16 @@ game.WalkerRat = game.WalkerNPC.extend({
         this.renderable.addAnimation("attack_right", [6, 7, 8, 9, 10, 11], 5);
         this.renderable.addAnimation("attack_up", [24, 25, 26, 27], 5);
         this.renderable.addAnimation("attack_down", [42, 43, 44, 45], 5);
-        this.renderable.addAnimation("die", [0, 0, 1, 2, 3, 4, 4, 4], 7);
+        this.renderable.addAnimation("die", [0, 0, 1, 2, 3, 4, 4], 7);
         this.renderable.setCurrentAnimation("iddle_right");
         this.updateColRect(15, 18, 18, 12);
         this.type = me.game.ENEMY_OBJECT;
         this.initHP(30);
         this.attack_cooldown = 1500;
         this.exp = 30;
-        this.drop = new game.mechanic.DropTable(200, 0, 200);
+        this.drop = new game.mechanic.DropTable(200, 50, 200);
         this.value = 15;
+        this.attack_cooldown_run = false;
     },
     update: function() {
         this.targeted = false;
@@ -121,7 +121,7 @@ game.WalkerRat = game.WalkerNPC.extend({
                     this.attack_cooldown_run = false;
                 }
             } else {
-                player.hurt(5);
+                player.hurt(2);
                 this.attack_cooldown_run = true;
                 this.attack_time = me.timer.getTime();
             }
@@ -178,7 +178,7 @@ game.WalkerRat = game.WalkerNPC.extend({
             this.use_text = null;
         }
         
-        if (this.renderable.getCurrentAnimationFrame() === 7 && this.renderable.isCurrentAnimation("die")) {
+        if (this.renderable.getCurrentAnimationFrame() === 6 && this.renderable.isCurrentAnimation("die")) {
             me.game.remove(this);
         }
     },

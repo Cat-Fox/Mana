@@ -6,7 +6,10 @@ game.Player = me.ObjectEntity.extend({
     attack_box: null,
     attack_cooldown: 500,
     attack_cooldown_run: null,
+    belt_cooldown: 200,
+    belt_cooldown_run: null,
     weapon: null,
+    red_screen: null,
     target_box: null,
     use_box: null,
     use_box_timer: null,
@@ -50,6 +53,7 @@ game.Player = me.ObjectEntity.extend({
             console.log("Player old GUID " + me.gamestat.getItemValue("player") + " New GUID " + this.GUID);
             me.gamestat.setValue("player", this.GUID);
         }
+        game.instances.player = this;
         this.type = "player";
 
         //creating shadow and GUI
@@ -63,14 +67,23 @@ game.Player = me.ObjectEntity.extend({
         me.game.add(this.exp_bar, game.guiLayer);
         me.game.sort();
 
-        this.hp_font = new me.Font("Arial", "1em", "red");
+        this.hp_font = game.fonts.bad_red;
+        this.red_screen = null;
 
         //armor & weapon
         this.equipArmor();
         this.equipWeapon();
-        
+
         //efects
         this.magic_find = 0;
+
+        game.instances.belt = new game.gui.Belt();
+        me.game.add(game.instances.belt, game.guiLayer);
+        me.game.sort();
+        this.belt_cooldown_run = new Array(8);
+        for(var i = 0; i < this.belt_cooldown_run.length; i++){
+            this.belt_cooldown_run[i] = 0;
+        }
 
     },
     draw: function(context) {
@@ -86,9 +99,65 @@ game.Player = me.ObjectEntity.extend({
             me.game.add(dieText, game.guiLayer);
             me.game.sort();
         }
+        
+        for(var i = 0; i < this.belt_cooldown_run.length; i++){
+            if(this.belt_cooldown_run[i] !== 0){
+                if(me.timer.getTime() > this.belt_cooldown_run[i] + this.belt_cooldown){
+                    this.belt_cooldown_run[i] = 0;
+                }
+            }
+        }
 
-        if (me.input.isKeyPressed('f')) {
-            this.renderable.image = me.loader.getImage("clotharmor");
+        //BeltKeys
+        if (me.input.isKeyPressed("1")){
+            if(this.belt_cooldown_run[0] === 0){
+                game.mechanic.belt_use(0);
+                this.belt_cooldown_run[0] = me.timer.getTime();
+            }
+        } else if (me.input.isKeyPressed("2")){
+            if(this.belt_cooldown_run[0] === 0){
+                game.mechanic.belt_use(1);
+                this.belt_cooldown_run[0] = me.timer.getTime();
+            }
+        } else if (me.input.isKeyPressed("3")){
+            if(this.belt_cooldown_run[0] === 0){
+                game.mechanic.belt_use(2);
+                this.belt_cooldown_run[0] = me.timer.getTime();
+            }
+        } else if (me.input.isKeyPressed("4")){
+            if(this.belt_cooldown_run[0] === 0){
+                game.mechanic.belt_use(3);
+                this.belt_cooldown_run[0] = me.timer.getTime();
+            }
+        } else if (me.input.isKeyPressed("5")){
+            if(this.belt_cooldown_run[0] === 0){
+                game.mechanic.belt_use(4);
+                this.belt_cooldown_run[0] = me.timer.getTime();
+            }
+        } else if (me.input.isKeyPressed("6")){
+            if(this.belt_cooldown_run[0] === 0){
+                game.mechanic.belt_use(5);
+                this.belt_cooldown_run[0] = me.timer.getTime();
+            }
+        } else if (me.input.isKeyPressed("7")){
+            if(this.belt_cooldown_run[0] === 0){
+                game.mechanic.belt_use(6);
+                this.belt_cooldown_run[0] = me.timer.getTime();
+            }
+        } else if (me.input.isKeyPressed("8")){
+            if(this.belt_cooldown_run[0] === 0){
+                game.mechanic.belt_use(7);
+                this.belt_cooldown_run[0] = me.timer.getTime();
+            }
+        }
+
+        if ((me.gamestat.getItemValue("hp") <= (me.gamestat.getItemValue("maxhp") * 0.05)) && this.red_screen === null) {
+            this.red_screen = new game.effects.RedScreen();
+            me.game.add(this.red_screen, game.guiLayer - 1);
+            me.game.sort();
+        } else if ((me.gamestat.getItemValue("hp") >= (me.gamestat.getItemValue("maxhp") * 0.05)) && this.red_screen !== null) {
+            me.game.remove(this.red_screen);
+            this.red_screen = null;
         }
 
         // TODO:CHANGE
@@ -140,7 +209,7 @@ game.Player = me.ObjectEntity.extend({
                 if (me.input.isKeyPressed('left')) {
                     // flip the sprite on horizontal axis
                     this.renderable.setCurrentAnimation("right");
-                    this.flipX(true);
+                    this.renderable.flipX(true);
                     this.flipped = true;
                     // update the entity velocity
                     this.vel.x -= this.accel.x * me.timer.tick;
@@ -148,7 +217,7 @@ game.Player = me.ObjectEntity.extend({
                 } else if (me.input.isKeyPressed('right')) {
                     this.renderable.setCurrentAnimation("right");
                     // unflip the sprite
-                    this.flipX(false);
+                    this.renderable.flipX(false);
                     this.flipped = false;
                     // update the entity velocity
                     this.vel.x += this.accel.x * me.timer.tick;
@@ -156,13 +225,15 @@ game.Player = me.ObjectEntity.extend({
                 } else if (me.input.isKeyPressed('up')) {
                     this.renderable.setCurrentAnimation("up");
                     // update the entity velocity
+                    this.renderable.flipX(false);
+                    this.flipped = false;
                     this.vel.y -= this.accel.y * me.timer.tick;
                     this.vel.x = 0;
                 } else if (me.input.isKeyPressed('down')) {
                     this.renderable.setCurrentAnimation("down");
                     // unflip the sprite
                     this.renderable.flipX(false);
-                    this.renderable.flipped = false;
+                    this.flipped = false;
                     // update the entity velocity
                     this.vel.y += this.accel.y * me.timer.tick;
                     this.vel.x = 0;
@@ -386,6 +457,7 @@ game.Player = me.ObjectEntity.extend({
         var bigText = me.entityPool.newInstanceOf("BigText", "YOU HAVE REACHED LEVEL " + me.gamestat.getItemValue("level"));
         me.game.add(bigText, game.guiLayer);
         me.game.sort();
+        game.instances.console.post("You haved reached new level");
     },
     strUp: function() {
         me.gamestat.updateValue("str", 1);

@@ -22,7 +22,6 @@ game.WalkerNPC = me.ObjectEntity.extend({
     drop: null,
     value: null,
     init: function(x, y, settings, c_shadow) {
-        console.log("creating Walker");
         /*settings = {};
          settings.image = me.loader.getImage("firefox");
          settings.spritewidth = 32;
