@@ -1,3 +1,22 @@
+game.npcStats = Object.extend({
+    hp: null,
+    max_hp: null,
+    dmg: null,
+    armor_normal: null,
+    armor_magic: null,
+    dmg_type: null,
+    exp: null,
+    init: function(max_hp, dmg, dmg_type, armor_normal, armor_magic, exp) {
+        this.hp = max_hp;
+        this.max_hp = max_hp;
+        this.dmg = dmg;
+        this.dmg_type = dmg_type;
+        this.armor_normal = armor_normal;
+        this.armor_magic = armor_magic;
+        this.exp = exp;
+    }
+});
+
 game.WalkerNPC = me.ObjectEntity.extend({
     iddle_min: 5000,
     iddle_max: 10000,
@@ -11,32 +30,30 @@ game.WalkerNPC = me.ObjectEntity.extend({
     duration_now: 0,
     walking: false,
     flipped: false,
-    max_hp: 100,
-    hp: 100,
     targeted: false,
     shadow: null,
-    modes: ["walking", "standing", "attacking", "dying"],
+    modes: ["walking", "standing", "attacking", "dying", "idling"],
     mode_select: "walking",
-    exp: 10,
-    armor: 0,
+    stats: null,
     drop: null,
     value: null,
-    init: function(x, y, settings, c_shadow) {
+    shadow_offset: null,
+    init: function(x, y, settings, c_shadow, stats) {
         /*settings = {};
          settings.image = me.loader.getImage("firefox");
          settings.spritewidth = 32;
          settings.spriteheight = 32;*/
-        this.parent(x, y, settings);
-        this.renderable.addAnimation("right", [8, 9, 10, 11], 10);
-        this.renderable.addAnimation("up", [32, 33, 34, 35, 36, 37, 38, 39]);
-        this.renderable.addAnimation("down", [56, 57, 58, 59]);
-        this.renderable.addAnimation("iddle_right", [16, 17, 18, 19, 20], 20);
-        this.renderable.addAnimation("iddle_up", [40, 41], 35);
-        this.renderable.addAnimation("iddle_down", [64, 65], 35);
-        this.renderable.addAnimation("attack_down", [48, 49, 50, 51, 52], 3);
-        this.renderable.addAnimation("attack_up", [24, 25, 26, 27, 28], 3);
-        this.renderable.addAnimation("attack_right", [0, 1, 2, 3, 4], 3);
-        this.renderable.setCurrentAnimation("iddle_right");
+        this.parent(x, y, settings);/*
+         this.renderable.addAnimation("right", [8, 9, 10, 11], 10);
+         this.renderable.addAnimation("up", [32, 33, 34, 35, 36, 37, 38, 39]);
+         this.renderable.addAnimation("down", [56, 57, 58, 59]);
+         this.renderable.addAnimation("iddle_right", [16, 17, 18, 19, 20], 20);
+         this.renderable.addAnimation("iddle_up", [40, 41], 35);
+         this.renderable.addAnimation("iddle_down", [64, 65], 35);
+         this.renderable.addAnimation("attack_down", [48, 49, 50, 51, 52], 3);
+         this.renderable.addAnimation("attack_up", [24, 25, 26, 27, 28], 3);
+         this.renderable.addAnimation("attack_right", [0, 1, 2, 3, 4], 3);
+         this.renderable.setCurrentAnimation("iddle_right");*/
         this.setVelocity(0.5, 0.5);
         this.gravity = 0;
         this.newIddle();
@@ -50,6 +67,8 @@ game.WalkerNPC = me.ObjectEntity.extend({
             me.game.sort();
         }
         this.drop = null;
+        this.stats = stats;
+        this.shadow_offset = new me.Vector2d(15, 15);
     },
     update: function() {
         switch (this.mode_select) {
@@ -61,6 +80,9 @@ game.WalkerNPC = me.ObjectEntity.extend({
                 break;
             case "dying":
                 this.modeDying();
+                break;
+            case "idling":
+                this.modeIdling();
                 break;
         }
 
@@ -100,8 +122,8 @@ game.WalkerNPC = me.ObjectEntity.extend({
         }
         this.updateMovement();
         if (this.shadow !== null) {
-            this.shadow.pos.x = this.pos.x + 15;
-            this.shadow.pos.y = this.pos.y + 15
+            this.shadow.pos.x = this.pos.x + this.shadow_offset.x;
+            this.shadow.pos.y = this.pos.y + this.shadow_offset.y;
         }
         this.parent();
         return true;
@@ -133,8 +155,9 @@ game.WalkerNPC = me.ObjectEntity.extend({
             me.game.remove(this.shadow);
             this.shadow = null;
         }
-        
-        if(this.drop !== null){
+    },
+    onDrop: function() {
+        if (this.drop !== null) {
             game.mechanic.drop(this.pos.x, this.pos.y, this.value, this.drop);
         }
     },
@@ -192,8 +215,107 @@ game.WalkerNPC = me.ObjectEntity.extend({
     modeDying: function() {
 
     },
+    modeIdling: function() {
+
+    },
     initHP: function(hp) {
         this.hp = hp;
         this.max_hp = hp;
+    }
+});
+
+game.npcs.AllyNPC = game.ShadowObject.extend({
+    target_box: null,
+    target_text: null,
+    targeted: null,
+    target_offset: null,
+    dialog: null,
+    speak_text: null,
+    speak_text_timer: null,
+    init: function(x, y, name, image, size, anim_length, dialog) {
+        settings = {};
+        settings.spritewidth = size;
+        settings.spriteheight = size;
+        settings.image = image;
+        this.dialog = me.loader.getJSON(dialog);
+        this.parent(x, y, settings);
+        var animation = [];
+        for (var i = 0; i < anim_length; i++) {
+            animation.push(i);
+        }
+        this.renderable.addAnimation("always", animation, 35);
+        this.renderable.setCurrentAnimation("always");
+        this.name = name;
+        this.type = "npc";
+        this.targeted = false;
+        this.target_box = null;
+        this.target_text = null;
+        this.target_offset = new me.Vector2d(6, 8);
+        this.speak_text = null;
+        this.speak_text_timer = 0;
+    }, update: function() {
+        this.shadow.pos.x = this.pos.x + this.target_offset.x;
+        this.shadow.pos.y = this.pos.y + this.target_offset.y;
+
+        if(this.speak_text !== null){
+            if(me.timer.getTime() > (this.speak_text_timer + 1500)){
+                me.game.remove(this.speak_text);
+                this.speak_text = null;
+                this.speak_text_timer = 0;
+            }
+        }
+
+        this.targeted = false;
+        var res = me.game.collide(this, true);
+        if (res.length >= 1) {
+            for (var i = 0; i < res.length; i++) {
+                if (res[i].obj.type === "human_target") {
+                    this.onTarget();
+                } else if (res[i].obj.type === "human_use") {
+                    this.onUse();
+                } else if (res[i].obj.type === "human_attack") {
+                    this.onHit();
+                }
+            }
+        }
+
+        if (!this.targeted) {
+            this.destroyTarget();
+            this.cleanup();
+        }
+
+        this.parent();
+        return true;
+    }, onTarget: function() {
+        this.targeted = true;
+        if (this.target_box === null) {
+            this.target_box = me.entityPool.newInstanceOf("Target", this.pos.x + this.target_offset.x, this.pos.y + this.target_offset.y, "green");
+            this.target_text = me.entityPool.newInstanceOf("SmallText", this.pos.x - (this.renderable.width / 2), this.pos.y + (this.renderable.height), this.name, game.fonts.white);
+            me.game.add(this.target_box, this.z);
+            me.game.add(this.target_text, this.z + 1);
+            me.game.sort();
+        }
+    }, onUse: function() {
+
+    }, onHit: function() {
+        if (typeof this.dialog.hit_texts !== "undefined") {
+            if (this.speak_text_timer === 0) {
+                var random = Number.prototype.random(0, this.dialog.hit_texts.length - 1);
+                this.speak_text = new game.SmallText(this.pos.x, this.pos.y - 5, this.dialog.hit_texts[random], game.fonts.white);
+                me.game.add(this.speak_text, game.guiLayer);
+                me.game.sort();
+                this.speak_text_timer = me.timer.getTime();
+            }
+        }
+    }, showTarget: function() {
+
+    }, destroyTarget: function() {
+        if (this.target_box !== null) {
+            me.game.remove(this.target_box);
+            me.game.remove(this.target_text);
+            this.target_box = null;
+            this.target_text = null;
+        }
+    }, cleanup: function() {
     }
 });

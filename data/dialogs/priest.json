@@ -1,0 +1,21 @@
+{
+    "npc_name": "Priest",
+    "npc_image": "npc_priest",
+    "image_size": 24,
+    "anim_length": 2,
+    "branches" : [
+        {
+            "messages" : [
+                {"type": "NPC", "message" : "Just get to me when you got some ouwie!"},
+                {"type": "NPC", "message" : "I heal you up"},
+                {"type": "NPC", "message" : ".....\n...."},
+                {"type": "PLAYER", "message" : "OKAY!"},
+                {"type": "NPC", "message" : "you idiot..."},
+                {"type": "QUIT"}
+            ]
+        }
+    ],
+    "hit_texts" : [
+        "I won't heal you anymore"
+    ]
+}

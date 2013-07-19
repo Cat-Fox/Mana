@@ -1,18 +1,16 @@
 game.SmallText = me.ObjectEntity.extend({
+    font: null,
     text: null,
-    font_o: null,
     init: function(x, y, text, font) {
+        this.font = font;
+        this.text = text;
         settings = {};
         settings.spritewidth = 0;
         settings.spriteheight = 0;
         this.parent(x, y, settings);
-        this.font_o = font;
-        this.text = text;
         //console.log("creating SmallText " + this.pos.x + " " + this.pos.y);
-    },
-    draw: function(context) {
-        this.parent(context);
-        this.font_o.draw(context, this.text, this.pos.x, this.pos.y);
+    }, draw: function(context){
+        this.font.draw(context, this.text, this.pos.x, this.pos.y);
     }
 });
 
@@ -31,7 +29,6 @@ game.BigText = me.ObjectEntity.extend({
         this.timer_run = me.timer.getTime();
         this.font = new me.BitmapFont("geebeeyay-8x8", 8, 1.0);
         this.floating = true;
-        console.log("Creating Big Text");
     }, draw: function(context) {
         this.parent(context);
         var size = this.font.measureText(context, this.text);
@@ -41,30 +38,27 @@ game.BigText = me.ObjectEntity.extend({
     }, update: function() {
         if (me.timer.getTime() > (this.timer_run + this.timer)) {
             me.game.remove(this);
-            console.log("DESTROY");
         }
         
         this.parent();
         return true;
     }, onDestroyEvent: function() {
-        delete this.font;
+        this.font = null;
     }
 });
 
 game.BigStaticText = me.ObjectEntity.extend({
-    text: null,
-    font: null,
     init: function(x, y,text, font) {
         settings = {};
-        settings.spritewidth = 0;
-        settings.spriteheight = 0;
+        var size = font.measureText(me.video.getScreenContext(), text);
+        settings.spritewidth = size.width;
+        settings.spriteheight = size.height;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+        
+        var context = settings.image.getContext("2d");
+        font.draw(context, text, 0, 0);
         this.parent(x,y, settings);
-        this.text = text;
-        this.font = font;
         this.floating = true;
-    }, draw: function(context) {
-        this.parent(context);
-        this.font.draw(context, this.text, this.pos.x, this.pos.y);
     }
 });
 
@@ -106,6 +100,44 @@ game.HitText = game.SmallText.extend({
     }
 });
 
+game.effects.SpeakText = game.SmallText.extend({
+    timer: 1500,
+    timer_run: null,
+    init: function(x, y, text) {
+        var font = game.fonts.white;
+        this.parent(x, y, text, font);
+        this.timer_run = me.timer.getTime();
+    },
+    update: function() {
+        if (me.timer.getTime() > (this.timer + this.timer_run)) {
+            me.game.remove(this);
+        }
+        this.parent();
+        return true;
+    }    
+});
+
+game.effects.ExpText = game.SmallText.extend({
+    timer: 700,
+    timer_run: null,
+    init: function(x, y, text) {
+        var font = game.fonts.magic_blue;
+        this.parent(x, y, text, font);
+        this.setVelocity(0.45, 0.45);
+        this.timer_run = me.timer.getTime();
+    },
+    update: function() {
+        if (me.timer.getTime() > (this.timer + this.timer_run)) {
+            me.game.remove(this);
+        }
+        
+        this.vel.y -= this.accel.y * me.timer.tick;
+        this.updateMovement();
+        this.parent();
+        return true;
+    }
+});
+
 game.DropTooltip = me.ObjectEntity.extend({
     text: null,
     type: null,
@@ -113,7 +145,7 @@ game.DropTooltip = me.ObjectEntity.extend({
         this.text = text;
         this.type = type;
         settings = {};
-        settings.spritewidth = 80;
+        settings.spritewidth = game.fonts.white.measureText(me.video.getScreenContext(), this.text).width + 3;
         settings.spriteheight = 13;
         settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
         
@@ -123,8 +155,6 @@ game.DropTooltip = me.ObjectEntity.extend({
         this.drawText(context, settings.spritewidth);
         
         this.parent(x, y, settings);
-        console.log("tooltip init");
-        
         this.renderable.setOpacity(0.85);
     },
     drawText: function(context, width){

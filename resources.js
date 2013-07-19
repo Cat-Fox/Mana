@@ -117,7 +117,9 @@
     name: "item-platearmor",
     type: "image",
     src: "data/item-platearmor.png"
-}, {
+}
+//------------------WEAPONS--------------------
+    , {
     name: "axe",
     type: "image",
     src: "data/weapon-axe.png"
@@ -150,9 +152,37 @@
     type: "image",
     src: "data/npc_guard.png"
 }, {
+    name: "npc_king",
+    type: "image",
+    src: "data/npc_king.png"
+}, {
+    name: "npc_priest",
+    type: "image",
+    src: "data/npc_priest.png"
+}, {
+    name: "npc_villager",
+    type: "image",
+    src: "data/npc_villager.png"
+}, {
+    name: "npc_octocat",
+    type: "image",
+    src: "data/npc_octocat.png"
+}, {
+    name: "npc_zaraka",
+    type: "image",
+    src: "data/zaraka.png"
+}, {
     name: "npc_rat",
     type: "image",
     src: "data/npc_rat.png"
+}, {
+    name: "chest_dungeon",
+    type: "image",
+    src: "data/chest_dungeon.png"
+}, {
+    name: "chest_player",
+    type: "image",
+    src: "data/chest_player.png"
 }, {
     name: "shadow16",
     type: "image",
@@ -169,6 +199,10 @@
     name: "barrel",
     type: "image",
     src: "data/barrel.png"
+},{
+    name: "close_button",
+    type: "image",
+    src: "data/close_button.png"
 },{
     name: "inventory_tile",
     type: "image",
@@ -247,4 +281,30 @@
     name: "coins",
     type: "audio",
     src: "data/sounds/"
+},
+//----------------------DIALOGS--------------------------
+{
+    name: "dialog_guard",
+    type: "json",
+    src: "data/dialogs/guard.json"
+}, {
+    name: "dialog_king",
+    type: "json",
+    src: "data/dialogs/king.json"
+},{
+    name: "dialog_priest",
+    type: "json",
+    src: "data/dialogs/priest.json"
+},{
+    name: "dialog_octocat",
+    type: "json",
+    src: "data/dialogs/octocat.json"
+},{
+    name: "dialog_chest",
+    type: "json",
+    src: "data/dialogs/chest.json"
+},{
+    name: "dialog_zaraka",
+    type: "json",
+    src: "data/dialogs/zaraka.json"
 }];

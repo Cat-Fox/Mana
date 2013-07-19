@@ -1,14 +1,18 @@
 game.ItemObject = Object.extend({
+    guid: null,
     name: null,
     icon_name: null,
     type: null,
     attributes: null,
     tooltip_text: null,
-    init: function(name, icon_name, type, attributes, tooltip) {
+    rarity: null,
+    init: function(name, icon_name, type, rarity, attributes, tooltip) {
+        this.guid = game.mechanic.guid();
         this.name = name;
         this.icon_name = icon_name;
-        this.type = type;         //weapon, armor, artefact, consumable, others
-        this.attributes = attributes; //Hash
+        this.type = type;               //weapon, armor, artefact, consumable, others
+        this.rarity = rarity;
+        this.attributes = attributes;   //Hash
         this.tooltip_text = tooltip;
     }
 });
@@ -116,10 +120,29 @@ game.consumables.HealthPotion = game.consumables.Layout.extend({
         var tooltip_text = [];
         tooltip_text.push(new game.gui.TextLine("Health Potion", game.fonts.bad_red));
         tooltip_text.push(new game.gui.TextLine("Heals 75 HP", game.fonts.bad_red));
-        var item = new game.ItemObject("Health Potion", "item-flask-red", "consumable", {heal: 75, sound: "bottle"}, tooltip_text);
-        
+        var item = new game.ItemObject("Health Potion", "item-flask-red", "consumable", "normal", {heal: 75, sound: "bottle"}, tooltip_text);
+
         this.onPickup(item)
     }
+});
+
+game.consumables.Burger = game.consumables.Layout.extend({
+    shadow: null,
+    smile: null,
+    init: function(x, y) {
+        settings = {};
+        settings.spritewidth = 16;
+        settings.spriteheight = 16;
+        settings.image = "burger";
+        this.parent(x, y, settings, true, "Health", "normal");
+    },
+    onUse: function() {
+        me.audio.play("itempick2");
+        me.game.getEntityByGUID(me.gamestat.getItemValue("player")).updateHP(30);
+        me.game.remove(this);
+        this.collidable = false;
+    }
+
 });
 
 game.consumables.Money = game.consumables.Layout.extend({
@@ -149,139 +172,18 @@ game.consumables.Money = game.consumables.Layout.extend({
     }
 });
 
-game.items.Axe = game.consumables.Layout.extend({
-    init: function(x, y) {
+
+game.items.Equip = game.consumables.Layout.extend({
+    item: null,
+    init: function(x, y, item) {
+        this.item = item;
         settings = {};
         settings.spritewidth = 16;
         settings.spriteheight = 16;
-        settings.image = "item-axe";
-        this.parent(x, y, settings, false, "Axe", "normal");
-        ;
+        settings.image = this.item.icon_name;
+        this.parent(x, y, settings, false, item.name, item.rarity);
     },
     onUse: function() {
-        var tooltip_text = [];
-        tooltip_text.push(new game.gui.TextLine("Axe", game.fonts.basic));
-        tooltip_text.push(new game.gui.TextLine("DMG 4", game.fonts.bad_red));
-        var item = new game.ItemObject("Axe", "item-sword1", "weapon", {dmg: 4, object_name: "Axe", offset_x: 0, offset_y: 0, sound: "metal-clash"}, tooltip_text);
-
-        this.onPickup(item);
-    }
-});
-
-game.items.Item_sword1 = game.consumables.Layout.extend({
-    init: function(x, y) {
-        settings = {};
-        settings.spritewidth = 16;
-        settings.spriteheight = 16;
-        settings.image = "item-sword1";
-        this.parent(x, y, settings, false, "Short Sword", "normal");
-        ;
-    },
-    onUse: function() {
-        var tooltip_text = [];
-        tooltip_text.push(new game.gui.TextLine("Short Sword", game.fonts.basic));
-        tooltip_text.push(new game.gui.TextLine("DMG 4", game.fonts.bad_red));
-        var item = new game.ItemObject("Short sword", "item-sword1", "weapon", {dmg: 4, object_name: "Sword1", offset_x: 0, offset_y: 0, sound: "metal-clash"}, tooltip_text);
-
-        this.onPickup(item);
-    }
-});
-
-game.items.Item_sword2 = game.consumables.Layout.extend({
-    init: function(x, y) {
-        settings = {};
-        settings.spritewidth = 16;
-        settings.spriteheight = 16;
-        settings.image = "item-sword2";
-        this.parent(x, y, settings, false, "Long Sword", "normal");
-    },
-    onUse: function() {
-        var tooltip_text = [];
-        tooltip_text.push(new game.gui.TextLine("Long Sword", game.fonts.bad_red));
-        tooltip_text.push(new game.gui.TextLine("DMG 10", game.fonts.bad_red));
-        var item = new game.ItemObject("Long sword", "item-sword2", "weapon", {dmg: 10, object_name: "Sword2", offset_x: -8, offset_y: -10, sound: "metal-clash"}, tooltip_text);
-        
-        this.onPickup(item);
-    }
-});
-
-game.items.Item_bluesword = game.consumables.Layout.extend({
-    init: function(x, y) {
-        settings = {};
-        settings.spritewidth = 16;
-        settings.spriteheight = 16;
-        settings.image = "item-bluesword";
-        this.parent(x, y, settings, false, "Blue Sword", "normal");
-    },
-    onUse: function() {
-        var item = new game.ItemObject("Blue sword", "item-bluesword", "weapon", {dmg: 25, object_name: "Sword2", offset_x: -8, offset_y: -10, sound: "metal-clash"});
-        
-        this.onPickup(item);
-    }
-});
-
-game.items.Item_redsword = game.consumables.Layout.extend({
-    init: function(x, y) {
-        settings = {};
-        settings.spritewidth = 16;
-        settings.spriteheight = 16;
-        settings.image = "item-redsword";
-        this.parent(x, y, settings, false, "Red Sword", "normal");
-    },
-    onUse: function() {
-        var item = new game.ItemObject("Red sword", "item-redsword", "weapon", {dmg: 25, object_name: "Sword2", offset_x: -8, offset_y: -10, sound: "metal-clash"});
-        
-        this.onPickup(item);
-    }
-});
-
-game.items.Morningstar = game.consumables.Layout.extend({
-    init: function(x, y) {
-        settings = {};
-        settings.spritewidth = 16;
-        settings.spriteheight = 16;
-        settings.image = "item-morningstar";
-        this.parent(x, y, settings, false, "Morningstar", "normal");
-    },
-    onUse: function() {
-        var item = new game.ItemObject("Morningstar", "item-morningstar", "weapon", {dmg: 25, object_name: "Sword2", offset_x: -8, offset_y: -10, sound: "metal-clash"});
-        
-        this.onPickup(item);
-    }
-});
-
-game.items.LeatherArmor = game.consumables.Layout.extend({
-    init: function(x, y) {
-        settings = {};
-        settings.spritewidth = 16;
-        settings.spriteheight = 16;
-        settings.image = "item-leatherarmor";
-        this.parent(x, y, settings, false, "Leather Armor", "normal");
-    },
-    onUse: function() {
-        var tooltip_text = [];
-        tooltip_text.push(new game.gui.TextLine("Leather Armor", game.fonts.basic));
-        tooltip_text.push(new game.gui.TextLine("Armor X", game.fonts.basic));
-        var item = new game.ItemObject("Leather Armor", "item-leatherarmor", "armor", {image_name: "leatherarmor", sound: "leather"}, tooltip_text);
-        
-        this.onPickup(item);
-    }
-});
-
-game.items.MailArmor = game.consumables.Layout.extend({
-    init: function(x, y) {
-        settings = {};
-        settings.spritewidth = 16;
-        settings.spriteheight = 16;
-        settings.image = "item-mailarmor";
-        this.parent(x, y, settings, false, "Mail Armor", "normal");
-    },
-    onUse: function() {
-        var tooltip_text = [];
-        tooltip_text.push(new game.gui.TextLine("Mail Armor", game.fonts.basic));
-        tooltip_text.push(new game.gui.TextLine("Armor X", game.fonts.basic));
-        var item = new game.ItemObject("Leather Armor", "item-mailarmor", "armor", {image_name: "mailarmor", sound: "itempick2"}, tooltip_text);
-        
-        this.onPickup(item);
+        this.onPickup(this.item);
     }
 });
