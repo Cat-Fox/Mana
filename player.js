@@ -1,6 +1,5 @@
 game.Player = me.ObjectEntity.extend({
     shadow: null,
-    inventory: null,
     //attacks
     attacking: false,
     attack_box: null,
@@ -13,11 +12,9 @@ game.Player = me.ObjectEntity.extend({
     target_box: null,
     use_box: null,
     use_box_timer: null,
-    attack: 5,
     flipped: false,
     hp_font: null,
     backpack_icon: null,
-    exp_bar: null,
     dying: false,
     //efects
     magic_find: null,
@@ -28,7 +25,6 @@ game.Player = me.ObjectEntity.extend({
         settings.image = "clotharmor";
         this.parent(x, y, settings);
         me.game.viewport.follow(this.pos, me.game.viewport.AXIS_BOTH);
-        console.log("creating player");
         this.renderable.addAnimation("right", [5, 6, 7, 8]);
         this.renderable.addAnimation("up", [20, 21, 22, 23]);
         this.renderable.addAnimation("down", [35, 36, 37, 38]);
@@ -63,9 +59,7 @@ game.Player = me.ObjectEntity.extend({
         me.game.add(this.target_box, 4);
         this.backpack_icon = new game.BackpackIcon(0, game.screenHeight - 16);
         me.game.add(this.backpack_icon, game.guiLayer);
-        this.exp_bar = new game.ExpBar(game.screenWidth - 30, game.screenHeight - 10);
-        me.game.add(this.exp_bar, game.guiLayer);
-        me.game.sort();
+
 
         this.hp_font = game.fonts.bad_red;
         this.red_screen = null;
@@ -77,14 +71,29 @@ game.Player = me.ObjectEntity.extend({
         //efects
         this.magic_find = 0;
 
+        this.updateStats();
+
+        //INSTANCES
+        game.instances.exp_bar = new game.ExpBar(game.screenWidth - 30, game.screenHeight - 10);
+        me.game.add(game.instances.exp_bar, game.guiLayer);
+
+        game.instances.pause_menu_run = 0;
+        game.instances.pause_menu_timer = 400;
+
         game.instances.belt = new game.gui.Belt();
         me.game.add(game.instances.belt, game.guiLayer);
         me.game.sort();
         this.belt_cooldown_run = new Array(8);
-        for(var i = 0; i < this.belt_cooldown_run.length; i++){
+        for (var i = 0; i < this.belt_cooldown_run.length; i++) {
             this.belt_cooldown_run[i] = 0;
         }
 
+        if (typeof me.game.currentLevel.level_name !== "undefined") {
+            var message = new game.BigText(me.game.currentLevel.level_name);
+            console.log("Level: " + me.game.currentLevel.level_name);
+            me.game.add(message, game.guiLayer);
+            me.game.sort();
+        }
     },
     draw: function(context) {
         this.parent(context);
@@ -93,62 +102,38 @@ game.Player = me.ObjectEntity.extend({
     update: function() {
         if (this.dying) {
             me.game.remove(this);
-            var dieText = me.entityPool.newInstanceOf("BigText", "YOU HAVE DIED");
+            var dieText = me.entityPool.newInstanceOf("BigText", "YOU HAVE DIED\nAND YOU LOSE ALL YOUR MONEY IDIOT");
             var deathSmoke = me.entityPool.newInstanceOf("DeathSmoke", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2));
             me.game.add(deathSmoke, this.z);
             me.game.add(dieText, game.guiLayer);
             me.game.sort();
         }
-        
-        for(var i = 0; i < this.belt_cooldown_run.length; i++){
-            if(this.belt_cooldown_run[i] !== 0){
-                if(me.timer.getTime() > this.belt_cooldown_run[i] + this.belt_cooldown){
-                    this.belt_cooldown_run[i] = 0;
-                }
-            }
+
+        if (me.input.isKeyPressed("debug")) {
+            me.debug.renderHitBox = !me.debug.renderHitBox;
+        }
+
+        if (me.input.isKeyPressed("esc")) {
+            game.mechanic.trigger_pause_menu();
         }
 
         //BeltKeys
-        if (me.input.isKeyPressed("1")){
-            if(this.belt_cooldown_run[0] === 0){
-                game.mechanic.belt_use(0);
-                this.belt_cooldown_run[0] = me.timer.getTime();
-            }
-        } else if (me.input.isKeyPressed("2")){
-            if(this.belt_cooldown_run[0] === 0){
-                game.mechanic.belt_use(1);
-                this.belt_cooldown_run[0] = me.timer.getTime();
-            }
-        } else if (me.input.isKeyPressed("3")){
-            if(this.belt_cooldown_run[0] === 0){
-                game.mechanic.belt_use(2);
-                this.belt_cooldown_run[0] = me.timer.getTime();
-            }
-        } else if (me.input.isKeyPressed("4")){
-            if(this.belt_cooldown_run[0] === 0){
-                game.mechanic.belt_use(3);
-                this.belt_cooldown_run[0] = me.timer.getTime();
-            }
-        } else if (me.input.isKeyPressed("5")){
-            if(this.belt_cooldown_run[0] === 0){
-                game.mechanic.belt_use(4);
-                this.belt_cooldown_run[0] = me.timer.getTime();
-            }
-        } else if (me.input.isKeyPressed("6")){
-            if(this.belt_cooldown_run[0] === 0){
-                game.mechanic.belt_use(5);
-                this.belt_cooldown_run[0] = me.timer.getTime();
-            }
-        } else if (me.input.isKeyPressed("7")){
-            if(this.belt_cooldown_run[0] === 0){
-                game.mechanic.belt_use(6);
-                this.belt_cooldown_run[0] = me.timer.getTime();
-            }
-        } else if (me.input.isKeyPressed("8")){
-            if(this.belt_cooldown_run[0] === 0){
-                game.mechanic.belt_use(7);
-                this.belt_cooldown_run[0] = me.timer.getTime();
-            }
+        if (me.input.isKeyPressed("1")) {
+            game.mechanic.belt_use(0);
+        } else if (me.input.isKeyPressed("2")) {
+            game.mechanic.belt_use(1);
+        } else if (me.input.isKeyPressed("3")) {
+            game.mechanic.belt_use(2);
+        } else if (me.input.isKeyPressed("4")) {
+            game.mechanic.belt_use(3);
+        } else if (me.input.isKeyPressed("5")) {
+            game.mechanic.belt_use(4);
+        } else if (me.input.isKeyPressed("6")) {
+            game.mechanic.belt_use(5);
+        } else if (me.input.isKeyPressed("7")) {
+            game.mechanic.belt_use(6);
+        } else if (me.input.isKeyPressed("8")) {
+            game.mechanic.belt_use(7);
         }
 
         if ((me.gamestat.getItemValue("hp") <= (me.gamestat.getItemValue("maxhp") * 0.05)) && this.red_screen === null) {
@@ -238,8 +223,11 @@ game.Player = me.ObjectEntity.extend({
                     this.vel.y += this.accel.y * me.timer.tick;
                     this.vel.x = 0;
                 } else {
-                    if (me.input.isKeyPressed('use')) {
-                        this.createUse();
+                    //i need to handle use carefully
+                    if (game.instances.dialog === null) {
+                        if (me.input.isKeyPressed('use')) {
+                            this.createUse();
+                        }
                     }
                     this.vel.x = 0;
                     this.vel.y = 0;
@@ -288,21 +276,25 @@ game.Player = me.ObjectEntity.extend({
         this.shadow.pos.y = this.pos.y + 13;
         this.updateTargetBox();
         if (this.weapon !== null) {
-            var weapon = me.gamestat.getItemValue("inventory")[me.gamestat.getItemValue("equip").weapon];
-            this.weapon.pos.x = this.pos.x + weapon.attributes.offset_x;
-            this.weapon.pos.y = this.pos.y + weapon.attributes.offset_y;
-            this.syncWeapon();
+            var weapon = game.mechanic.get_inventory_item(me.gamestat.getItemValue("equip").weapon);
+            if (weapon === false) {
+                //should not be required, in other case this will fix it
+                this.equipWeapon();
+            } else {
+                this.weapon.pos.x = this.pos.x + weapon.attributes.offset_x;
+                this.weapon.pos.y = this.pos.y + weapon.attributes.offset_y;
+                this.syncWeapon();
+            }
         }
-
         // update object animation
         this.parent();
-
-
         return true;
     },
     onDestroyEvent: function() {
         me.game.remove(this.shadow);
+        this.shadow = null;
         me.game.remove(this.target_box);
+        this.target_box = null;
     },
     updateHP: function(value) {
         if (me.gamestat.getItemValue("hp") + value > me.gamestat.getItemValue("maxhp")) {
@@ -382,28 +374,33 @@ game.Player = me.ObjectEntity.extend({
             this.weapon = null;
         }
         if (me.gamestat.getItemValue("equip").weapon !== null) {
-            var weapon = me.gamestat.getItemValue("inventory")[me.gamestat.getItemValue("equip").weapon];
+            var weapon = game.mechanic.get_inventory_item(me.gamestat.getItemValue("equip").weapon);
+            if (weapon === false) {
+                console.log("weapon not found in inventory");
+                me.gamestat.getItemValue("equip").weapon = null;
+                return false;
+            }
             this.weapon = new game.weapons[weapon.attributes.object_name](this.pos.x + weapon.attributes.offset_x, this.pos.y + weapon.attributes.offset_y);
             me.game.add(this.weapon, this.z + 1);
             me.game.sort();
+
+            return true;
         }
     }, equipArmor: function() {
         if (me.gamestat.getItemValue("equip").armor === null) {
             this.renderable.image = me.loader.getImage("clotharmor");
         } else {
-            var armor = me.gamestat.getItemValue("inventory")[me.gamestat.getItemValue("equip").armor];
+            var armor = game.mechanic.get_inventory_item(me.gamestat.getItemValue("equip").armor);
+            if (armor === false) {
+                console.log("armor not found in inventory");
+                me.gamestat.getItemVAlue("equip").armor = null;
+                return false;
+            }
             this.renderable.image = me.loader.getImage(armor.attributes.image_name);
         }
-
+        return true;
     }, countDMG: function(armor) {
-        var weapon = me.gamestat.getItemValue("inventory")[me.gamestat.getItemValue("equip").weapon];
-        if (this.weapon !== null) {
-            console.log(this.attack + " + " + weapon.attributes.dmg + " - " + armor);
-            return this.attack + weapon.attributes.dmg - armor;
-        } else {
-            console.log(this.attack + " - " + armor);
-            return this.attack - armor;
-        }
+
     }, syncWeapon: function() {
         if (this.renderable.isCurrentAnimation("up")) {
             this.weapon.renderable.flipX(false);
@@ -458,17 +455,27 @@ game.Player = me.ObjectEntity.extend({
         me.game.add(bigText, game.guiLayer);
         me.game.sort();
         game.instances.console.post("You haved reached new level");
+        this.updateStats();
     },
     strUp: function() {
-        me.gamestat.updateValue("str", 1);
+        me.gamestat.getItemValue("stats").str += 1;
+        this.updateStats();
     },
     agiUp: function() {
-        me.gamestat.updateValue("agi", 1);
+        me.gamestat.getItemValue("stats").agi += 1;
+        this.updateStats();
     },
     endUp: function() {
-        me.gamestat.updateValue("end", 1);
+        me.gamestat.getItemValue("stats").end += 1;
+        this.updateStats();
     },
     intUp: function() {
-        me.gamestat.updateValue("int", 1);
+        me.gamestat.getItemValue("stats").int += 1;
+        this.updateStats();
+    },
+    updateStats: function() {
+        var max_hp = me.gamestat.getItemValue("stats").getHP();
+        me.gamestat.setValue("maxhp", max_hp);
+        me.gamestat.setValue("hp", max_hp);
     }
 });

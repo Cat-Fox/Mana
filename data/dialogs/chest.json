@@ -1,0 +1,17 @@
+{
+    "npc_name": "Mana Chest",
+    "npc_image": "chest_player",
+    "image_size": 16,
+    "anim_length": 1,
+    "branches" : [
+        {
+            "messages" : [
+                {"type": "NPC", "message" : "Hello! ^^"},
+                {"type": "NPC", "message" : "I'm your MANA CHEST!\nYou can store items in me!"},
+                {"type": "NPC", "message" : "..I will keep them save I promise!\nSometimes you can find me in dungeon too."},
+                {"type": "PLAYER", "message" : "OKAY!"},
+                {"type": "QUIT"}
+            ]
+        }
+    ]
+}

@@ -33,27 +33,8 @@
     <property name="spritewidth" value="32"/>
    </properties>
   </object>
-  <object name="Guard" type="Ally_NPC" x="32" y="32" width="16" height="16">
-   <properties>
-    <property name="image" value="npc_guard"/>
-    <property name="spriteheight" value="24"/>
-    <property name="spritewidth" value="24"/>
-   </properties>
-  </object>
-  <object name="Guard" type="Ally_NPC" x="96" y="32" width="16" height="16">
-   <properties>
-    <property name="image" value="npc_guard"/>
-    <property name="spriteheight" value="24"/>
-    <property name="spritewidth" value="24"/>
-   </properties>
-  </object>
-  <object name="Item_sword1" type="Collectable" x="64" y="48" width="16" height="16">
-   <properties>
-    <property name="image" value="item-sword1"/>
-    <property name="spriteheight" value="16"/>
-    <property name="spritewidth" value="16"/>
-   </properties>
-  </object>
+  <object name="Guard" type="NPC_ALLY" x="32" y="32" width="16" height="16"/>
+  <object name="King" type="NPC_ALLY" x="80" y="48" width="16" height="16"/>
  </objectgroup>
  <objectgroup name="entities-effects" width="10" height="15">
   <object name="ParticleGenerator" type="Particles" x="64" y="208" width="16" height="16">

@@ -2,6 +2,7 @@
 <map version="1.0" orientation="orthogonal" width="50" height="50" tilewidth="16" tileheight="16">
  <properties>
   <property name="fire speed" value="6"/>
+  <property name="level_name" value="VILLAGE"/>
  </properties>
  <tileset firstgid="1" name="tilesheet" tilewidth="16" tileheight="16">
   <image source="tilesheet.png" width="320" height="1568"/>
@@ -67,6 +68,9 @@
   </data>
  </layer>
  <objectgroup name="entities" width="50" height="50">
+  <properties>
+   <property name="name" value="village"/>
+  </properties>
   <object name="Player" type="Player" x="432" y="384" width="16" height="16">
    <properties>
     <property name="image" value="human"/>
@@ -81,13 +85,7 @@
     <property name="spritewidth" value="16"/>
    </properties>
   </object>
-  <object name="Guard" type="NPC_ALLY" x="592" y="432" width="16" height="16">
-   <properties>
-    <property name="image" value="npc_guard"/>
-    <property name="spriteheight" value="24"/>
-    <property name="spritewidth" value="24"/>
-   </properties>
-  </object>
+  <object name="TalkyGuard" type="NPC_ALLY" x="592" y="432" width="16" height="16"/>
   <object name="me.LevelEntity" type="me.LevelEntity" x="352" y="592" width="16" height="16">
    <properties>
     <property name="duration" value="250"/>
@@ -101,20 +99,6 @@
   <object name="Sparks" type="Collectable" x="288" y="112" width="16" height="16"/>
   <object name="Sparks" type="Collectable" x="496" y="160" width="16" height="16"/>
   <object name="Sparks" type="Collectable" x="448" y="96" width="16" height="16"/>
-  <object name="Item_sword1" type="Collectable" x="592" y="464" width="16" height="16">
-   <properties>
-    <property name="image" value="item-sword1"/>
-    <property name="spriteheight" value="16"/>
-    <property name="spritewidth" value="16"/>
-   </properties>
-  </object>
-  <object name="WalkerNPC" x="272" y="272" width="16" height="16">
-   <properties>
-    <property name="image" value="firefox"/>
-    <property name="spriteheight" value="32"/>
-    <property name="spritewidth" value="32"/>
-   </properties>
-  </object>
   <object name="Spawn" type="SPAWN" x="288" y="368" width="96" height="96">
    <properties>
     <property name="limit" value="3"/>
@@ -131,16 +115,21 @@
     <property name="to" value="cave"/>
    </properties>
   </object>
-  <object name="Item_sword2" type="Collectable" x="592" y="496" width="16" height="16">
+  <object name="Barrel" x="528" y="464" width="16" height="16"/>
+  <object name="Exit" type="EXIT" x="352" y="624" width="16" height="16">
    <properties>
-    <property name="image" value="item-sword2"/>
-    <property name="spriteheight" value="16"/>
-    <property name="spritewidth" value="16"/>
+    <property name="from" value="house"/>
    </properties>
   </object>
-  <object name="Barrel" x="528" y="464" width="16" height="16"/>
-  <object name="LeatherArmor" type="Collectable" x="592" y="528" width="16" height="16"/>
-  <object name="MailArmor" type="Collectable" x="592" y="560" width="16" height="16"/>
+  <object name="Exit" type="EXIT" x="624" y="64" width="16" height="16">
+   <properties>
+    <property name="from" value="house"/>
+   </properties>
+  </object>
+  <object name="MimicWeapon" x="464" y="512" width="16" height="16"/>
+  <object name="Priest" type="NPC_ALLY" x="544" y="384" width="16" height="16"/>
+  <object name="Octocat" type="NPC_ALLY" x="656" y="672" width="16" height="16"/>
+  <object name="ManaChest" type="NPC_ALLY" x="464" y="384" width="16" height="16"/>
  </objectgroup>
  <objectgroup name="entities2" width="50" height="50">
   <object name="ParticleGenerator" type="Particles" x="352" y="592" width="16" height="16">

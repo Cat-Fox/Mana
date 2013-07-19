@@ -12,7 +12,6 @@ game.Spawn = me.ObjectEntity.extend({
     init: function(x, y, settings) {
         settings.spritewidth = settings.width;
         settings.spriteheight = settings.height;
-        console.log(settings);
         this.parent(x, y, settings);
         this.limit = settings.limit;
         this.respawn = settings.time;
@@ -63,5 +62,33 @@ game.Spawn = me.ObjectEntity.extend({
         me.game.add(tmp, this.z);
         me.game.sort();
         this.guids.push(tmp.GUID);
+    }
+});
+
+game.DungeonSpawn = me.ObjectEntity({
+    init: function(x, y, settings){
+        
+        this.parent(x, y, settings);
+        
+        var spawn_type = settings.spawn_type;
+        switch(spawn_type){
+            case "destroyable":
+                
+                break;
+            case "npc":
+                
+                break;
+            case "rare":
+                
+                break;
+            case "epic":
+                
+                break;
+            default:
+                console.error("spawn type not recognized");
+                break;
+        }
+        
+        me.game.remove(this);
     }
 });

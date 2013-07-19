@@ -1,0 +1,20 @@
+{
+    "npc_name": "Zaraka",
+    "npc_image": "npc_zaraka",
+    "image_size": 24,
+    "anim_length": 2,
+    "branches" : [
+        {
+            "messages" : [
+                {"type": "NPC", "message" : "I hate Javascript."},
+                {"type": "PLAYER", "message" : "OKAY!"},
+                {"type": "QUIT"}
+            ]
+        }
+    ],
+    "hit_texts" : [
+        "I make this game for this?",
+        "Oh, please.... harder",
+        "....."
+    ]
+}

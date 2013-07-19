@@ -1,29 +1,5 @@
-game.Burger = me.CollectableEntity.extend({
-    shadow: null,
-    smile: null,
-    init: function(x, y, settings) {
-        console.log("creating burger");
-        this.parent(x, y, settings);
-        this.renderable.addAnimation("always", [0, 1, 2, 3, 4, 5]);
-        this.renderable.setCurrentAnimation("always");
-        this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x, this.pos.y + 7);
-        me.game.add(this.shadow, 4);
-        me.game.sort();
-    },
-    onCollision: function() {
-        me.audio.play("itempick2");
-        me.game.remove(this.shadow);
-        me.game.remove(this);
-        me.game.sort();
-        me.game.getEntityByGUID(me.gamestat.getItemValue("player")).updateHP(30);
-        this.collidable = false;
-    }
-
-});
-
 game.Sparks = me.CollectableEntity.extend({
     init: function(x, y) {
-        console.log("creating sparks");
         settings = {};
         settings.image = "sparks";
         settings.spritewidth = 16;
@@ -45,7 +21,6 @@ game.Sparks = me.CollectableEntity.extend({
 game.CollectableShadow = me.CollectableEntity.extend({
     shadow: null,
     init: function(x, y, settings) {
-        console.log("creating shadow Collectable");
         this.parent(x, y, settings);
         this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x, this.pos.y + 5);
         me.game.add(this.shadow, 4);
@@ -71,7 +46,6 @@ game.ShadowObject = me.ObjectEntity.extend({
 
 game.Target = me.ObjectEntity.extend({
     init: function(x, y, colour) {
-        console.log("creating target");
         settings = {};
         settings.image = "target";
         settings.spritewidth = 16;
@@ -85,7 +59,6 @@ game.Target = me.ObjectEntity.extend({
 
 game.Shadow = me.ObjectEntity.extend({
     init: function(x, y) {
-        console.log("creating shadow");
         settings = {};
         settings.image = "shadow16";
         settings.spritewidth = 16;
@@ -128,7 +101,6 @@ game.Fire = me.ObjectEntity.extend({
     attack_timer: null,
     attacking: false,
     init: function(x, y) {
-        console.log("creating fire");
         settings = {};
         settings.spritewidth = 16;
         settings.sriteheight = 16;
@@ -168,46 +140,6 @@ game.CollisionBox = me.ObjectEntity.extend({
         this.type = type;
     }, onDestroyEvent: function() {
         this.collidable = false;
-    }
-});
-
-game.weapons.Sword1 = me.ObjectEntity.extend({
-    init: function(x, y) {
-        console.log("creating Sword1");
-        settings = {};
-        settings.spritewidth = 32;
-        settings.spriteheight = 32;
-        settings.image = "sword1";
-        this.parent(x, y, settings);
-        this.renderable.addAnimation("attack_right", [0, 1, 2, 3, 4], 1);
-        this.renderable.addAnimation("right", [5, 6, 7, 8]);
-        this.renderable.addAnimation("iddle_right", [10, 11], 30);
-        this.renderable.addAnimation("attack_up", [15, 16, 17, 18, 19], 1);
-        this.renderable.addAnimation("up", [20, 21, 22, 23]);
-        this.renderable.addAnimation("iddle_up", [25, 26], 30);
-        this.renderable.addAnimation("attack_down", [30, 31, 32, 33, 34], 1);
-        this.renderable.addAnimation("down", [35, 36, 37, 38]);
-        this.renderable.addAnimation("iddle_down", [40, 41], 30);
-    }
-});
-
-game.weapons.Sword2 = me.ObjectEntity.extend({
-    init: function(x, y) {
-        console.log("creating Sword1");
-        settings = {};
-        settings.spritewidth = 48;
-        settings.spriteheight = 48;
-        settings.image = "sword2";
-        this.parent(x, y, settings);
-        this.renderable.addAnimation("attack_right", [0, 1, 2, 3, 4], 1);
-        this.renderable.addAnimation("right", [5, 6, 7, 8]);
-        this.renderable.addAnimation("iddle_right", [10, 11], 30);
-        this.renderable.addAnimation("attack_up", [15, 16, 17, 18, 19], 1);
-        this.renderable.addAnimation("up", [20, 21, 22, 23]);
-        this.renderable.addAnimation("iddle_up", [25, 26], 30);
-        this.renderable.addAnimation("attack_down", [30, 31, 32, 33, 34], 1);
-        this.renderable.addAnimation("down", [35, 36, 37, 38]);
-        this.renderable.addAnimation("iddle_down", [40, 41], 30);
     }
 });
 
@@ -289,7 +221,6 @@ game.ParticleGenerator = me.ObjectEntity.extend({
     image: null,
     type: null,
     init: function(x, y, settings) {
-        console.log("Creating Particle Generator");
         //settings.spritewidth = 16;
         //settings.spritewidth = 16;
         this.parent(x, y, settings);
@@ -335,5 +266,14 @@ game.DeathSmoke = me.ObjectEntity.extend({
 
         this.parent();
         return true;
+    }
+});
+
+game.Exit = me.ObjectEntity.extend({
+    from: null,
+    init: function(x, y, settings){
+        settings.spritewidth;
+        this.parent(x, y, settings);
+        this.from = settings.from;
     }
 });
