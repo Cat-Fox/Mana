@@ -37,7 +37,7 @@ game.Player = me.ObjectEntity.extend({
 
         this.setVelocity(1.5, 1.5);
         this.gravity = 0;
-        this.updateColRect(10, 12, 5, 22);
+        this.updateColRect(10, 12, 13, 14);
         this.renderable.setCurrentAnimation("iddle_down");
 
         this.attack_cooldown_run = 0;
@@ -76,9 +76,6 @@ game.Player = me.ObjectEntity.extend({
         //INSTANCES
         game.instances.exp_bar = new game.ExpBar(game.screenWidth - 30, game.screenHeight - 10);
         me.game.add(game.instances.exp_bar, game.guiLayer);
-
-        game.instances.pause_menu_run = 0;
-        game.instances.pause_menu_timer = 400;
 
         game.instances.belt = new game.gui.Belt();
         me.game.add(game.instances.belt, game.guiLayer);
@@ -309,7 +306,23 @@ game.Player = me.ObjectEntity.extend({
             this.levelUp(value);
         } else {
             me.gamestat.updateValue("exp", value);
+            me.event.publish("/player/exp", [me.gamestat.getItemValue("exp")]);
         }
+    },
+    levelUp: function(value) {
+        var addition = me.gamestat.getItemValue("exp") + value - me.gamestat.getItemValue("next_level");
+        me.gamestat.updateValue("level", 1);
+        me.gamestat.setValue("exp", addition);
+        var next_level = Math.floor(me.gamestat.getItemValue("next_level") + me.gamestat.getItemValue("next_level") * 2.5);
+        me.gamestat.setValue("next_level", next_level);
+        me.gamestat.updateValue("skill", 5);
+        me.audio.play("level_up");
+        var bigText = me.entityPool.newInstanceOf("BigText", "YOU HAVE REACHED LEVEL " + me.gamestat.getItemValue("level"));
+        me.game.add(bigText, game.guiLayer);
+        me.game.sort();
+        game.instances.console.post("You haved reached new level");
+        this.updateStats();
+        me.event.publish("/player/exp", [me.gamestat.getItemValue("exp")]);
     },
     createAttack: function(direction) {
         if (direction === "up") {
@@ -357,9 +370,10 @@ game.Player = me.ObjectEntity.extend({
             me.game.add(this.use_box, 5);
             me.game.sort();
         }
-    }, hurt: function(damage) {
-        this.updateHP(-damage);
-        this.hit_text = me.entityPool.newInstanceOf("HitText", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2), damage, game.fonts.bad_red);
+    }, hurt: function(dmg_min, dmg_max, dmg_type) {
+        var dmg = game.mechanic.player_hurt(dmg_min, dmg_max, dmg_type);
+        this.updateHP(-dmg);
+        this.hit_text = me.entityPool.newInstanceOf("HitText", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2), dmg, game.fonts.bad_red);
         me.game.add(this.hit_text, this.z + 1);
         me.game.sort();
         if (me.gamestat.getItemValue("hp") <= 0) {
@@ -393,14 +407,12 @@ game.Player = me.ObjectEntity.extend({
             var armor = game.mechanic.get_inventory_item(me.gamestat.getItemValue("equip").armor);
             if (armor === false) {
                 console.log("armor not found in inventory");
-                me.gamestat.getItemVAlue("equip").armor = null;
+                me.gamestat.getItemValue("equip").armor = null;
                 return false;
             }
             this.renderable.image = me.loader.getImage(armor.attributes.image_name);
         }
         return true;
-    }, countDMG: function(armor) {
-
     }, syncWeapon: function() {
         if (this.renderable.isCurrentAnimation("up")) {
             this.weapon.renderable.flipX(false);
@@ -442,20 +454,6 @@ game.Player = me.ObjectEntity.extend({
             this.weapon.renderable.flipX(false);
             this.weapon.renderable.setCurrentAnimation("attack_up");
         }
-    },
-    levelUp: function(value) {
-        var addition = me.gamestat.getItemValue("exp") + value - me.gamestat.getItemValue("next_level");
-        me.gamestat.updateValue("level", 1);
-        me.gamestat.setValue("exp", addition);
-        var next_level = Math.floor(me.gamestat.getItemValue("next_level") + me.gamestat.getItemValue("next_level") * 2.5);
-        me.gamestat.setValue("next_level", next_level);
-        me.gamestat.updateValue("skill", 5);
-        me.audio.play("level_up");
-        var bigText = me.entityPool.newInstanceOf("BigText", "YOU HAVE REACHED LEVEL " + me.gamestat.getItemValue("level"));
-        me.game.add(bigText, game.guiLayer);
-        me.game.sort();
-        game.instances.console.post("You haved reached new level");
-        this.updateStats();
     },
     strUp: function() {
         me.gamestat.getItemValue("stats").str += 1;

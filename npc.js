@@ -1,18 +1,20 @@
 game.npcStats = Object.extend({
     hp: null,
     max_hp: null,
-    dmg: null,
-    armor_normal: null,
-    armor_magic: null,
+    dmg_min: null,
+    dmg_max: null,
+    normal_armor: null,
+    magic_armor: null,
     dmg_type: null,
     exp: null,
-    init: function(max_hp, dmg, dmg_type, armor_normal, armor_magic, exp) {
+    init: function(max_hp, dmg_min, dmg_max, dmg_type, armor_normal, armor_magic, exp) {
         this.hp = max_hp;
         this.max_hp = max_hp;
-        this.dmg = dmg;
+        this.dmg_min = dmg_min;
+        this.dmg_max = dmg_max;
         this.dmg_type = dmg_type;
-        this.armor_normal = armor_normal;
-        this.armor_magic = armor_magic;
+        this.normal_armor = armor_normal;
+        this.magic_armor = armor_magic;
         this.exp = exp;
     }
 });
@@ -38,6 +40,11 @@ game.WalkerNPC = me.ObjectEntity.extend({
     drop: null,
     value: null,
     shadow_offset: null,
+    dmg_min: null,
+    dmg_max: null,
+    dmg_type: null,
+    armor_normal: null,
+    armor_magic: null,
     init: function(x, y, settings, c_shadow, stats) {
         /*settings = {};
          settings.image = me.loader.getImage("firefox");
@@ -154,6 +161,10 @@ game.WalkerNPC = me.ObjectEntity.extend({
         if (this.shadow !== null) {
             me.game.remove(this.shadow);
             this.shadow = null;
+        }
+        
+        if(this.type === me.game.ENEMY_OBJECT){
+            me.gamestat.getItemValue("statistic").killed_monsters++;
         }
     },
     onDrop: function() {
