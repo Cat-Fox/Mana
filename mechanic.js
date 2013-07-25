@@ -39,16 +39,16 @@ game.mechanic.Stats = Object.extend({
     getDmg: function() {
         var weapon = me.gamestat.getItemValue("equip").weapon;
         if (weapon === null) {
-            return 5;
+            return [{type: "normal", min_dmg: 3, max_dmg: 5}];
         } else {
             var result = [];
             weapon = game.mechanic.get_inventory_item(weapon);
-            result.push({type: "normal", dmg: weapon.attributes.dmg});
+            result.push({type: "normal", min_dmg: weapon.attributes.min_dmg, max_dmg: weapon.attributes.max_dmg});
             if (typeof weapon.fire_dmg !== "undefined") {
-                result.push({type: "magic", element: "fire", dmg: weapon.attributes.fire_dmg});
+                result.push({type: "magic", element: "fire", min_dmg: 0, max_dmg: weapon.attributes.fire_dmg});
             }
             if (typeof weapon.ice_dmg !== "undefined") {
-                result.push({type: "magic", element: "ice", dmg: weapon.attributes.ice_dmg});
+                result.push({type: "magic", element: "ice", min_dmg: 0, max_dmg: weapon.attributes.ice_dmg});
             }
             return result;
         }
@@ -58,13 +58,39 @@ game.mechanic.Stats = Object.extend({
     }
 });
 
-game.mechanic.count_dmg = function(dmg, dmg_type, armor_normal, armor_magic) {
+game.mechanic.count_dmg = function(dmg_min, dmg_max, dmg_type, armor_normal, armor_magic) {
+    var dmg = Number.prototype.random(dmg_min, dmg_max);
     if (dmg_type === "normal") {
-        return dmg - armor_normal;
+        dmg = dmg - armor_normal;
     } else {
-        return dmg - armor_magic;
+        dmg = dmg - armor_magic;
     }
+    
+    if(dmg <= 0){
+        dmg = 1;
+    }
+    
+    return dmg;
 };
+
+game.mechanic.player_hurt = function(dmg_min, dmg_max, dmg_type){
+    var normal_armor, magic_armor, armor_type;
+    var equip_armor = me.gamestat.getItemValue("equip").armor;
+    if(equip_armor === null){
+        normal_armor = 0;
+        magic_armor = 0;
+        armor_type = "normal";
+    } else {
+        equip_armor = game.mechanic.get_inventory_item(equip_armor);
+        normal_armor = equip_armor.attributes.armor_normal;
+        magic_armor = equip_armor.attributes.armor_magic;
+        armor_type = equip_armor.attributes.armor_type;
+    }
+    
+    var result_dmg = game.mechanic.count_dmg(dmg_min, dmg_max, dmg_type, normal_armor, magic_armor);
+    return result_dmg;
+};
+    
 
 game.mechanic.trigger_pause_menu = function() {
     if (game.instances.pause_menu === null) {
@@ -74,6 +100,31 @@ game.mechanic.trigger_pause_menu = function() {
     } else {
         me.game.remove(game.instances.pause_menu);
         game.instances.pause_menu = null;
+    }
+};
+
+game.mechanic.trigger_inventory = function() {
+    if (game.instances.backpack === null && game.instances.stash === null) {
+        game.instances.backpack = me.entityPool.newInstanceOf("Backpack");
+        this.backpack = game.instances.backpack;
+        me.game.add(game.instances.backpack, game.guiLayer);
+        me.game.sort();
+        me.audio.play("itempick2");
+    } else if (game.instances.backpack !== null) {
+        me.game.remove(game.instances.backpack);
+        game.instances.backpack = null;
+        me.audio.play("itempick2");
+    }
+};
+
+game.mechanic.trigger_stash = function() {
+    if (game.instances.stash === null && game.instances.backpack === null) {
+        game.instances.stash = new game.gui.Stash();
+        me.game.add(game.instances.stash, game.guiLayer);
+        me.game.sort();
+    } else if (game.instances.stash !== null) {
+        me.game.remove(game.instances.stash);
+        game.instances.stash = null;
     }
 };
 
@@ -116,7 +167,7 @@ game.mechanic.get_inventory_item = function(guid) {
         }
     }
     return false;
-}
+};
 
 game.mechanic.stash_push = function(item) {
     var inventory = me.gamestat.getItemValue("stash");
@@ -157,7 +208,7 @@ game.mechanic.get_stash_item = function(guid) {
         }
     }
     return false;
-}
+};
 
 game.mechanic.sort = function(a, b) {
     if (a === null && b !== null) {

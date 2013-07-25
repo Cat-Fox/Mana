@@ -113,12 +113,14 @@ game.mechanic.drop = function(x, y, container_value, drop_table) {
                     icon_image = "item-leatherarmor";
                     equip_image = "leatherarmor";
                     attributes.sound = "itempick2";
+                    attributes.image_name = equip_image;
                     name = "Light Armor";
                 } else {
                     armor_type = "heavy";
                     icon_image = "item-mailarmor";
                     equip_image = "mailarmor";
                     attributes.sound = "itempick2";
+                    attributes.image_name = equip_image;
                     name = "Heavy Armor";
                 }
 
@@ -130,7 +132,7 @@ game.mechanic.drop = function(x, y, container_value, drop_table) {
                 if (weapon_type < 3) {
                     //SHORT SWORD
                     icon_image = "item-sword1";
-                    equip_image = "sword1";
+                    equip_image = "Sword1";
                     weapon_type = "short";
                     attributes.offset_x = 0;
                     attributes.offset_y = 0;
@@ -138,7 +140,7 @@ game.mechanic.drop = function(x, y, container_value, drop_table) {
                 } else if (weapon_type < 6) {
                     //LONG SWORD
                     icon_image = "item-sword2";
-                    equip_image = "sword2";
+                    equip_image = "Sword2";
                     weapon_type = "long";
                     attributes.offset_x = -8;
                     attributes.offset_y = -10;
@@ -146,19 +148,19 @@ game.mechanic.drop = function(x, y, container_value, drop_table) {
                 } else if (weapon_type < 9) {
                     //AXE
                     icon_image = "item-axe";
-                    equip_image = "axe";
+                    equip_image = "Axe";
                     weapon_type = "axe";
                     name = "Axe";
-                    attributes.offset_x = 0;
-                    attributes.offset_y = 0;
+                    attributes.offset_x = -8;
+                    attributes.offset_y = -10;
                 } else {
                     //MACE
                     icon_image = "item-morningstar";
-                    equip_image = "morningstar";
+                    equip_image = "Morningstar";
                     weapon_type = "mace";
                     name = "Mace";
-                    attributes.offset_x = 0;
-                    attributes.offset_y = 0;
+                    attributes.offset_x = -6;
+                    attributes.offset_y = -10;
                 }
                 attributes.object_name = equip_image;
                 attributes.sound = "metal-clash";
@@ -206,23 +208,28 @@ game.mechanic.drop = function(x, y, container_value, drop_table) {
                         }
                         dmg_max = Math.floor(dmg_max);
                         dmg_min = Math.floor(dmg_min);
-                        attributes.dmg_min = dmg_min;
-                        attributes.dmg_max = dmg_max;
+                        attributes.min_dmg = dmg_min;
+                        attributes.max_dmg = dmg_max;
                         tooltip.push(new game.gui.TextLine("Weapon type: " + weapon_type, game.fonts.white));
                         tooltip.push(new game.gui.TextLine("Damage: " + dmg_min + "-" + dmg_max, game.fonts.white));
                         break;
                     case "armor":
-                        var normal_armor = equip_value * 0.075;
+                        var armor = equip_value * 0.075;
+                        var normal_armor, magic_armor;
                         switch (armor_type) {
                             case "light":
-                                normal_armor = normal_armor * 0.75;
+                                normal_armor = armor * 0.75;
+                                magic_armor = armor * 1.5;
                                 break;
                             case "heavy":
-                                normal_armor = normal_armor * 2;
+                                normal_armor = armor * 2;
+                                magic_armor = armor * 0.5;
                                 break;
                         }
                         normal_armor = Math.floor(normal_armor);
-                        attributes.armor = normal_armor;
+                        magic_armor = Math.floor(magic_armor);
+                        attributes.armor_normal = normal_armor;
+                        attributes.armor_magic = magic_armor;
                         attributes.armor_type = armor_type;
                         tooltip.push(new game.gui.TextLine("Armor type: " + armor_type, game.fonts.white));
                         tooltip.push(new game.gui.TextLine("Armor: " + normal_armor, game.fonts.white));
@@ -231,9 +238,9 @@ game.mechanic.drop = function(x, y, container_value, drop_table) {
                 if (stats_type === "magic") {
                     var effect = Number.prototype.random(0, game.mechanic.magic_effects.length - 1);
                     var picked_up = game.mechanic.magic_effects[effect];
-                    console.log(picked_up.class);
-                    while (picked_up.class !== equip_type) {
-                        effect = Number.prototype.random(0, game.mechanic.magic_effects.length);
+                    while (picked_up.class !== equip_type && picked_up.class !== "all") {
+                        console.log(equip_type + " " + picked_up.class);
+                        effect = Number.prototype.random(0, game.mechanic.magic_effects.length - 1);
                         picked_up = game.mechanic.magic_effects[effect];
                     }
                     var effect_value = Math.floor(equip_value / picked_up.divider);

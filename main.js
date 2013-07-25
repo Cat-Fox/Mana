@@ -15,6 +15,7 @@ var game =
             object_layer: 4,
             effects: {},
             npcs: {},
+            version: "0.0.1",
             onload: function()
             {
                 if (!me.video.init('screen', this.screenWidth, this.screenHeight, true, 2.0, true)) {
@@ -85,6 +86,7 @@ var game =
                 me.entityPool.add("ManaChest", game.npcs.ManaChest);
                 me.entityPool.add("Zaraka", game.npcs.Zaraka);
                 me.entityPool.add("Spawn", game.Spawn);
+                me.entityPool.add("DungeonSpawn", game.DungeonSpawn);
                 //Destroyable
                 me.entityPool.add("Barrel", game.destroyable.Barrel, true);
                 //---------------------GUI--------------------------------
@@ -100,7 +102,6 @@ var game =
                 //Buttons
                 me.entityPool.add("Button", game.Button, true);
                 me.entityPool.add("DropButton", game.DropButton, true);
-                me.entityPool.add("EquipButton", game.EquipButton, true);
                 me.entityPool.add("PlusSkillButton", game.PlusSkillButton, true);
 
 
@@ -127,9 +128,12 @@ var game =
                 }
                 me.gamestat.add("stash", stash);
                 var equip = {weapon: null, armor: null, artefact: null};
+                me.gamestat.add("stash_money", 0);
                 me.gamestat.add("equip", equip);
                 var belt = new Array(8);
                 me.gamestat.add("belt", belt);
+                var stats = new game.mechanic.Stats();
+                me.gamestat.add("statistic", stats);
 
 
                 // start the game
@@ -217,6 +221,7 @@ game.MenuScreen = game.AnimatedScreen.extend({
 
         this.logo = null;
         this.small_logo = null;
+        this.version = null;
 
         this.buttons = {};
         this.icon = null;
@@ -252,6 +257,9 @@ game.MenuScreen = game.AnimatedScreen.extend({
         me.game.add(this.logo, 8);
         this.small_logo = new game.SmallText((game.screenWidth - 80) / 2, (game.screenHeight - 30) / 2, "The Adventure full of Bugs", game.fonts.white);
         this.small_logo.floating = true;
+        this.version = new game.SmallText(10,10, game.version, game.fonts.white);
+        this.version.floating = true;
+        me.game.add(this.version, 8);
         me.game.add(this.small_logo, 8);
         me.game.sort();
 
@@ -315,6 +323,15 @@ game.MenuScreen = game.AnimatedScreen.extend({
         me.input.unbindKey(me.input.KEY.C);
         me.input.unbindKey(me.input.KEY.UP);
         me.input.unbindKey(me.input.KEY.DOWN);
+        me.game.remove(this.logo);
+        me.game.remove(this.version);
+        me.game.remove(this.small_logo);
+        me.game.remove(this.icon);
+        me.game.remove(this.label);
+        me.game.remove(this.buttons.new_game);
+        me.game.remove(this.buttons.load_game);
+        me.game.remove(this.buttons.credits);
+        me.game.remove(this.buttons.delete);
     }
 });
 
@@ -371,6 +388,10 @@ game.PlayScreen = game.AnimatedScreen.extend({
         me.input.bindKey(me.input.KEY.NUM6, "6", true);
         me.input.bindKey(me.input.KEY.NUM7, "7", true);
         me.input.bindKey(me.input.KEY.NUM8, "8", true);
+        
+        game.instances.backpack = null;
+        game.instances.stash = null;
+        game.instances.dialog = null;
 
         me.input.registerPointerEvent('mousemove', me.game.viewport, this.mouse);
 

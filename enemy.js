@@ -11,7 +11,7 @@ game.WalkerRat = game.WalkerNPC.extend({
         settings.image = me.loader.getImage("npc_rat");
         settings.spritewidth = 48;
         settings.spriteheight = 48;
-        var stats = new game.npcStats(20, 3, "normal", 0, 0, 15);
+        var stats = new game.npcStats(20, 1, 4, "normal", 0, 0, 15);
         this.parent(x, y, settings, true, stats);
         this.renderable.anim = [];
         this.renderable.addAnimation("iddle_right", [18, 19], 30);
@@ -68,28 +68,22 @@ game.WalkerRat = game.WalkerNPC.extend({
     onHit: function() {
         var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
         var dmg = me.gamestat.getItemValue("stats").getDmg();
-        if (Object.prototype.toString.call(dmg) === '[object Array]') {
-            for (var i = 0; i < dmg.length; i++) {
-                console.log(dmg[i].dmg + " " + dmg[i].type);
-                var result_dmg = this.hurt(dmg[i].dmg, dmg[i].type);
-                var font = game.fonts.good_green;
-                if (dmg[i].type === "magic") {
-                    if (dmg[i].element === "fire") {
-                        font = game.fonts.bad_red;
-                    } else {
-                        font = game.fonts.magic_blue;
-                    }
+        console.log(dmg);
+        for (var i = 0; i < dmg.length; i++) {
+            var result_dmg = this.hurt(dmg[i].min_dmg, dmg[i].max_dmg, dmg[i].type);
+            var font = game.fonts.good_green;
+            if (dmg[i].type === "magic") {
+                if (dmg[i].element === "fire") {
+                    font = game.fonts.bad_red;
+                } else {
+                    font = game.fonts.magic_blue;
                 }
-                this.hit_text = me.entityPool.newInstanceOf("HitText", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2), result_dmg, font);
             }
-        } else {
-            var result_dmg = this.hurt(dmg, "normal");
-            this.hit_text = me.entityPool.newInstanceOf("HitText", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2), result_dmg, game.fonts.good_green);
-            
+            this.hit_text = me.entityPool.newInstanceOf("HitText", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2), result_dmg, font);
+            me.game.add(this.hit_text, this.z + 1);
         }
-        player.destroyAttack();
 
-        me.game.add(this.hit_text, this.z + 1);
+        player.destroyAttack();
         me.game.sort();
     },
     onUse: function() {
@@ -100,9 +94,10 @@ game.WalkerRat = game.WalkerNPC.extend({
             me.game.sort();
         }
     },
-    hurt: function(dmg, dmg_type) {
+    hurt: function(dmg_min, dmg_max, dmg_type) {
         if (this.mode_select !== "dying") {
-            var result_dmg = game.mechanic.count_dmg(dmg, dmg_type, this.stats.armor_normal, this.stats.armor_magic);
+            console.log(this.stats.normal_armor + " " +this.stats.magic_armor);
+            var result_dmg = game.mechanic.count_dmg(dmg_min, dmg_max, dmg_type, this.stats.normal_armor, this.stats.magic_armor);
             this.stats.hp -= result_dmg;
             if (this.stats.hp <= 0) {
                 this.renderable.setCurrentAnimation("die");
@@ -138,7 +133,7 @@ game.WalkerRat = game.WalkerNPC.extend({
                     this.attack_cooldown_run = false;
                 }
             } else {
-                player.hurt(2);
+                player.hurt(this.stats.dmg_min, this.stats.dmg_max, this.stats.dmg_type);
                 this.attack_cooldown_run = true;
                 this.attack_time = me.timer.getTime();
             }
@@ -305,7 +300,7 @@ game.npcs.MimicWeaponActive = game.WalkerNPC.extend({
         settings.image = me.loader.getImage("axe");
         settings.spritewidth = 48;
         settings.spriteheight = 48;
-        var stats = new game.npcStats(45, 10, "normal", 0, 0, 50);
+        var stats = new game.npcStats(45, 5, 10, "normal", 0, 0, 50);
         this.parent(x, y, settings, true, stats);
         this.renderable.anim = [];
         this.renderable.addAnimation("attack_right", [0, 1, 2, 3, 4], 3);
@@ -357,9 +352,9 @@ game.npcs.MimicWeaponActive = game.WalkerNPC.extend({
             me.game.sort();
         }
     },
-    hurt: function(dmg, dmg_type) {
+    hurt: function(dmg_min, dmg_max, dmg_type) {
         if (this.mode_select !== "dying") {
-            var result_dmg = game.mechanic.count_dmg(dmg, dmg_type, this.stats.armor_normal, this.stats.armor_magic);
+            var result_dmg = game.mechanic.count_dmg(dmg_min, dmg_max, dmg_type, this.stats.normal_armor, this.stats.magic_armor);
             this.stats.hp -= result_dmg;
             if (this.stats.hp <= 0) {
                 this.onDrop();
@@ -396,7 +391,7 @@ game.npcs.MimicWeaponActive = game.WalkerNPC.extend({
                     this.attack_cooldown_run = false;
                 }
             } else {
-                player.hurt(this.stats.dmg);
+                player.hurt(this.dmg_min, this.dmg_max, this.dmg_type);
                 this.attack_cooldown_run = true;
                 this.attack_time = me.timer.getTime();
             }

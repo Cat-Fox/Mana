@@ -31,16 +31,7 @@ game.BackpackIcon = me.GUI_Object.extend({
         this.triggerBackpack();
     },
     triggerBackpack: function() {
-        if (this.backpack === null) {
-            this.backpack = me.entityPool.newInstanceOf("Backpack");
-            me.game.add(this.backpack, game.guiLayer);
-            me.game.sort();
-            me.audio.play("itempick2");
-        } else {
-            me.game.remove(this.backpack);
-            this.backpack = null;
-            me.audio.play("itempick2");
-        }
+        game.mechanic.trigger_inventory();
     }
 });
 
@@ -59,6 +50,7 @@ game.Backpack = me.ObjectEntity.extend({
     weapon_icon: null,
     money_icon: null,
     drop_tile: null,
+    money_tab: null,
     init: function() {
         settings = {};
         settings.spritewidth = 370;
@@ -76,19 +68,6 @@ game.Backpack = me.ObjectEntity.extend({
         context.lineTo(0, settings.spriteheight);
         context.lineTo(0, 0);
         context.stroke();
-
-        context.lineWidth = 1;
-        context.strokeStyle = "black";
-        context.fillStyle = "black";
-        //context.moveTo(180, 145);
-        //context.fillRect(140,135,65,16);
-        context.strokeRect(140, 125, 16, 16);
-        context.strokeRect(140, 125, 16, 16);
-        context.strokeRect(140, 125, 16, 16);
-        context.strokeRect(140, 125, 65, 16);
-        context.strokeRect(140, 125, 65, 16);
-        context.strokeRect(140, 125, 65, 16);
-
 
         //Texts
         this.font = game.fonts.basic;
@@ -143,8 +122,6 @@ game.Backpack = me.ObjectEntity.extend({
         this.artefact_tile = me.entityPool.newInstanceOf("CharacterTile", 110, 75, "artefact", null);
         me.game.add(this.artefact_tile, this.entity_layer);
 
-
-
         if (me.gamestat.getItemValue("skill") > 0) {
             this.buttons_add = {};
             var x_pos = this.pos.x + 75;
@@ -158,20 +135,18 @@ game.Backpack = me.ObjectEntity.extend({
             me.game.add(this.buttons_add.int, this.entity_layer);
         }
 
-
-        this.money_icon = new game.Icon(this.pos.x + 140, this.pos.y + 128, "money-1");
-        me.game.add(this.money_icon, this.entity_layer);
-
         this.belt_tiles = new Array(8);
 
         for (var i = 0; i < this.belt_tiles.length; i++) {
             this.belt_tiles[i] = me.entityPool.newInstanceOf("CharacterTile", this.pos.x + 135 + (i * 16), this.pos.y + 160, "belt", i);
             me.game.add(this.belt_tiles[i], this.entity_layer);
         }
+
+        this.money_tab = new game.gui.MoneyTab(this.pos.x + 140, this.pos.y + 125);
+        me.game.add(this.money_tab, this.entity_layer);
         me.game.sort();
 
         me.input.registerPointerEvent('mouseup', me.game.viewport, this.mouseUp.bind(this));
-
     }, update: function() {
         if (me.gamestat.getItemValue("skill") === 0 && this.buttons_add !== null) {
             me.game.remove(this.buttons_add.str);
@@ -180,17 +155,7 @@ game.Backpack = me.ObjectEntity.extend({
             me.game.remove(this.buttons_add.int);
         }
 
-        var value = me.gamestat.getItemValue("money");
-        if (value < 6) {
-            this.money_icon.renderable.image = me.loader.getImage("money-1");
-        } else if (value < 26) {
-            this.money_icon.renderable.image = me.loader.getImage("money-2");
-        } else if (value < 101) {
-            this.money_icon.renderable.image = me.loader.getImage("money-3");
-        } else {
-            this.money_icon.renderable.image = me.loader.getImage("money-4");
-        }
-
+        this.money_tab.onUpdate(me.gamestat.getItemValue("money"));
 
         this.parent();
         return true;
@@ -258,14 +223,12 @@ game.Backpack = me.ObjectEntity.extend({
         }
         height = height + this.font.measureText(context, "HP").height;
         this.font.draw(context, me.gamestat.getItemValue("skill"), x_pos, height);
-
-        game.fonts.white.draw(context, me.gamestat.getItemValue("money"), this.pos.x + 160, this.pos.y + 128);
     },
     onDestroyEvent: function() {
         me.game.remove(this.human_icon);
         this.human_icon = null;
-        me.game.remove(this.money_icon);
-        this.money_icon = null;
+        me.game.remove(this.money_tab);
+        this.money_tab = null;
         if (this.weapon_icon !== null) {
             me.game.remove(this.weapon_icon);
             this.weapon_icon = null;
@@ -470,12 +433,15 @@ game.InventoryTile = me.GUI_Object.extend({
         if (this.click_timer_run === 0) {
             this.click_timer_run = me.timer.getTime();
             if (this.icon !== null) {
+                console.log(game.instances.backpack);
+                console.log(game.instances.stash);
                 if (game.instances.backpack !== null) {
                     game.instances.backpack.selected_tile = this.id;
+                    console.log("backpack is open");
                 } else if (game.instances.stash !== null) {
                     game.instances.stash.selected_tile = this.id;
                     game.instances.stash.selected_type = this.tile_type;
-                    console.log(game.instances.stash);
+                    console.log("stash is open " + this.id + " " + this.tile_type);
                 }
                 this.follow_mouse = true;
             }
@@ -556,6 +522,7 @@ game.InventoryTile = me.GUI_Object.extend({
 game.ExpBar = me.ObjectEntity.extend({
     percent: null,
     font: null,
+    subscribe: null,
     init: function(x, y) {
         settings = {};
         settings.spriteWidth = 100;
@@ -576,30 +543,33 @@ game.ExpBar = me.ObjectEntity.extend({
         this.floating = true;
 
         this.font = game.fonts.good_green;
-    },
-    update: function() {
-        this.percent = Math.floor((me.gamestat.getItemValue("exp") * 100) / me.gamestat.getItemValue("next_level"));
-
+        this.subscribe = me.event.subscribe("/player/exp", function(a) {
+            game.instances.exp_bar.onUpdate(a);
+        });
+    }, onUpdate: function(exp) {
+        this.percent = Math.floor((100 / me.gamestat.getItemValue("next_level")) * exp);
+        console.log(this.percent);
         var context = this.renderable.image.getContext("2d");
         context.strokeStyle = "#958686";
-        context.moveTo(6, 5);
+        context.moveTo(6,5);
         context.lineTo(6 + 88, 5);
         context.stroke();
-        var width = Math.floor(0.9 * this.percent);
+        var width = Math.floor(0.88 * this.percent);
         if (width >= 1) {
             context.strokeStyle = "green";
             context.lineWidth = 1;
             context.moveTo(6, 5);
             context.lineTo(6 + width, 5);
+            console.log(6 + width);
             context.stroke();
         }
         context.fillStyle = "#958686";
         context.fillRect(3, 9, 90, 10);
-        var size = this.font.measureText(context, me.gamestat.getItemValue("exp") + "/" + me.gamestat.getItemValue("next_level"));
-        this.font.draw(context, me.gamestat.getItemValue("exp") + "/" + me.gamestat.getItemValue("next_level"), 50 - (size.width / 2), 9);
-
-        this.parent();
-        return true;
+        var size = this.font.measureText(context, exp + "/" + me.gamestat.getItemValue("next_level"));
+        this.font.draw(context, exp + "/" + me.gamestat.getItemValue("next_level"), 50 - (size.width / 2), 9);
+    },
+    onDestroyEvent: function() {
+        me.event.unsubscribe(this.subscribe);
     }
 });
 
@@ -770,8 +740,8 @@ game.DropButton = game.Button.extend({
     onClick: function() {
         this.parent();
         var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
-        if (player.backpack_icon.backpack.selected_tile !== null) {
-            me.gamestat.getItemValue("inventory").splice(player.backpack_icon.backpack.selected_tile, 1);
+        if (game.instances.backpack.selected_tile !== null) {
+            me.gamestat.getItemValue("inventory").splice(game.instances.backpack.selected_tile, 1);
         }
 
     }
@@ -787,15 +757,15 @@ game.UseButton = game.Button.extend({
     onClick: function() {
         this.parent();
         var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
-        if (player.backpack_icon.backpack.selected_tile !== null) {
-            console.log("use item on tile " + player.backpack_icon.backpack.selected_tile);
-            var selected = me.gamestat.getItemValue("inventory")[player.backpack_icon.backpack.selected_tile];
+        if (game.instances.backpack.selected_tile !== null) {
+            console.log("use item on tile " + game.instances.backpack.selected_tile);
+            var selected = me.gamestat.getItemValue("inventory")[game.instances.backpack.selected_tile];
             switch (selected.type) {
                 case "consumable":
                     if (typeof selected.attributes.heal !== "undefined") {
                         player.updateHP(selected.attributes.heal);
                     }
-                    me.gamestat.getItemValue("inventory").splice(player.backpack_icon.backpack.selected_tile, 1);
+                    me.gamestat.getItemValue("inventory").splice(game.instances.backpack.selected_tile, 1);
                     break;
                 case "default":
                     console.log("nothing");
@@ -1208,11 +1178,13 @@ game.gui.Dialog = me.ObjectEntity.extend({
         return true;
     }, getCurrentMessage: function() {
         var message_object = this.dialog.branches[this.branch].messages[this.message];
+
         if (message_object.type === "QUIT") {
             me.game.remove(game.instances.dialog);
             game.instances.dialog = null;
             return false;
         }
+
         return message_object.message;
     },
     createCurrentIcon: function() {
@@ -1245,8 +1217,11 @@ game.gui.Dialog = me.ObjectEntity.extend({
         if (this.message === this.dialog.branches[this.branch].length) {
             this.message = 0;
         }
-        this.text_object.text = this.getCurrentMessage();
-        this.createCurrentIcon();
+        var text = this.getCurrentMessage();
+        if (text !== false) {
+            this.text_object.text = text;
+            this.createCurrentIcon();
+        }
     }, onDestroyEvent: function() {
         me.game.remove(this.text_object);
         this.text_object = null;
@@ -1254,8 +1229,6 @@ game.gui.Dialog = me.ObjectEntity.extend({
         this.human_icon = null;
     }
 });
-
-game.instances.dialog = null;
 
 game.gui.CloseButton = me.GUI_Object.extend({
     parent_class: null,
@@ -1307,11 +1280,13 @@ game.gui.Stash = game.gui.Window.extend({
     entity_layer: null,
     selected_tile: null,
     selected_type: null,
+    inventory_money: null,
+    stash_money: null,
     init: function() {
         this.selected_tile = null;
         this.selected_type = null;
         this.entity_layer = game.guiLayer + 1;
-        this.parent(10, 10, 200, 150);
+        this.parent(10, 10, 200, 175);
         var context = this.renderable.image.getContext("2d");
         game.fonts.basic.draw(context, "Stash", 35, 5);
         game.fonts.basic.draw(context, "Inventory", 115, 5);
@@ -1340,9 +1315,21 @@ game.gui.Stash = game.gui.Window.extend({
             }
         }
 
+        this.stash_money = new game.gui.MoneyTab(this.pos.x + 20, this.pos.y + 150);
+        me.game.add(this.stash_money, this.entity_layer);
+        this.inventory_money = new game.gui.MoneyTab(this.pos.x + 115, this.pos.y + 150);
+        me.game.add(this.inventory_money, this.entity_layer);
+
         me.game.sort();
 
         me.input.registerPointerEvent('mouseup', me.game.viewport, this.mouseUp.bind(this));
+    },
+    update: function() {
+        this.inventory_money.onUpdate(me.gamestat.getItemValue("money"));
+        this.stash_money.onUpdate(me.gamestat.getItemValue("stash_money"));
+
+        this.parent();
+        return true;
     },
     onDestroyEvent: function() {
         this.parent();
@@ -1360,12 +1347,19 @@ game.gui.Stash = game.gui.Window.extend({
                 this.stash_tiles[row][column] = null;
             }
         }
+
+        me.game.remove(this.inventory_money);
+        this.inventory_money = null;
+        me.game.remove(this.stash_money);
+        this.stash_money = null;
         me.input.releasePointerEvent('mouseup', me.game.viewport);
     },
     mouseUp: function() {
+        console.log("tile " + this.selected_tile);
         if (this.selected_tile !== null) {
-            console.log(this.selected_type);
+            console.log("type " + this.selected_type);
             if (this.selected_type === "stash") {
+                var flag = false;
                 for (var row = 0; row < this.inventory_tiles.length; row++) {
                     for (var column = 0; column < this.inventory_tiles[row].length; column++) {
                         if (this.inventory_tiles[row][column].containsPointV(me.input.mouse.pos)) {
@@ -1373,7 +1367,12 @@ game.gui.Stash = game.gui.Window.extend({
                             var item = me.gamestat.getItemValue("stash")[this.selected_tile];
                             game.mechanic.inventory_push(item);
                             game.mechanic.stash_drop(item.guid);
+                            flag = true;
+                            break;
                         }
+                    }
+                    if (flag) {
+                        break;
                     }
                 }
             }
@@ -1386,17 +1385,22 @@ game.gui.Stash = game.gui.Window.extend({
                             var item = me.gamestat.getItemValue("inventory")[this.selected_tile];
                             game.mechanic.stash_push(item);
                             game.mechanic.inventory_drop(item.guid);
+                            flag = true;
+                            break;
                         }
+                    }
+                    if(flag){
+                        break;
                     }
                 }
             }
-            
-                        var selected_row, selected_column;
+
+            var selected_row, selected_column;
             if (this.selected_type === "inventory") {
                 selected_row = this.selected_tile / 6;
                 selected_column = this.selected_tile % 5;
                 this.inventory_tiles[selected_row][selected_column].mouseUp();
-            } else {
+            } else if (this.selected_type === "stash") {
                 selected_row = this.selected_tile / 8;
                 selected_column = this.selected_tile % 5;
                 this.stash_tiles[selected_row][selected_column].mouseUp();
@@ -1405,5 +1409,56 @@ game.gui.Stash = game.gui.Window.extend({
     }
 });
 
-game.instances.stash = null;
-game.instances.backpack = null;
+game.gui.MoneyTab = me.ObjectEntity.extend({
+    icon: null,
+    font: null,
+    label: null,
+    init: function(x, y) {
+        settings = {};
+        settings.spritewidth = 65;
+        settings.spriteheight = 16;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+
+        var context = settings.image.getContext("2d");
+        context.lineWidth = 1;
+        context.strokeStyle = "black";
+        context.fillStyle = "black";
+        //140 125
+        context.strokeRect(0, 0, 16, 16);
+        context.strokeRect(0, 0, 16, 16);
+        context.strokeRect(0, 0, 16, 16);
+        context.strokeRect(0, 0, 65, 16);
+        context.strokeRect(0, 0, 65, 16);
+        context.strokeRect(0, 0, 65, 16);
+        this.parent(x, y, settings);
+        this.floating = true;
+        this.icon = new game.Icon(this.pos.x, this.pos.y, "money-1");
+        this.icon.floating = true;
+        me.game.add(this.icon, game.guiLayer + 1);
+        this.font = game.fonts.white;
+        this.label = new game.SmallText(this.pos.x + 20, this.pos.y + 4, "0", this.font);
+        this.label.floating = true;
+        me.game.add(this.label, game.guiLayer + 1);
+        me.game.sort();
+        console.log("hey");
+    },
+    onDestroyEvent: function() {
+        me.game.remove(this.icon);
+        this.icon = null;
+        me.game.remove(this.label);
+        this.label = null;
+    },
+    onUpdate: function(value) {
+        this.label.text = value;
+
+        if (value < 6) {
+            this.icon.renderable.image = me.loader.getImage("money-1");
+        } else if (value < 26) {
+            this.icon.renderable.image = me.loader.getImage("money-2");
+        } else if (value < 101) {
+            this.icon.renderable.image = me.loader.getImage("money-3");
+        } else {
+            this.icon.renderable.image = me.loader.getImage("money-4");
+        }
+    }
+});

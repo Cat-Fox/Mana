@@ -23,6 +23,7 @@ game.npcs.Guard = game.npcs.AllyNPC.extend({
 game.npcs.King = game.npcs.AllyNPC.extend({
     init: function(x, y) {
         this.parent(x, y, "King", "npc_king", 32, 2, "dialog_king");
+        this.updateColRect(10, 10, 8, 18);
     },
     onUse: function() {
         if (game.instances.dialog === null) {
@@ -83,14 +84,7 @@ game.npcs.ManaChest = game.npcs.AllyNPC.extend({
             me.game.add(game.instances.dialog, game.guiLayer);
             me.game.sort();
         } else if (game.instances.dialog === null) {
-            if(game.instances.stash === null){
-                 game.instances.stash = new game.gui.Stash();
-                 me.game.add(game.instances.stash, game.guiLayer);
-                 me.game.sort();
-            } else {
-                me.game.remove(game.instances.stash);
-                game.instances.stash = null;
-            }
+            game.mechanic.trigger_stash();
         }
     },
     cleanup: function() {
