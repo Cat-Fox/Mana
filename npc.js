@@ -148,7 +148,27 @@ game.WalkerNPC = me.ObjectEntity.extend({
         this.walking = false;
     },
     onHit: function() {
+        if (this.type === me.game.ENEMY_OBJECT) {
+            var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
+            var dmg = me.gamestat.getItemValue("stats").getDmg();
+            console.log(dmg);
+            for (var i = 0; i < dmg.length; i++) {
+                var result_dmg = this.hurt(dmg[i].min_dmg, dmg[i].max_dmg, dmg[i].type);
+                var font = game.fonts.white;
+                if (dmg[i].type === "magic") {
+                    if (dmg[i].element === "fire") {
+                        font = game.fonts.bad_red;
+                    } else {
+                        font = game.fonts.magic_blue;
+                    }
+                }
+                this.hit_text = me.entityPool.newInstanceOf("HitText", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2), result_dmg, font);
+                me.game.add(this.hit_text, this.z + 1);
+            }
 
+            player.destroyAttack();
+            me.game.sort();
+        }
     },
     onUse: function() {
 
@@ -158,14 +178,9 @@ game.WalkerNPC = me.ObjectEntity.extend({
     },
     onDestroyEvent: function() {
         this.collidable = false;
-        if (this.shadow !== null) {
-            me.game.remove(this.shadow);
-            this.shadow = null;
-        }
-        
-        if(this.type === me.game.ENEMY_OBJECT){
-            me.gamestat.getItemValue("statistic").killed_monsters++;
-        }
+        me.game.remove(this.shadow);
+        this.shadow = null;
+
     },
     onDrop: function() {
         if (this.drop !== null) {
@@ -235,6 +250,148 @@ game.WalkerNPC = me.ObjectEntity.extend({
     }
 });
 
+game.npcs.EnemyNPC = game.WalkerNPC.extend({
+    target: null,
+    target_text: null,
+    targeted: null,
+    target_offset: null,
+    attack_cooldown: null,
+    attack_cooldown_run: false,
+    attack_time: null,
+    init: function(x, y, settings, c_shadow, stats) {
+        this.parent(x, y, settings, c_shadow, stats);
+        this.attack_cooldown_run = false;
+        this.targeted = false;
+        this.target_offset = new me.Vector2d(15, 16);
+    },
+    update: function() {
+        this.targeted = false;
+        this.parent();
+
+        if (this.target !== null) {
+            if (this.targeted === false) {
+                me.game.remove(this.target);
+                me.game.remove(this.target_text);
+                this.target = null;
+                this.target_text = null;
+            } else {
+                this.target.pos.x = this.pos.x + this.target_offset.x;
+                this.target.pos.y = this.pos.y + this.target_offset.y;
+                this.target_text.text = this.stats.hp + "/" + this.stats.max_hp;
+            }
+        }
+    },
+    onTarget: function() {
+        this.targeted = true;
+        if (this.target === null) {
+            var text = this.stats.hp + "/" + this.stats.max_hp;
+            this.target = me.entityPool.newInstanceOf("Target", this.pos.x + 15, this.pos.y + 16, "red");
+            this.target_text = me.entityPool.newInstanceOf("SmallText", this.pos.x + (this.renderable.width / 4), this.pos.y + (this.renderable.height / 1.5), text, game.fonts.bad_red);
+            me.game.add(this.target, this.z - 1);
+            me.game.add(this.target_text, this.z + 1);
+            me.game.sort();
+        }
+    },
+    hurt: function(dmg_min, dmg_max, dmg_type) {
+        if (this.mode_select !== "dying") {
+            var result_dmg = game.mechanic.count_dmg(dmg_min, dmg_max, dmg_type, this.stats.normal_armor, this.stats.magic_armor);
+            this.stats.hp -= result_dmg;
+            var percent = Math.floor((this.stats.hp * 100) / this.stats.max_hp);
+            game.mechanic.set_enemy_panel(this.name, percent);
+            if (this.stats.hp <= 0) {
+                if (typeof this.renderable.anim["die"] !== "undefined") {
+                    this.renderable.setCurrentAnimation("die");
+                }
+                me.game.getEntityByGUID(me.gamestat.getItemValue("player")).updateEXP(this.stats.exp);
+                var exp_text = new game.effects.ExpText(this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2), this.stats.exp + "xp");
+                me.game.add(exp_text, this.z);
+                me.game.sort();
+                this.mode_select = "dying";
+            } else {
+                this.renderable.flicker(5);
+                if (this.mode_select !== "attacking") {
+                    this.mode_select = "attacking";
+                }
+            }
+            return result_dmg;
+        }
+    },
+    modeAttacking: function() {
+        var this_vector = new me.Vector2d(this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2));
+        var player = game.instances.player;
+        if (player === null) {
+            this.mode_select = "walking";
+            return;
+        }
+        var player_vector = new me.Vector2d(player.pos.x + (player.width / 2), player.pos.y + (player.height / 2));
+        var angle = (this_vector.angle(player_vector) * (180 / Math.PI));
+        this.vel.x = 0;
+        this.vel.y = 0;
+        if (this_vector.distance(player_vector) < 25) {
+            if (this.attack_cooldown_run) {
+                if (me.timer.getTime() > (this.attack_time + this.attack_cooldown)) {
+                    this.attack_cooldown_run = false;
+                }
+            } else {
+                player.hurt(this.stats.dmg_min, this.stats.dmg_max, this.stats.dmg_type);
+                this.attack_cooldown_run = true;
+                this.attack_time = me.timer.getTime();
+            }
+        }
+        if (angle <= 45 && angle >= -45) {
+            //right
+            this.flipX(false);
+            if (this_vector.distance(player_vector) >= 25) {
+                this.vel.x += this.accel.x * me.timer.tick;
+                this.renderable.setCurrentAnimation("right");
+            } else {
+                this.renderable.setCurrentAnimation("attack_right");
+            }
+        } else if (angle < -45 && angle >= -120) {
+            //top
+            if (this_vector.distance(player_vector) >= 25) {
+                this.vel.y -= this.accel.x * me.timer.tick;
+                this.renderable.setCurrentAnimation("up");
+            } else {
+                this.renderable.setCurrentAnimation("attack_up");
+            }
+        } else if ((angle < -120 && angle >= -180) || (angle > 120 && angle <= 180)) {
+            //right_flipped
+            this.flipX(true);
+            if (this_vector.distance(player_vector) >= 25) {
+                this.vel.x -= this.accel.x * me.timer.tick;
+                this.renderable.setCurrentAnimation("right");
+            } else {
+                this.renderable.setCurrentAnimation("attack_right");
+            }
+        } else if (angle > 45 && angle <= 120) {
+            //down
+            if (this_vector.distance(player_vector) >= 25) {
+                this.vel.y += this.accel.x * me.timer.tick;
+                this.renderable.setCurrentAnimation("down");
+            } else {
+                this.renderable.setCurrentAnimation("attack_down");
+            }
+        }
+    },
+    modeDying: function() {
+        this.alive = false;
+        if (this.target_text !== null) {
+            me.game.remove(this.target_text);
+            this.target_text = null;
+        }
+        if (this.target !== null) {
+            me.game.remove(this.target);
+            this.target = null;
+        }
+
+        if (this.renderable.getCurrentAnimationFrame() === 6 && this.renderable.isCurrentAnimation("die")) {
+            this.onDrop();
+            me.game.remove(this);
+        }
+    }
+});
+
 game.npcs.AllyNPC = game.ShadowObject.extend({
     target_box: null,
     target_text: null,
@@ -268,8 +425,8 @@ game.npcs.AllyNPC = game.ShadowObject.extend({
         this.shadow.pos.x = this.pos.x + this.target_offset.x;
         this.shadow.pos.y = this.pos.y + this.target_offset.y;
 
-        if(this.speak_text !== null){
-            if(me.timer.getTime() > (this.speak_text_timer + 1500)){
+        if (this.speak_text !== null) {
+            if (me.timer.getTime() > (this.speak_text_timer + 1500)) {
                 me.game.remove(this.speak_text);
                 this.speak_text = null;
                 this.speak_text_timer = 0;

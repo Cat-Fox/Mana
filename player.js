@@ -18,6 +18,7 @@ game.Player = me.ObjectEntity.extend({
     dying: false,
     //efects
     magic_find: null,
+    hp_text: null,
     init: function(x, y) {
         settings = {};
         settings.spritewidth = 32;
@@ -35,7 +36,7 @@ game.Player = me.ObjectEntity.extend({
         this.renderable.addAnimation("attack_up", [15, 16, 17, 18, 19], 1);
         this.renderable.addAnimation("attack_right", [0, 1, 2, 3, 4], 1);
 
-        this.setVelocity(1.5, 1.5);
+        this.setVelocity(1.0, 1.0);
         this.gravity = 0;
         this.updateColRect(10, 12, 13, 14);
         this.renderable.setCurrentAnimation("iddle_down");
@@ -53,7 +54,7 @@ game.Player = me.ObjectEntity.extend({
         this.type = "player";
 
         //creating shadow and GUI
-        this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x + 8, this.pos.y + 13);
+        this.shadow = new game.Shadow(this.pos.x + 8, this.pos.y + 13);
         me.game.add(this.shadow, 4);
         this.target_box = new game.CollisionBox(this.pos.x + 8, this.pos.y + 22, "human_target");
         me.game.add(this.target_box, 4);
@@ -71,7 +72,7 @@ game.Player = me.ObjectEntity.extend({
         //efects
         this.magic_find = 0;
 
-        this.updateStats();
+        game.mechanic.updateStats();
 
         //INSTANCES
         game.instances.exp_bar = new game.ExpBar(game.screenWidth - 30, game.screenHeight - 10);
@@ -79,6 +80,9 @@ game.Player = me.ObjectEntity.extend({
 
         game.instances.belt = new game.gui.Belt();
         me.game.add(game.instances.belt, game.guiLayer);
+        
+        this.hp_text = new game.SmallText(this.pos.x + 5, this.posy + this.renderable.height, me.gamestat.getItemValue("hp") + "/" + me.gamestat.getItemValue("maxhp"), this.hp_font);
+        me.game.add(this.hp_text, game.LAYERS.GUI - 1);
         me.game.sort();
         this.belt_cooldown_run = new Array(8);
         for (var i = 0; i < this.belt_cooldown_run.length; i++) {
@@ -91,10 +95,8 @@ game.Player = me.ObjectEntity.extend({
             me.game.add(message, game.guiLayer);
             me.game.sort();
         }
-    },
-    draw: function(context) {
-        this.parent(context);
-        this.hp_font.draw(context, me.gamestat.getItemValue("hp") + "/" + me.gamestat.getItemValue("maxhp"), this.pos.x + 5, this.pos.y + this.renderable.height);
+
+
     },
     update: function() {
         if (this.dying) {
@@ -108,6 +110,10 @@ game.Player = me.ObjectEntity.extend({
 
         if (me.input.isKeyPressed("debug")) {
             me.debug.renderHitBox = !me.debug.renderHitBox;
+        }
+
+        if(me.input.isKeyPressed("mana")) {
+            this.updateEXP(100);
         }
 
         if (me.input.isKeyPressed("esc")) {
@@ -175,7 +181,7 @@ game.Player = me.ObjectEntity.extend({
             this.vel.x = 0;
             this.vel.y = 0;
             this.attacking = true;
-            me.audio.play("swing");
+            game.instances.audio.channels.effects.addEffect("swing");
             if ((this.renderable.isCurrentAnimation("up") === true) || (this.renderable.isCurrentAnimation("iddle_up") === true)) {
                 this.renderable.setCurrentAnimation("attack_up");
                 this.createAttack("up");
@@ -272,6 +278,9 @@ game.Player = me.ObjectEntity.extend({
         this.shadow.pos.x = this.pos.x + 8;
         this.shadow.pos.y = this.pos.y + 13;
         this.updateTargetBox();
+        this.hp_text.pos.x = this.pos.x + 5;
+        this.hp_text.pos.y = this.pos.y + this.renderable.height;
+        this.hp_text.text = me.gamestat.getItemValue("hp") + "/" + me.gamestat.getItemValue("maxhp");
         if (this.weapon !== null) {
             var weapon = game.mechanic.get_inventory_item(me.gamestat.getItemValue("equip").weapon);
             if (weapon === false) {
@@ -292,9 +301,13 @@ game.Player = me.ObjectEntity.extend({
         this.shadow = null;
         me.game.remove(this.target_box);
         this.target_box = null;
+        me.game.remove(this.hp_text);
+        this.hp_text = null;
+        
+        game.instances.player = null;
     },
     updateHP: function(value) {
-        if (me.gamestat.getItemValue("hp") + value > me.gamestat.getItemValue("maxhp")) {
+        if ((me.gamestat.getItemValue("hp") + value) > me.gamestat.getItemValue("maxhp")) {
             me.gamestat.setValue("hp", me.gamestat.getItemValue("maxhp"));
         } else {
             me.gamestat.updateValue("hp", value);
@@ -316,12 +329,12 @@ game.Player = me.ObjectEntity.extend({
         var next_level = Math.floor(me.gamestat.getItemValue("next_level") + me.gamestat.getItemValue("next_level") * 2.5);
         me.gamestat.setValue("next_level", next_level);
         me.gamestat.updateValue("skill", 5);
-        me.audio.play("level_up");
+        game.instances.audio.channels.effects.addEffect("level_up");
         var bigText = me.entityPool.newInstanceOf("BigText", "YOU HAVE REACHED LEVEL " + me.gamestat.getItemValue("level"));
         me.game.add(bigText, game.guiLayer);
         me.game.sort();
         game.instances.console.post("You haved reached new level");
-        this.updateStats();
+        game.mechanic.updateStats();
         me.event.publish("/player/exp", [me.gamestat.getItemValue("exp")]);
     },
     createAttack: function(direction) {
@@ -380,7 +393,7 @@ game.Player = me.ObjectEntity.extend({
             //just die already!)
             this.dying = true;
         } else {
-            this.renderable.flicker(20);
+            this.renderable.flicker(2);
         }
     }, equipWeapon: function() {
         if (this.weapon !== null) {
@@ -397,7 +410,7 @@ game.Player = me.ObjectEntity.extend({
             this.weapon = new game.weapons[weapon.attributes.object_name](this.pos.x + weapon.attributes.offset_x, this.pos.y + weapon.attributes.offset_y);
             me.game.add(this.weapon, this.z + 1);
             me.game.sort();
-
+            game.mechanic.updateStats();
             return true;
         }
     }, equipArmor: function() {
@@ -410,8 +423,9 @@ game.Player = me.ObjectEntity.extend({
                 me.gamestat.getItemValue("equip").armor = null;
                 return false;
             }
-            this.renderable.image = me.loader.getImage(armor.attributes.image_name);
+            this.renderable.image = me.loader.getImage(armor.attributes.image_name); 
         }
+        game.mechanic.updateStats();
         return true;
     }, syncWeapon: function() {
         if (this.renderable.isCurrentAnimation("up")) {
@@ -454,26 +468,5 @@ game.Player = me.ObjectEntity.extend({
             this.weapon.renderable.flipX(false);
             this.weapon.renderable.setCurrentAnimation("attack_up");
         }
-    },
-    strUp: function() {
-        me.gamestat.getItemValue("stats").str += 1;
-        this.updateStats();
-    },
-    agiUp: function() {
-        me.gamestat.getItemValue("stats").agi += 1;
-        this.updateStats();
-    },
-    endUp: function() {
-        me.gamestat.getItemValue("stats").end += 1;
-        this.updateStats();
-    },
-    intUp: function() {
-        me.gamestat.getItemValue("stats").int += 1;
-        this.updateStats();
-    },
-    updateStats: function() {
-        var max_hp = me.gamestat.getItemValue("stats").getHP();
-        me.gamestat.setValue("maxhp", max_hp);
-        me.gamestat.setValue("hp", max_hp);
     }
 });

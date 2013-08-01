@@ -11,6 +11,14 @@
                 {"type": "NPC", "message" : ".....\n...."},
                 {"type": "PLAYER", "message" : "OKAY!"},
                 {"type": "NPC", "message" : "you idiot..."},
+                {"type": "SET_HISTORY", "variable" : "priest", "value" : true},
+                {"type": "HEAL"},
+                {"type": "QUIT"}
+            ]
+        },
+        {
+            "messages" : [
+                {"type": "NPC", "message" : "You are healed!"},
                 {"type": "QUIT"}
             ]
         }

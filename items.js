@@ -23,6 +23,7 @@ game.consumables.Layout = game.ShadowObject.extend({
     rarity: null,
     name: null,
     target_box: null,
+    life_timer: null,
     init: function(x, y, settings, autopick, name, rarity) {
         this.parent(x, y, settings);
         this.renderable.addAnimation("always", [0, 1, 2, 3, 4]);
@@ -32,7 +33,12 @@ game.consumables.Layout = game.ShadowObject.extend({
         this.autopick = autopick;
         this.name = name;
         this.rarity = rarity;
+        this.life_timer = me.timer.getTime();
     }, update: function() {
+        if(me.timer.getTime() > (this.life_timer + 60000)){
+            me.game.remove(this);
+        }
+        
         var res = me.game.collide(this, true);
         var targeted = false;
         if (res.length >= 1) {
@@ -93,7 +99,7 @@ game.consumables.Layout = game.ShadowObject.extend({
     },
     onPickup: function(item) {
         if (game.mechanic.inventory_push(item)) {
-            me.audio.play(item.attributes.sound);
+            game.instances.audio.channels.effects.addEffect(item.attributes.sound);
             me.game.remove(this);
             this.collidable = false;
         } else {
@@ -137,12 +143,13 @@ game.consumables.Burger = game.consumables.Layout.extend({
         this.parent(x, y, settings, true, "Health", "normal");
     },
     onUse: function() {
-        me.audio.play("itempick2");
-        me.game.getEntityByGUID(me.gamestat.getItemValue("player")).updateHP(30);
+        game.instances.audio.channels.effects.addEffect("itempick2");
+        game.instances.player.updateHP(30);
+        var text = new game.effects.HealText(this.pos.x, this.pos.y, "30HP");
+        me.game.add(text, game.LAYERS.GUI - 1);
+        me.game.sort();
         me.game.remove(this);
-        this.collidable = false;
     }
-
 });
 
 game.consumables.Money = game.consumables.Layout.extend({
@@ -165,7 +172,7 @@ game.consumables.Money = game.consumables.Layout.extend({
         this.parent(x, y, settings, true, this.value + " Gold", "gold");
     },
     onUse: function() {
-        me.audio.play("coins");
+        game.instances.audio.channels.effects.addEffect("coins");
         me.gamestat.updateValue("money", this.value);
         me.game.remove(this);
         this.collidable = false;
