@@ -324,6 +324,16 @@
     type: "audio",
     src: "data/sounds/"
 },
+/***************SOUNDTRACK**********************/
+    {
+    name: "taberna_noctis",
+    type: "audio",
+    src: "data/sounds/"
+}, {
+    name: "battle_of_souls",
+    type: "audio",
+    src: "data/sounds/"
+},
 //----------------------DIALOGS--------------------------
 {
     name: "dialog_guard",

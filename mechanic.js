@@ -522,13 +522,13 @@ game.mechanic.initialize_level = function() {
         game.instances.rain = null;
     }
 
-    game.instances.audio.channels.ambient.setVolume(0.6);
-
-    game.instances.audio.channels.ambient.stopAmbient();
+    //game.instances.audio.channels.ambient.stopAmbient();
 
     //lets load some ambient
     if (me.game.currentLevel.name === "test_map") {
-        game.instances.audio.channels.ambient.changeAmbient("forest");
+        game.instances.audio.channels.ambient.changeAmbient("taberna_noctis");
+    } else if (me.game.currentLevel.name === "cave") {
+        game.instances.audio.channels.ambient.changeAmbient("battle_of_souls");
     }
 };
 
@@ -545,8 +545,14 @@ game.mechanic.trigger_options = function() {
 
 game.mechanic.save_settings = function() {
     localStorage.options = true;
-    localStorage.audio_enabled = me.audio.isAudioEnable();
-    console.log(localStorage.audio_enabled);
+    if(me.audio.isAudioEnable()){
+        localStorage.audio_enabled = true;
+    } else {
+        localStorage.audio_enabled = false;
+    }
+    
+    localStorage.ambient_volume = game.instances.audio.channels.ambient.volume;
+    localStorage.effects_volume = game.instances.audio.channels.effects.volume;
     game.instances.console.post("Options has been saved");
 };
 
@@ -554,6 +560,10 @@ game.mechanic.load_settings = function(){
     if(typeof localStorage.options !== "undefined"){
         game.instances.console.post("Options save found");
         var boolean = (localStorage.audio_enabled === "true");
+        console.log(boolean);
         game.instances.audio.switchEnable(boolean);
+        game.instances.audio.channels.ambient.volume = parseFloat(localStorage.ambient_volume);
+        game.instances.audio.channels.effects.volume = parseFloat(localStorage.effects_volume);
+        
     }
 };

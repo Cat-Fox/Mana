@@ -646,6 +646,7 @@ game.Button = me.GUI_Object.extend({
     inline: null,
     fill: null,
     tooltip: null,
+    hovering: null,
     init: function(x, y, text, title) {
         this.text = text;
         this.title = title;
@@ -665,6 +666,7 @@ game.Button = me.GUI_Object.extend({
         this.drawContext(context);
 
         this.floating = true;
+        this.hovering = false;
     }, update: function() {
         var trigger = false;
         if (me.input.mouse.pos.x >= this.pos.x && me.input.mouse.pos.x <= this.pos.x + this.width) {
@@ -674,6 +676,7 @@ game.Button = me.GUI_Object.extend({
         }
 
         if (trigger) {
+            this.hovering = true;
             this.onHover();
             this.outline = "black";
             this.inline = "black";
@@ -682,12 +685,15 @@ game.Button = me.GUI_Object.extend({
             this.drawContext(this.image.getContext("2d"));
 
         } else {
-            this.onHoverOut();
-            this.outline = "black";
-            this.inline = "#E26D6D";
-            this.fill = "#D83939";
+            if (this.hovering) {
+                this.hovering = false;
+                this.onHoverOut();
+                this.outline = "black";
+                this.inline = "#E26D6D";
+                this.fill = "#D83939";
 
-            this.drawContext(this.image.getContext("2d"));
+                this.drawContext(this.image.getContext("2d"));
+            }
         }
     }, onClick: function() {
     }, onHover: function() {
@@ -990,7 +996,7 @@ game.gui.Console = me.ObjectEntity.extend({
         }
         console.log(this.lines);
     },
-    clearAll: function() {       
+    clearAll: function() {
         for (var i = 0; i < this.lines.length; i++) {
             this.removeLast();
         }
@@ -1246,7 +1252,7 @@ game.gui.Dialog = me.ObjectEntity.extend({
 
         this.parent(10, 20, settings);
         this.floating = true;
-        
+
         this.text_object = new game.SmallText(this.pos.x + 45, this.pos.y + 5, this.getCurrentMessage(), game.fonts.white);
         this.text_object.floating = true;
         me.game.add(this.text_object, game.guiLayer + 1);
@@ -1842,9 +1848,11 @@ game.gui.Options = game.gui.Window.extend({
     entity_layers: null,
     checkboxes: null,
     buttons: null,
+    sliders: null,
     init: function() {
         this.checkboxes = {};
         this.buttons = {};
+        this.sliders = {};
         this.parent(20, 10, 300, 170);
         var context = this.renderable.image.getContext("2d");
         game.fonts.white.draw(context, "Enable sounds", 20, 20);
@@ -1852,8 +1860,17 @@ game.gui.Options = game.gui.Window.extend({
         bmf.draw(context, "OPTIONS", (300 - bmf.measureText(context, "OPTIONS").width) / 2, 5);
         this.checkboxes.enable_sound = new game.gui.CheckBox(45, 43, me.audio.isAudioEnable(), game.instances.audio.switchEnable);
         me.game.add(this.checkboxes.enable_sound, game.LAYERS.TOP + 1);
+        game.fonts.white.draw(context, "Music volume", 20, 50);
+        this.sliders.ambient = new game.gui.SliderContainer(45, 72, parseInt(game.instances.audio.channels.ambient.volume * 100), game.instances.audio.channels.ambient);
+        me.game.add(this.sliders.ambient, game.LAYERS.TOP + 1);
+        game.fonts.white.draw(context, "Effects volume", 20, 78);
+        console.log(game.instances.audio.channels.effects.volume);
+        this.sliders.effects = new game.gui.SliderContainer(45, 100, parseInt(game.instances.audio.channels.effects.volume * 100), game.instances.audio.channels.effects);
+        me.game.add(this.sliders.effects, game.LAYERS.TOP + 1);
         this.buttons.save = new game.gui.FuncButton(30, 160, "Save", "", game.mechanic.save_settings);
         me.game.add(this.buttons.save, game.LAYERS.TOP + 1);
+
+
         me.game.sort();
     },
     onDestroyEvent: function() {
@@ -1865,6 +1882,11 @@ game.gui.Options = game.gui.Window.extend({
         me.game.remove(this.buttons.save);
         this.buttons.save = null;
         this.buttons = null;
+        me.game.remove(this.sliders.ambient);
+        this.sliders.ambient = null;
+        me.game.remove(this.sliders.effects);
+        this.sliders.effects = null;
+        this.sliders = null;
     }
 });
 
@@ -1968,5 +1990,95 @@ game.gui.AttributeText = game.SmallText.extend({
             me.game.remove(this.tooltip);
             this.tooltip = null;
         }
+    }
+});
+
+game.gui.SliderContainer = me.ObjectEntity.extend({
+    slider: null,
+    func: null,
+    mouse_rect: null,
+    activated: null,
+    init: function(x, y, init_v, func) {
+        this.func = func;
+        this.activated = false;
+        settings = {};
+        settings.spritewidth = 100;
+        settings.spriteheight = 10;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+
+        var context = settings.image.getContext("2d");
+        context.strokeStyle = "black";
+        context.fillStyle = "red";
+        context.lineWidth = 2;
+        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
+        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+
+        this.parent(x, y, settings);
+        this.floating = true;
+
+        this.slider = new game.gui.Slider(this.pos.x + init_v, this.pos.y - 2, this);
+        me.game.add(this.slider, game.LAYERS.TOP + 4);
+        me.game.sort();
+
+        me.input.registerPointerEvent("mouseup", me.game.viewport, this.mouseUp.bind(this));
+    },
+    onDestroyEvent: function() {
+        me.game.remove(this.slider);
+        this.slider = null;
+        me.input.releasePointerEvent("mouseup", me.game.viewport);
+    },
+    mouseUp: function() {
+        if (this.activated) {
+            this.slider.mouseUp();
+        }
+    }
+});
+
+game.gui.Slider = me.GUI_Object.extend({
+    parent_container: null,
+    moving: null,
+    init: function(x, y, parent_c) {
+        this.parent_container = parent_c;
+        settings = {};
+        settings.spritewidth = 5;
+        settings.spriteheight = 14;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+
+        var context = settings.image.getContext("2d");
+        context.strokeStyle = "black";
+        context.fillStyle = "#958686";
+        context.lineWidth = 2;
+        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
+        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+
+        this.parent(x, y, settings);
+        this.floating = true;
+        this.moving = false;
+    },
+    update: function() {
+        if (this.parent_container.activated) {
+            if (me.input.mouse.pos.x < this.parent_container.pos.x) {
+                this.pos.x = this.parent_container.pos.x;
+            } else if (me.input.mouse.pos.x > (this.parent_container.pos.x + 100)) {
+                this.pos.s = this.parent_container.pos.x + 100;
+            } else {
+                this.pos.x = me.input.mouse.pos.x;
+            }
+            var value = this.pos.x - this.parent_container.pos.x;
+            this.parent_container.func.volume = value / 100;
+            return true;
+        }
+
+        this.parent();
+        return false;
+    },
+    onClick: function() {
+        this.parent_container.activated = true;
+    },
+    mouseUp: function() {
+        this.moving = false;
+        this.parent_container.activated = false;
     }
 });
