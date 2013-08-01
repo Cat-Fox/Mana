@@ -7,8 +7,8 @@ game.audio.Main = Object.extend({
         this.channels.effects = new game.audio.Channel();
         this.enable = true;
     },
-    switchEnable: function(value){
-        if(value){
+    switchEnable: function(value) {
+        if (value) {
             me.audio.enable();
             this.enable = true;
         } else {
@@ -26,9 +26,11 @@ game.audio.Channel = Object.extend({
         this.tracks = [];
         this.volume = 1;
         this.ambient = null;
+        console.log("init");
     },
-    setVolume: function(volume) {
-        this.volume = volume;
+    setVolume: function(volume_v) {
+        this.volume = volume_v / 100;
+        console.log(this.volume + " " + volume_v);
     },
     stopAll: function() {
         for (var i = 0; i < this.tracks.length; i++) {
@@ -44,16 +46,21 @@ game.audio.Channel = Object.extend({
         me.audio.play(name, false, this.remove(guid), this.volume);
     },
     changeAmbient: function(name) {
-        if (this.ambient !== null) {
-            this.stopAmbient();
+        if (this.ambient === null) {
+            this.ambient = name;
+            me.audio.playTrack(name, this.volume);
         }
-        this.ambient = name;
-        me.audio.playTrack(name, this.volume);
+        else if (this.ambient !== null && this.ambient !== name) {
+            this.stopAmbient();
+            this.ambient = name;
+            me.audio.playTrack(name, this.volume);
+        }
+
     },
     stopAmbient: function() {
         if (this.ambient !== null) {
             me.audio.stopTrack(this.ambient);
-            me.audio.unload(this.ambient);
+            //me.audio.unload(this.ambient);
             this.ambient = null;
         }
     },

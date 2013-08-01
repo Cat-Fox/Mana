@@ -136,6 +136,7 @@ var game =
                     belt[i] = null;
                 }
                 me.gamestat.add("belt", belt);
+                console.log(me.gamestat.getItemValue("belt"));
                 var history = new game.mechanic.History();
                 me.gamestat.add("history", history);
                 
@@ -300,6 +301,10 @@ game.MenuScreen = game.AnimatedScreen.extend({
                 case 2 :
                     delete localStorage.save;
                     game.instances.console.post("save deleted");
+                    localStorage.options = false;
+                    localStorage.ambient_volume = 0.8;
+                    localStorage.effects_volume = 0.8;
+                    localStorage.audio_enabled = true;
                     break;
                 case 3 :
                     game.mechanic.trigger_options();
@@ -507,6 +512,3 @@ window.onReady(function()
 {
     game.onload();
 });
-
-
-game.instances.rain = null;
