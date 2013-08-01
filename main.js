@@ -136,6 +136,7 @@ var game =
                     belt[i] = null;
                 }
                 me.gamestat.add("belt", belt);
+                console.log(me.gamestat.getItemValue("belt"));
                 var history = new game.mechanic.History();
                 me.gamestat.add("history", history);
                 

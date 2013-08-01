@@ -399,7 +399,6 @@ game.CharacterTile = me.GUI_Object.extend({
             }
             game.instances.backpack.updateEquip();
         } else {
-            console.log("belt " + guid);
             if (game.instances.belt.tiles[this.id].icon !== null) {
                 me.game.remove(game.instances.belt.tiles[this.id].icon);
                 game.instances.belt.tiles[this.id].icon = null;
