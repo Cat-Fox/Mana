@@ -35,12 +35,13 @@ game.ShadowObject = me.ObjectEntity.extend({
     shadow: null,
     init: function(x, y, settings) {
         this.parent(x, y, settings);
-        this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x, this.pos.y + 5);
+        this.shadow = new game.Shadow(this.pos.x, this.pos.y + 5);
         me.game.add(this.shadow, 4);
         me.game.sort();
     },
     onDestroyEvent: function() {
         me.game.remove(this.shadow);
+        this.shadow = null;
     }
 });
 
@@ -117,9 +118,9 @@ game.Fire = me.ObjectEntity.extend({
             var res = me.game.collide(this);
             if (res) {
                 if (res.obj.type === "player") {
-                    me.audio.play("fire");
+                    game.instances.audio.channels.effects.addEffect("fire");
                     var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
-                    player.hurt(10);
+                    player.hurt(9, 15, "normal");
                     this.attack_timer = me.timer.getTime();
                     this.attacking = true;
                 }
@@ -140,38 +141,6 @@ game.CollisionBox = me.ObjectEntity.extend({
         this.type = type;
     }, onDestroyEvent: function() {
         this.collidable = false;
-    }
-});
-
-
-
-game.Message = me.ObjectEntity.extend({
-    timer: me.timer.getTime(),
-    font: null,
-    text: "",
-    init: function(x, y, text) {
-        settings = {};
-        settings.spritewidth = 160;
-        settings.spriteheight = 32;
-        settings.image = "message";
-        //now draw box for text!
-//        settings.image = document.createElement("canvas");
-//        settings.image.width = 150;
-//        settings.image.height = 50;
-//        var ctx = settings.image.getContext("2d");
-//        ctx.fillStyle = "rgb(200,200,200)";
-//        ctx.fillRect(0, 0, settings.image.width, settings.image.height);
-        this.parent(x, y, settings);
-        this.text = text;
-        this.font = new me.Font("Arial", 10, "white");
-
-    }, draw: function(context) {
-        this.parent(context);
-        var lines = this.text.split('\n');
-        for (var i = 0; i < lines.length; i++) {
-            this.font.draw(context, lines[i], this.pos.x + 6, this.pos.y + 10 + (10 * i));
-        }
-
     }
 });
 
@@ -275,5 +244,36 @@ game.Exit = me.ObjectEntity.extend({
         settings.spritewidth;
         this.parent(x, y, settings);
         this.from = settings.from;
+        this.name = "exit";
+        console.log(this);
+    }
+});
+
+game.ChangeLevel = me.LevelEntity.extend({
+    init: function(x, y, settings){
+        settings.duration = 250;
+        settings.fade = "#000000";
+        this.parent(x, y, settings);
+    },
+    onCollision: function(){
+        me.gamestat.getItemValue("history").previous_level = me.game.currentLevel.name; 
+        this.parent();
+    },
+    onFadeComplete: function(){
+        this.parent();
+        
+        var player = game.instances.player;
+        if(me.gamestat.getItemValue("history").previous_level !== null){
+            var exits = me.game.getEntityByProp("name","exit");
+            for(var i = 0; i < exits.length; i++){
+                if(me.gamestat.getItemValue("history").previous_level === exits[i].from){
+                    player.pos.x = exits[i].pos.x;
+                    player.pos.y = exits[i].pos.y;
+                    break;
+                }
+            }
+        }
+        
+        game.mechanic.initialize_level();
     }
 });

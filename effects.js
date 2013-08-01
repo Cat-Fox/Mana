@@ -1,3 +1,13 @@
+/**
+ * @name SmallText
+ * @memberOf game
+ * @function
+ * @param {Number} x xpos
+ * @param {Number} y ypos
+ * @param {String} text
+ * @param {Font} font
+ * @return {undefined} 
+ */
 game.SmallText = me.ObjectEntity.extend({
     font: null,
     text: null,
@@ -9,7 +19,7 @@ game.SmallText = me.ObjectEntity.extend({
         settings.spriteheight = 0;
         this.parent(x, y, settings);
         //console.log("creating SmallText " + this.pos.x + " " + this.pos.y);
-    }, draw: function(context){
+    }, draw: function(context) {
         this.font.draw(context, this.text, this.pos.x, this.pos.y);
     }
 });
@@ -24,7 +34,7 @@ game.BigText = me.ObjectEntity.extend({
         settings.spritewidth = 0;
         settings.spriteheight = 0;
         var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
-        this.parent(0,0, settings);
+        this.parent(0, 0, settings);
         this.text = text;
         this.timer_run = me.timer.getTime();
         this.font = new me.BitmapFont("geebeeyay-8x8", 8, 1.0);
@@ -33,13 +43,13 @@ game.BigText = me.ObjectEntity.extend({
         this.parent(context);
         var size = this.font.measureText(context, this.text);
         var x = (game.screenWidth / 2) - (size.width / 2);
-        var y = (game.screenHeight / 2)  - (size.height / 2);
+        var y = (game.screenHeight / 2) - (size.height / 2);
         this.font.draw(context, this.text, x, y);
     }, update: function() {
         if (me.timer.getTime() > (this.timer_run + this.timer)) {
             me.game.remove(this);
         }
-        
+
         this.parent();
         return true;
     }, onDestroyEvent: function() {
@@ -48,16 +58,16 @@ game.BigText = me.ObjectEntity.extend({
 });
 
 game.BigStaticText = me.ObjectEntity.extend({
-    init: function(x, y,text, font) {
+    init: function(x, y, text, font) {
         settings = {};
         var size = font.measureText(me.video.getScreenContext(), text);
         settings.spritewidth = size.width;
         settings.spriteheight = size.height;
         settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
-        
+
         var context = settings.image.getContext("2d");
         font.draw(context, text, 0, 0);
-        this.parent(x,y, settings);
+        this.parent(x, y, settings);
         this.floating = true;
     }
 });
@@ -114,7 +124,7 @@ game.effects.SpeakText = game.SmallText.extend({
         }
         this.parent();
         return true;
-    }    
+    }
 });
 
 game.effects.ExpText = game.SmallText.extend({
@@ -130,7 +140,28 @@ game.effects.ExpText = game.SmallText.extend({
         if (me.timer.getTime() > (this.timer + this.timer_run)) {
             me.game.remove(this);
         }
-        
+
+        this.vel.y -= this.accel.y * me.timer.tick;
+        this.updateMovement();
+        this.parent();
+        return true;
+    }
+});
+
+game.effects.HealText = game.SmallText.extend({
+    timer: 700,
+    timer_run: null,
+    init: function(x, y, text) {
+        var font = game.fonts.good_green;
+        this.parent(x, y, text, font);
+        this.setVelocity(0.45, 0.45);
+        this.timer_run = me.timer.getTime();
+    },
+    update: function() {
+        if (me.timer.getTime() > (this.timer + this.timer_run)) {
+            me.game.remove(this);
+        }
+
         this.vel.y -= this.accel.y * me.timer.tick;
         this.updateMovement();
         this.parent();
@@ -141,24 +172,24 @@ game.effects.ExpText = game.SmallText.extend({
 game.DropTooltip = me.ObjectEntity.extend({
     text: null,
     type: null,
-    init: function(x, y, text, type){
+    init: function(x, y, text, type) {
         this.text = text;
         this.type = type;
         settings = {};
         settings.spritewidth = game.fonts.white.measureText(me.video.getScreenContext(), this.text).width + 3;
         settings.spriteheight = 13;
         settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
-        
+
         var context = settings.image.getContext("2d");
         context.fillStyle = "#404040";
-        context.fillRect(0,0,settings.spritewidth, settings.spriteheight);
+        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
         this.drawText(context, settings.spritewidth);
-        
+
         this.parent(x, y, settings);
         this.renderable.setOpacity(0.85);
     },
-    drawText: function(context, width){
-        switch(this.type){
+    drawText: function(context, width) {
+        switch (this.type) {
             case "normal":
                 game.fonts.white.draw(context, this.text, (width / 2) - (game.fonts.white.measureText(context, this.text).width / 2), 2);
                 break;
@@ -178,24 +209,91 @@ game.DropTooltip = me.ObjectEntity.extend({
                 console.log("Error choosing rarity tooltip");
         }
     },
-    update: function(){
+    update: function() {
         this.parent();
         return true;
     }
 });
 
 game.effects.RedScreen = me.ObjectEntity.extend({
-    init: function(){
+    init: function() {
+        settings = {};
         settings.spritewidth = game.screenWidth;
         settings.spriteheight = game.screenHeight;
         settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
-        
+
         var context = settings.image.getContext("2d");
         context.fillStyle = "red";
-        context.fillRect(0,0, settings.spritewidth, settings.spriteheight);
-       
+        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
+
         this.parent(0, 0, settings);
         this.floating = true;
         this.renderable.setOpacity(0.45);
+    }
+});
+
+game.effects.Rain = me.ObjectEntity.extend({
+    drops: null,
+    drops_max: 40,
+    init: function() {
+        settings = {};
+        settings.spritewidth = game.screenWidth;
+        settings.spriteheight = game.screenHeight;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+
+        var context = settings.image.getContext("2d");
+        context.fillStyle = "black";
+        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
+
+        this.parent(0, 0, settings);
+        this.floating = true;
+        this.renderable.setOpacity(0.25);
+        
+        game.instances.audio.channels.ambient.changeAmbient("rain");
+        this.drops = 0;
+    }, update: function() {
+        if (this.drops < this.drops_max) {
+            var x = Number.prototype.random(0, game.screenWidth);
+            var drop = me.entityPool.newInstanceOf("RainDrop", x, 10);
+            me.game.add(drop, game.guiLayer - 1);
+            me.game.sort();
+            this.drops++;
+            //console.log("creating drop " + this.drops);
+        }
+    },
+    onDestroyEvent: function(){
+        game.instances.audio.channels.ambient.stopAmbient();
+    }
+});
+
+game.effects.RainDrop = me.ObjectEntity.extend({
+    timer: 4000,
+    timer_run: null,
+    init: function(x, y) {
+        settings = {};
+        settings.spritewidth = 1;
+        settings.spriteheight = 10;
+        settings.image = "rain";
+
+        this.parent(x, y, settings);
+        this.floating = true;
+        this.setVelocity(4.0, 4.0);
+        this.timer_run = me.timer.getTime();
+        this.gravity = 0;
+    },
+    update: function() {
+        if (me.timer.getTime() > (this.timer + this.timer_run)) {
+            game.instances.rain.drops--;
+            me.game.remove(this);
+        }
+        if(this.pos.y >= game.screenHeight){
+            game.instances.rain.drops--;
+            me.game.remove(this);
+        }
+        this.vel.y += this.accel.y * me.timer.tick;
+        this.updateMovement();
+        this.parent();
+        //console.log(this.pos.y +" v" + this.vel.y + " a" + this.accel.y);
+        return true;
     }
 });

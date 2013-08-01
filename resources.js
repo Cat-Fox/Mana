@@ -164,6 +164,10 @@
     type: "image",
     src: "data/npc_villager.png"
 }, {
+    name: "npc_blacksmith",
+    type: "image",
+    src: "data/npc_blacksmith.png"
+}, {
     name: "npc_octocat",
     type: "image",
     src: "data/npc_octocat.png"
@@ -176,6 +180,20 @@
     type: "image",
     src: "data/npc_rat.png"
 }, {
+    name: "npc_sorcerer",
+    type: "image",
+    src: "data/npc_sorcerer.png"
+}, 
+/***************ENEMIES****************/
+    {
+    name: "npc_goblin",
+    type: "image",
+    src: "data/npc_goblin.png"
+}, {
+    name: "npc_crab",
+    type: "image",
+    src: "data/npc_crab.png"
+},{
     name: "chest_dungeon",
     type: "image",
     src: "data/chest_dungeon.png"
@@ -196,6 +214,10 @@
     type: "image",
     src: "data/sparks.png"
 },{
+    name: "rain",
+    type: "image",
+    src: "data/rain.png"
+},{
     name: "barrel",
     type: "image",
     src: "data/barrel.png"
@@ -207,6 +229,18 @@
     name: "inventory_tile",
     type: "image",
     src: "data/inventory_tile.png"
+},{
+    name: "checkbox_unchecked",
+    type: "image",
+    src: "data/checkbox_unchecked.png"
+},{
+    name: "checkbox_checked",
+    type: "image",
+    src: "data/checkbox_checked.png"
+},{
+    name: "undefined",
+    type: "image",
+    src: "data/undefined.png"
 },{
     name: "backpack",
     type: "image",
@@ -281,6 +315,14 @@
     name: "coins",
     type: "audio",
     src: "data/sounds/"
+}, {
+    name: "rain",
+    type: "audio",
+    src: "data/sounds/"
+}, {
+    name: "forest",
+    type: "audio",
+    src: "data/sounds/"
 },
 //----------------------DIALOGS--------------------------
 {
@@ -307,4 +349,16 @@
     name: "dialog_zaraka",
     type: "json",
     src: "data/dialogs/zaraka.json"
+},{
+    name: "dialog_villager",
+    type: "json",
+    src: "data/dialogs/villager.json"
+},{
+    name: "dialog_blacksmith",
+    type: "json",
+    src: "data/dialogs/blacksmith.json"
+},{
+    name: "dialog_wizard",
+    type: "json",
+    src: "data/dialogs/wizard.json"
 }];

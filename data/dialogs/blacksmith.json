@@ -1,0 +1,43 @@
+{
+    "npc_name": "Blacksmith",
+    "npc_image": "npc_blacksmith",
+    "image_size": 24,
+    "anim_length": 2,
+    "branches": [
+        {
+            "messages": [
+                {"type": "NPC", "message": "Hey you! I'm town Blacksmith, I do weapons."},
+                {"type": "NPC", "message": "Just find me, if you willing to change gear."},
+                {"type": "PLAYER", "message": "OKAY!"},
+                {"type": "SET_HISTORY", "variable": "blacksmith", "value": true},
+                {"type": "QUIT"}
+            ]
+        }, {
+            "messages": [
+                {"type": "QUESTION", "message": "What do you want?", 
+                    "answers": [
+                        {"message": "Introduction", "branch": 0},
+                        {"message": "Shopping", "branch": 3},
+                        {"message": "Goodbye", "branch": 2}
+                    ]
+                }
+            ]
+        }, {
+            "messages": [
+                {"type": "QUIT"}
+            ]
+        }, {
+            "messages": [
+                {"type": "SHOP"}
+            ]
+        }
+    ],
+    "hit_texts": [
+        "Goddamit kid...",
+        "I used to be idiot like you, then I get inteligence into brain"
+    ],
+    "shop" : 
+    {
+        "type" : "weapons"
+    }
+}

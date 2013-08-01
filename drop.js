@@ -1,57 +1,57 @@
 game.mechanic.magic_effects = [
     {
         name: "Flames",
-        textline: [new game.gui.TextLine("Fire Damage: <value>", game.fonts.bad_red)],
+        textline: [new game.gui.TextLine("Fire Damage: $value$", game.fonts.bad_red)],
         class: "weapon",
         type: "fire_dmg",
         element: "fire",
-        divider: 3
+        divider: 20
     },
     {
         name: "Cold",
-        textline: [new game.gui.TextLine("Ice Damage: <value>", game.fonts.magic_blue)],
+        textline: [new game.gui.TextLine("Ice Damage: $value$", game.fonts.magic_blue)],
         class: "weapon",
         type: "ice_dmg",
-        divider: 4
+        divider: 25
     },
     {
         name: "Luck",
-        textline: [new game.gui.TextLine("Magic find + <value>", game.fonts.good_green)],
+        textline: [new game.gui.TextLine("Magic find + $value$", game.fonts.good_green)],
         class: "all",
         type: "magic_find",
         divider: 20
     },
     {
         name: "Vitality",
-        textline: [new game.gui.TextLine("Hit Points + <value>", game.fonts.bad_red)],
+        textline: [new game.gui.TextLine("Hit Points + $value$", game.fonts.bad_red)],
         class: "armor",
-        type: "vit",
+        type: "hp",
         divider: 30
     },
     {
         name: "Strength",
-        textline: [new game.gui.TextLine("Strength + <value>", game.fonts.bad_red)],
+        textline: [new game.gui.TextLine("Strength + $value$", game.fonts.bad_red)],
         class: "weapon",
         type: "str",
         divider: 100
     },
     {
         name: "Agility",
-        textline: [new game.gui.TextLine("Agility + <value>", game.fonts.bad_red)],
+        textline: [new game.gui.TextLine("Agility + $value$", game.fonts.bad_red)],
         class: "artefact",
         type: "agi",
         divider: 100
     },
     {
         name: "Endurance",
-        textline: [new game.gui.TextLine("Endurance + <value>", game.fonts.bad_red)],
+        textline: [new game.gui.TextLine("Endurance + $value$", game.fonts.bad_red)],
         class: "armor",
         type: "end",
         divider: 100
     },
     {
         name: "Inteligence",
-        textline: [new game.gui.TextLine("Inteligence + <value>", game.fonts.bad_red)],
+        textline: [new game.gui.TextLine("Inteligence + $value$", game.fonts.bad_red)],
         class: "artefact",
         type: "int",
         divider: 100
@@ -72,25 +72,22 @@ game.mechanic.DropTable = Object.extend({
 });
 
 game.mechanic.drop = function(x, y, container_value, drop_table) {
-
-    var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
-
-    var max_object_value = Math.floor(container_value + (container_value * (player.magic_find / 100)));
+    var max_object_value = Math.floor(container_value + (me.gamestat.getItemValue("stats").getMagicFind() * (container_value / 100)));
     var drop = false;
-    console.log("drop max value " + max_object_value);
+    console.log("container value " + container_value + " max value " + max_object_value);
     //Drop Gold
     var chance_gold = Number.prototype.random(0, 1000);
     if (chance_gold <= drop_table.gold) {
-        var gold_amount = Number.prototype.random(1, max_object_value);
+        var gold_amount = Number.prototype.random(2, max_object_value);
+        gold_amount = Math.floor(gold_amount / 2);
         var gold = me.entityPool.newInstanceOf("Gold", x, y, gold_amount);
-        me.game.add(gold, game.object_layer);
+        me.game.add(gold, game.LAYERS.ITEMS);
         drop = true;
     }
     //Drop Equip
     var chance_equip = Number.prototype.random(0, 1000);
     if (chance_equip <= drop_table.equip) {
         var equip_value = Number.prototype.random(1, max_object_value);
-        console.log("generated equip value " + equip_value);
         var equip_type = Number.prototype.random(0, 100);
         var icon_image = null;
         var equip_image = null;
@@ -182,7 +179,6 @@ game.mechanic.drop = function(x, y, container_value, drop_table) {
                 //generate attributes
                 switch (equip_type) {
                     case "weapon":
-                        var standart_name;
                         var dmg_min;
                         var dmg_max;
                         var normal_dmg = equip_value * 0.15;
@@ -212,18 +208,20 @@ game.mechanic.drop = function(x, y, container_value, drop_table) {
                         attributes.max_dmg = dmg_max;
                         tooltip.push(new game.gui.TextLine("Weapon type: " + weapon_type, game.fonts.white));
                         tooltip.push(new game.gui.TextLine("Damage: " + dmg_min + "-" + dmg_max, game.fonts.white));
+                        attributes.str_req = Math.floor(normal_dmg / 2);
+                        tooltip.push(new game.gui.TextLine("STR req. " + attributes.str_req, game.fonts.bad_red));
                         break;
                     case "armor":
-                        var armor = equip_value * 0.075;
+                        var armor = equip_value * 0.070;
                         var normal_armor, magic_armor;
                         switch (armor_type) {
                             case "light":
-                                normal_armor = armor * 0.75;
-                                magic_armor = armor * 1.5;
+                                normal_armor = armor * 0.5;
+                                magic_armor = armor * 1.0;
                                 break;
                             case "heavy":
-                                normal_armor = armor * 2;
-                                magic_armor = armor * 0.5;
+                                normal_armor = armor * 1.2;
+                                magic_armor = armor * 0.4;
                                 break;
                         }
                         normal_armor = Math.floor(normal_armor);
@@ -233,34 +231,38 @@ game.mechanic.drop = function(x, y, container_value, drop_table) {
                         attributes.armor_type = armor_type;
                         tooltip.push(new game.gui.TextLine("Armor type: " + armor_type, game.fonts.white));
                         tooltip.push(new game.gui.TextLine("Armor: " + normal_armor, game.fonts.white));
+                        tooltip.push(new game.gui.TextLine("Magic Armor: " + magic_armor, game.fonts.white));
                         break;
                 }
                 if (stats_type === "magic") {
                     var effect = Number.prototype.random(0, game.mechanic.magic_effects.length - 1);
                     var picked_up = game.mechanic.magic_effects[effect];
                     while (picked_up.class !== equip_type && picked_up.class !== "all") {
-                        console.log(equip_type + " " + picked_up.class);
                         effect = Number.prototype.random(0, game.mechanic.magic_effects.length - 1);
                         picked_up = game.mechanic.magic_effects[effect];
                     }
                     var effect_value = Math.floor(equip_value / picked_up.divider);
-                    attributes[effect.type] = effect_value;
+                    attributes[picked_up.type] = effect_value;
                     name = name + " of " + picked_up.name;
                     font = game.fonts.magic_blue;
                     rarity = "magic";
                     tooltip.push(picked_up.textline[0]);
                     tooltip[tooltip.length - 1].setValue(effect_value);
-                    
+
                 } else {
                     font = game.fonts.white;
                     rarity = "normal";
                 }
                 tooltip.splice(0, 0, new game.gui.TextLine(name, font));
+                var price = equip_value;
+                if(stats_type !== "magic"){
+                    price = Math.floor(price / 2);
+                }
+                attributes.price = price;
+                tooltip.push(new game.gui.TextLine("Price: " + price, game.fonts.gold));
                 var item = new game.ItemObject(name, icon_image, equip_type, rarity, attributes, tooltip);
-                console.log(item);
-                var equip = new game.items.Equip(x + 16, y ,item);
-                console.log(equip);
-                me.game.add(equip, game.object_layer);
+                var equip = new game.items.Equip(x + 16, y, item);
+                me.game.add(equip, game.LAYERS.ITEMS);
             }
         } else {
             console.log("value too small");
@@ -269,10 +271,16 @@ game.mechanic.drop = function(x, y, container_value, drop_table) {
 
     //Drop Consumable
     var chance_consumable = Number.prototype.random(0, 1000);
-    console.log("Generated consumable - "+ chance_consumable + " Drop table - "+ drop_table.consumable);
+    console.log("Generated consumable - " + chance_consumable + " Drop table - " + drop_table.consumable);
     if (chance_consumable <= drop_table.consumable) {
-        var consumable = me.entityPool.newInstanceOf("HealthPotion", x, y + 16);
-        me.game.add(consumable, game.object_layer);
+        var consumable_type = Number.prototype.random(0, 100);
+        var consumable;
+        if (consumable_type < 70) {
+            consumable = me.entityPool.newInstanceOf("HealthPotion", x, y + 16);
+        } else {
+            consumable = me.entityPool.newInstanceOf("Burger", x, y + 16);
+        }
+        me.game.add(consumable, game.LAYERS.ITEMS);
         drop = true;
     }
 

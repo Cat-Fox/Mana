@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" orientation="orthogonal" width="10" height="15" tilewidth="16" tileheight="16" backgroundcolor="#000000">
+ <properties>
+  <property name="level_name" value="KINGS HOUSE"/>
+  <property name="level_type" value="safe"/>
+ </properties>
  <tileset firstgid="1" name="tilesheet" tilewidth="16" tileheight="16">
   <image source="tilesheet.png" width="320" height="1568"/>
   <tile id="3">
@@ -19,22 +23,19 @@
   </data>
  </layer>
  <objectgroup name="entities" width="10" height="15">
-  <object name="me.LevelEntity" type="me.LevelEntity" x="48" y="208" width="48" height="32">
+  <object name="Player" type="Player" x="32" y="160" width="16" height="16"/>
+  <object name="Guard" type="NPC_ALLY" x="32" y="32" width="16" height="16"/>
+  <object name="King" type="NPC_ALLY" x="80" y="48" width="16" height="16"/>
+  <object name="Exit" type="EXIT" x="64" y="176" width="16" height="16">
    <properties>
-    <property name="duration" value="250"/>
-    <property name="fade" value="#000000"/>
+    <property name="from" value="test_map"/>
+   </properties>
+  </object>
+  <object name="ChangeLevel" type="me.LevelEntity" x="48" y="208" width="48" height="32">
+   <properties>
     <property name="to" value="test_map"/>
    </properties>
   </object>
-  <object name="Player" type="Player" x="64" y="176" width="16" height="16">
-   <properties>
-    <property name="image" value="human"/>
-    <property name="spriteheight" value="32"/>
-    <property name="spritewidth" value="32"/>
-   </properties>
-  </object>
-  <object name="Guard" type="NPC_ALLY" x="32" y="32" width="16" height="16"/>
-  <object name="King" type="NPC_ALLY" x="80" y="48" width="16" height="16"/>
  </objectgroup>
  <objectgroup name="entities-effects" width="10" height="15">
   <object name="ParticleGenerator" type="Particles" x="64" y="208" width="16" height="16">
@@ -50,7 +51,7 @@
    AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
   </data>
  </layer>
- <layer name="collision" width="10" height="15">
+ <layer name="collision" width="10" height="15" visible="0">
   <data encoding="base64">
    AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
   </data>

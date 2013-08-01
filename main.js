@@ -15,7 +15,9 @@ var game =
             object_layer: 4,
             effects: {},
             npcs: {},
-            version: "0.0.1",
+            audio: {},
+            LAYERS: {GUI: 15, NPC: 4, ITEMS: 8, TOP: 20},
+            version: "0.0.2",
             onload: function()
             {
                 if (!me.video.init('screen', this.screenWidth, this.screenHeight, true, 2.0, true)) {
@@ -35,15 +37,10 @@ var game =
                     });
                 }
 
-                //set loading screen
                 me.state.set(me.state.LOADING, new game.LoadingScreen());
-                // initialize the "audio"
                 me.audio.init("mp3,ogg");
-                // set all resources to be loaded
                 me.loader.onload = this.loaded.bind(this);
-                // set all resources to be loaded
                 me.loader.preload(game.resources);
-                // load everything & display a loading screen
                 me.state.change(me.state.LOADING);
             },
             /* ---callback when everything is loaded---*/
@@ -57,7 +54,7 @@ var game =
                 me.entityPool.add("Player", game.Player);
                 //------------------ITEMS------------------------
                 me.entityPool.add("Burger", game.consumables.Burger, true);
-                me.entityPool.add("Equip", game.items.Equip. true);
+                me.entityPool.add("Equip", game.items.Equip.true);
                 me.entityPool.add("HealthPotion", game.consumables.HealthPotion, true);
                 me.entityPool.add("Gold", game.consumables.Money, true);
                 //------------------Entities---------------------------
@@ -69,14 +66,17 @@ var game =
                 me.entityPool.add("CollisionBox", game.CollisionBox, true);
                 me.entityPool.add("Message", game.Message);
                 me.entityPool.add("Exit", game.Exit);
+                me.entityPool.add("ChangeLevel", game.ChangeLevel);
                 //Particles
                 me.entityPool.add("ParticleGenerator", game.ParticleGenerator);
                 me.entityPool.add("Particle", game.Particle, true);
+                me.entityPool.add("RainDrop", game.effects.RainDrop, true);
                 //----------------------NPCS--------------------------
                 //ENEMY
                 me.entityPool.add("MimicWeapon", game.npcs.MimicWeapon, true);
                 me.entityPool.add("WalkerNPC", game.WalkerNPC, true);
                 me.entityPool.add("WalkerRat", game.WalkerRat, true);
+                me.entityPool.add("Goblin", game.npcs.Goblin, true);
                 //ALLY
                 me.entityPool.add("Guard", game.npcs.Guard);
                 me.entityPool.add("TalkyGuard", game.npcs.TalkyGuard);
@@ -85,6 +85,9 @@ var game =
                 me.entityPool.add("Octocat", game.npcs.Octocat);
                 me.entityPool.add("ManaChest", game.npcs.ManaChest);
                 me.entityPool.add("Zaraka", game.npcs.Zaraka);
+                me.entityPool.add("Villager", game.npcs.Villager);
+                me.entityPool.add("Blacksmith", game.npcs.Blacksmith);
+                me.entityPool.add("Wizard", game.npcs.Wizard);
                 me.entityPool.add("Spawn", game.Spawn);
                 me.entityPool.add("DungeonSpawn", game.DungeonSpawn);
                 //Destroyable
@@ -111,19 +114,17 @@ var game =
                 me.gamestat.add("exp", 0);
                 me.gamestat.add("level", 1);
                 me.gamestat.add("next_level", 100);
-                var stats = new game.mechanic.Stats(1, 1, 1, 1);
+                var stats = new game.mechanic.Stats(1, 1, 1, 1, true);
                 me.gamestat.add("stats", stats);
                 me.gamestat.add("skill", 0);
                 me.gamestat.add("money", 0);
-                var previous_level = {name: null};
-                me.gamestat.add("previous_level", previous_level)
                 var inventory = new Array(30);
-                for(var i = 0; i < inventory.length; i++){
+                for (var i = 0; i < inventory.length; i++) {
                     inventory[i] = null;
                 }
                 me.gamestat.add("inventory", inventory);
                 var stash = new Array(40);
-                for(var i = 0; i < stash.length; i++){
+                for (var i = 0; i < stash.length; i++) {
                     stash[i] = null;
                 }
                 me.gamestat.add("stash", stash);
@@ -132,9 +133,12 @@ var game =
                 me.gamestat.add("equip", equip);
                 var belt = new Array(8);
                 me.gamestat.add("belt", belt);
-                var stats = new game.mechanic.Stats();
-                me.gamestat.add("statistic", stats);
-
+                var history = new game.mechanic.History();
+                me.gamestat.add("history", history);
+                
+                
+                //audio need to be global and set before menu
+                game.instances.audio = new game.audio.Main();
 
                 // start the game
                 me.state.change(me.state.MENU);
@@ -248,7 +252,9 @@ game.MenuScreen = game.AnimatedScreen.extend({
         me.game.add(this.buttons.load_game, 8);
         this.buttons.delete = new game.BigStaticText(game.screenWidth / 2, game.screenHeight / 2 + 20, "DELETE SAVE", this.bmf_gold);
         me.game.add(this.buttons.delete, 8);
-        this.buttons.credits = new game.BigStaticText(game.screenWidth / 2, game.screenHeight / 2 + 30, "CREDITS", this.bmf_gold);
+        this.buttons.options = new game.BigStaticText(game.screenWidth / 2, game.screenHeight / 2 + 30, "OPTIONS", this.bmf_gold);
+        me.game.add(this.buttons.options, 8);
+        this.buttons.credits = new game.BigStaticText(game.screenWidth / 2, game.screenHeight / 2 + 40, "CREDITS", this.bmf_gold);
         me.game.add(this.buttons.credits, 8);
         this.label = new game.BigStaticText(20, game.screenHeight - 10, "PRESS ENTER OR C TO SELECT", this.bmf_geebee);
         me.game.add(this.label, 8);
@@ -257,23 +263,21 @@ game.MenuScreen = game.AnimatedScreen.extend({
         me.game.add(this.logo, 8);
         this.small_logo = new game.SmallText((game.screenWidth - 80) / 2, (game.screenHeight - 30) / 2, "The Adventure full of Bugs", game.fonts.white);
         this.small_logo.floating = true;
-        this.version = new game.SmallText(10,10, game.version, game.fonts.white);
+        this.version = new game.SmallText(10, 10, game.version, game.fonts.white);
         this.version.floating = true;
         me.game.add(this.version, 8);
         me.game.add(this.small_logo, 8);
         me.game.sort();
 
         this.selection = 0;
-        this.selection_options = {
-            NEW: me.state.PLAY,
-            LOAD: me.state.PLAY,
-            CREDITS: me.state.CREDITS
-        };
 
         me.input.bindKey(me.input.KEY.ENTER, "enter", true);
         me.input.bindKey(me.input.KEY.C, "enter-alternative", true);
         me.input.bindKey(me.input.KEY.UP, "up", true);
         me.input.bindKey(me.input.KEY.DOWN, "down", true);
+        
+        game.mechanic.load_settings();
+        game.instances.options = null;
     },
     update: function() {
         this.parent();
@@ -283,11 +287,11 @@ game.MenuScreen = game.AnimatedScreen.extend({
                     me.state.change(me.state.PLAY);
                     break;
                 case 1 :
-                    if(typeof localStorage.save === "undefined"){
+                    if (typeof localStorage.save === "undefined") {
                         game.instances.console.post("No save found");
                     } else {
-                    game.mechanic.load_game();
-                    me.state.change(me.state.PLAY);
+                        game.mechanic.load_game();
+                        me.state.change(me.state.PLAY);
                     }
                     break
                 case 2 :
@@ -295,20 +299,25 @@ game.MenuScreen = game.AnimatedScreen.extend({
                     game.instances.console.post("save deleted");
                     break;
                 case 3 :
+                    game.mechanic.trigger_options();
+                    break;
+                case 4 :
                     me.state.change(me.state.CREDITS);
                     break;
             }
         }
         if (me.input.isKeyPressed('up')) {
+            game.instances.audio.channels.effects.addEffect("exp_click");
             if (this.selection > 0) {
                 this.selection--;
             } else {
-                this.selection = 3;
+                this.selection = 4;
             }
         }
 
         if (me.input.isKeyPressed('down')) {
-            if (this.selection < 3) {
+            game.instances.audio.channels.effects.addEffect("exp_click");
+            if (this.selection < 4) {
                 this.selection++;
             } else {
                 this.selection = 0;
@@ -345,7 +354,7 @@ game.CreditsScreen = me.ScreenObject.extend({
         console.log("loading credits");
         this.gold_font = new me.BitmapFont("geebeeyay-8x8", 8, 1.0);
         me.input.bindKey(me.input.KEY.ENTER, "enter", true);
-        this.credits = new game.gui.Credits(0,0);
+        this.credits = new game.gui.Credits(0, 0);
         me.game.add(this.credits, 8);
         me.game.sort();
     },
@@ -379,6 +388,9 @@ game.PlayScreen = game.AnimatedScreen.extend({
         me.input.bindKey(me.input.KEY.ALT, "alt");
         me.input.bindKey(me.input.KEY.ESC, "esc", true);
         me.input.bindKey(me.input.KEY.F, "debug", true);
+        me.input.bindKey(me.input.KEY.M, "mana", true);
+        me.input.bindKey(me.input.KEY.A, "option_up", true);
+        me.input.bindKey(me.input.KEY.S, "option_down", true);
 
         me.input.bindKey(me.input.KEY.NUM1, "1", true);
         me.input.bindKey(me.input.KEY.NUM2, "2", true);
@@ -388,12 +400,18 @@ game.PlayScreen = game.AnimatedScreen.extend({
         me.input.bindKey(me.input.KEY.NUM6, "6", true);
         me.input.bindKey(me.input.KEY.NUM7, "7", true);
         me.input.bindKey(me.input.KEY.NUM8, "8", true);
-        
+
         game.instances.backpack = null;
         game.instances.stash = null;
         game.instances.dialog = null;
+        game.instances.shop = null;
+        game.instances.options = null;
+        game.instances.rain = null;
 
         me.input.registerPointerEvent('mousemove', me.game.viewport, this.mouse);
+        
+        game.mechanic.initialize_level();
+        game.instances.console.clearAll();
 
     },
     /* ---action to perform when game is finished (state change)---*/
@@ -408,6 +426,10 @@ game.PlayScreen = game.AnimatedScreen.extend({
         me.input.unbindKey(me.input.KEY.C);
         me.input.unbindKey(me.input.KEY.ALT);
         me.input.unbindKey(me.input.KEY.ESC);
+        me.input.unbindKey(me.input.KEY.F);
+        me.input.unbindKey(me.input.KEY.M);
+        me.input.unbindKey(me.input.KEY.A);
+        me.input.unbindKey(me.input.KEY.S);
 
         me.input.unbindKey(me.input.KEY.NUM1);
         me.input.unbindKey(me.input.KEY.NUM2);
@@ -484,3 +506,4 @@ window.onReady(function()
 });
 
 
+game.instances.rain = null;

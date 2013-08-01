@@ -8,9 +8,15 @@
             "messages" : [
                 {"type": "NPC", "message" : "Hello! ^^"},
                 {"type": "NPC", "message" : "I'm your MANA CHEST!\nYou can store items in me!"},
-                {"type": "NPC", "message" : "..I will keep them save I promise!\nSometimes you can find me in dungeon too."},
+                {"type": "NPC", "message" : "..I will keep them safe, I promise!\nSometimes you can find me in dungeon too."},
                 {"type": "PLAYER", "message" : "OKAY!"},
+                {"type": "SET_HISTORY", "variable": "stash", "value": true},
                 {"type": "QUIT"}
+            ]
+        }, 
+        {
+            "messages" : [
+                {"type": "STASH"}
             ]
         }
     ]

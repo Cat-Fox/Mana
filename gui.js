@@ -51,6 +51,7 @@ game.Backpack = me.ObjectEntity.extend({
     money_icon: null,
     drop_tile: null,
     money_tab: null,
+    attributes: null,
     init: function() {
         settings = {};
         settings.spritewidth = 370;
@@ -76,9 +77,10 @@ game.Backpack = me.ObjectEntity.extend({
         this.font.draw(context, "Inventory", 15 + 135, 5 + 2);
         this.font.draw(context, "Belt", 15 + 135, 147);
 
-        var height = 95;
+        var height = 95, attr_height;
         this.bm_font.draw(context, "LEVEL", 15, height);
         height = height + 2 + this.bm_font.measureText(context, "HP").height;
+        attr_height = height;
         this.font.draw(context, "Experience", 15, height);
         height = height + this.font.measureText(context, "HP").height;
         this.font.draw(context, "HP", 15, height);
@@ -96,6 +98,35 @@ game.Backpack = me.ObjectEntity.extend({
         this.parent(15, 5, settings);
         game.instances.backpack = this;
         this.floating = true;
+
+        this.attributes = {};
+        this.labels = {};
+        height = attr_height;
+        height += 4;
+        this.labels.exp = new game.SmallText(105, height, me.gamestat.getItemValue("exp") + "/" + me.gamestat.getItemValue("next_level"), game.fonts.basic);
+        this.labels.exp.floating = true;
+        me.game.add(this.labels.exp, this.entity_layer);
+        height = height + this.font.measureText(context, "HP").height;
+        this.labels.hp = new game.SmallText(105, height, me.gamestat.getItemValue("hp") + "/" + me.gamestat.getItemValue("maxhp"), game.fonts.basic);
+        this.labels.hp.floating = true;
+        me.game.add(this.labels.hp, this.entity_layer);
+        height = height + this.font.measureText(context, "HP").height;
+        this.attributes.str = new game.gui.AttributeText(105, height, "str");
+        me.game.add(this.attributes.str, this.entity_layer);
+        console.log(this.attributes.str);
+        height = height + this.font.measureText(context, "HP").height;
+        this.attributes.agi = new game.gui.AttributeText(105, height, "agi");
+        me.game.add(this.attributes.agi, this.entity_layer);
+        height = height + this.font.measureText(context, "HP").height;
+        this.attributes.end = new game.gui.AttributeText(105, height, "end");
+        me.game.add(this.attributes.end, this.entity_layer);
+        height = height + this.font.measureText(context, "HP").height;
+        this.attributes.int = new game.gui.AttributeText(105, height, "int");
+        me.game.add(this.attributes.int, this.entity_layer);
+        height = height + this.font.measureText(context, "HP").height;
+        this.labels.skill = new game.SmallText(105, height, me.gamestat.getItemValue("skill"), game.fonts.basic);
+        this.labels.skill.floating = true;
+        me.game.add(this.labels.skill, this.entity_layer);
 
         var armor = "clotharmor";
         this.human_icon = new game.gui.HumanIcon(60, 23, armor);
@@ -125,13 +156,18 @@ game.Backpack = me.ObjectEntity.extend({
         if (me.gamestat.getItemValue("skill") > 0) {
             this.buttons_add = {};
             var x_pos = this.pos.x + 75;
-            this.buttons_add.str = me.entityPool.newInstanceOf("PlusSkillButton", x_pos, 10, "str");
+            var height = this.font.measureText(context, "HP").height;
+            var y_pos = 95 + 2 + 12 + (height * 2);
+            this.buttons_add.str = me.entityPool.newInstanceOf("PlusSkillButton", x_pos, y_pos, "str");
             me.game.add(this.buttons_add.str, this.entity_layer);
-            this.buttons_add.agi = me.entityPool.newInstanceOf("PlusSkillButton", x_pos, 10, "agi");
+            y_pos += height;
+            this.buttons_add.agi = me.entityPool.newInstanceOf("PlusSkillButton", x_pos, y_pos, "agi");
             me.game.add(this.buttons_add.agi, this.entity_layer);
-            this.buttons_add.end = me.entityPool.newInstanceOf("PlusSkillButton", x_pos, 10, "end");
+            y_pos += height;
+            this.buttons_add.end = me.entityPool.newInstanceOf("PlusSkillButton", x_pos, y_pos, "end");
             me.game.add(this.buttons_add.end, this.entity_layer);
-            this.buttons_add.int = me.entityPool.newInstanceOf("PlusSkillButton", x_pos, 10, "int");
+            y_pos += height;
+            this.buttons_add.int = me.entityPool.newInstanceOf("PlusSkillButton", x_pos, y_pos, "int");
             me.game.add(this.buttons_add.int, this.entity_layer);
         }
 
@@ -150,10 +186,19 @@ game.Backpack = me.ObjectEntity.extend({
     }, update: function() {
         if (me.gamestat.getItemValue("skill") === 0 && this.buttons_add !== null) {
             me.game.remove(this.buttons_add.str);
+            this.buttons_add.str = null;
             me.game.remove(this.buttons_add.agi);
+            this.buttons_add.agi = null;
             me.game.remove(this.buttons_add.end);
+            this.buttons_add.end = null;
             me.game.remove(this.buttons_add.int);
+            this.buttons_add.int = null;
+            this.buttons_add = null;
         }
+
+        this.labels.skill.text = me.gamestat.getItemValue("skill");
+        this.labels.exp.text = me.gamestat.getItemValue("exp") + "/" + me.gamestat.getItemValue("next_level");
+        this.labels.hp.text = me.gamestat.getItemValue("hp") + "/" + me.gamestat.getItemValue("maxhp");
 
         this.money_tab.onUpdate(me.gamestat.getItemValue("money"));
 
@@ -197,32 +242,6 @@ game.Backpack = me.ObjectEntity.extend({
         height = 100;
         var x_pos = this.pos.x + 90;
         this.bm_font.draw(context, me.gamestat.getItemValue("level"), x_pos, height);
-        height = height + 2 + this.bm_font.measureText(context, "HP").height;
-        this.font.draw(context, me.gamestat.getItemValue("exp") + "/" + me.gamestat.getItemValue("next_level"), x_pos, height);
-        height = height + this.font.measureText(context, "HP").height;
-        this.font.draw(context, me.gamestat.getItemValue("hp") + "/" + me.gamestat.getItemValue("maxhp"), x_pos, height);
-        height = height + this.font.measureText(context, "HP").height;
-        this.font.draw(context, me.gamestat.getItemValue("stats").str, x_pos, height);
-        if (this.buttons_add !== null) {
-            this.buttons_add.str.pos.y = height;
-        }
-        height = height + this.font.measureText(context, "HP").height;
-        this.font.draw(context, me.gamestat.getItemValue("stats").agi, x_pos, height);
-        if (this.buttons_add !== null) {
-            this.buttons_add.agi.pos.y = height;
-        }
-        height = height + this.font.measureText(context, "HP").height;
-        this.font.draw(context, me.gamestat.getItemValue("stats").end, x_pos, height);
-        if (this.buttons_add !== null) {
-            this.buttons_add.end.pos.y = height;
-        }
-        height = height + this.font.measureText(context, "HP").height;
-        this.font.draw(context, me.gamestat.getItemValue("stats").int, x_pos, height);
-        if (this.buttons_add !== null) {
-            this.buttons_add.int.pos.y = height;
-        }
-        height = height + this.font.measureText(context, "HP").height;
-        this.font.draw(context, me.gamestat.getItemValue("skill"), x_pos, height);
     },
     onDestroyEvent: function() {
         me.game.remove(this.human_icon);
@@ -258,6 +277,25 @@ game.Backpack = me.ObjectEntity.extend({
             this.buttons_add = null;
         }
 
+        me.game.remove(this.attributes.str);
+        this.attributes.str = null;
+        me.game.remove(this.attributes.agi);
+        this.attributes.agi = null;
+        me.game.remove(this.attributes.end);
+        this.attributes.end = null;
+        me.game.remove(this.attributes.int);
+        this.attributes.int = null;
+        this.attributes = null;
+
+        me.game.remove(this.labels.exp);
+        this.labels.exp = null;
+        me.game.remove(this.labels.hp);
+        this.labels.hp = null;
+        me.game.remove(this.labels.skill);
+        this.labels.skill = null;
+        this.labels = null;
+
+
         for (var i = 0; i < this.belt_tiles.length; i++) {
             me.game.remove(this.belt_tiles[i]);
         }
@@ -277,7 +315,6 @@ game.Backpack = me.ObjectEntity.extend({
             return {row: row, column: column};
         }
     }, mouseUp: function() {
-        console.log("mouse-up at " + me.input.mouse.pos.x + " " + me.input.mouse.pos.y);
         if (this.selected_tile !== null) {
             var selected = this.getTileFromID(this.selected_tile);
             //noticed equip first
@@ -292,7 +329,7 @@ game.Backpack = me.ObjectEntity.extend({
 
             //then drop tile
             this.drop_tile.mouseUp(this.selected_tile);
-
+            console.log(selected);
             //then tile
             this.tiles[selected.row][selected.column].mouseUp();
         }
@@ -318,7 +355,7 @@ game.CharacterTile = me.GUI_Object.extend({
                 this.addIcon(me.gamestat.getItemValue("equip")[this.type]);
             }
         } else {
-            if (typeof me.gamestat.getItemValue("belt")[this.id] !== "undefined") {
+            if (me.gamestat.getItemValue("belt")[this.id] !== null) {
                 this.addIcon(me.gamestat.getItemValue("belt")[this.id]);
             }
         }
@@ -328,14 +365,12 @@ game.CharacterTile = me.GUI_Object.extend({
         if (this.type !== "belt") {
             switch (this.type) {
                 case "weapon":
-                    me.game.getEntityByGUID(me.gamestat.getItemValue("player")).equipWeapon();
+                    game.instances.player.equipWeapon();
                     break;
                 case "armor":
-                    me.game.getEntityByGUID(me.gamestat.getItemValue("player")).equipArmor();
+                    game.instances.player.equipArmor();
                     break;
             }
-        } else {
-
         }
     }, onDestroyEvent: function() {
         this.removeIcon();
@@ -344,21 +379,27 @@ game.CharacterTile = me.GUI_Object.extend({
 
         var object = game.mechanic.get_inventory_item(guid);
         if (this.type !== "belt") {
-            me.gamestat.getItemValue("equip")[this.type] = guid;
-
+            var success = false;
             switch (object.type) {
                 case "weapon":
-                    me.game.getEntityByGUID(me.gamestat.getItemValue("player")).equipWeapon();
+                    success = game.mechanic.trigger_item(guid);
                     break;
                 case "armor":
-                    me.game.getEntityByGUID(me.gamestat.getItemValue("player")).equipArmor();
+                    success = game.mechanic.trigger_item(guid);
+                    break;
+                case "artefact":
+                    success = game.mechanic.trigger_item(guid);
                     break;
             }
-
-            this.icon = new game.Icon(this.pos.x, this.pos.y, object.icon_name);
-
+            if (success) {
+                console.log(this.pos.x + " " + this.pos.y + " " + object.icon_name);
+                this.icon = new game.Icon(this.pos.x, this.pos.y, object.icon_name);
+                me.game.add(this.icon, this.z + 1);
+                me.game.sort();
+            }
             game.instances.backpack.updateEquip();
         } else {
+            console.log("belt " + guid);
             if (game.instances.belt.tiles[this.id].icon !== null) {
                 me.game.remove(game.instances.belt.tiles[this.id].icon);
                 game.instances.belt.tiles[this.id].icon = null;
@@ -370,9 +411,11 @@ game.CharacterTile = me.GUI_Object.extend({
 
             game.instances.belt.tiles[this.id].icon = new game.Icon(game.instances.belt.tiles[this.id].pos.x - 8, game.instances.belt.tiles[this.id].pos.y - 8, object.icon_name);
             me.game.add(game.instances.belt.tiles[this.id].icon, game.guiLayer + 1);
+
+            me.game.add(this.icon, this.z + 1);
+            me.game.sort();
         }
-        me.game.add(this.icon, this.z + 1);
-        me.game.sort();
+
         return true;
 
     }, removeIcon: function() {
@@ -433,15 +476,15 @@ game.InventoryTile = me.GUI_Object.extend({
         if (this.click_timer_run === 0) {
             this.click_timer_run = me.timer.getTime();
             if (this.icon !== null) {
-                console.log(game.instances.backpack);
-                console.log(game.instances.stash);
+                game.instances.audio.channels.effects.addEffect(me.gamestat.getItemValue(this.tile_type)[this.id].attributes.sound);
                 if (game.instances.backpack !== null) {
                     game.instances.backpack.selected_tile = this.id;
-                    console.log("backpack is open");
                 } else if (game.instances.stash !== null) {
                     game.instances.stash.selected_tile = this.id;
                     game.instances.stash.selected_type = this.tile_type;
-                    console.log("stash is open " + this.id + " " + this.tile_type);
+                } else if (game.instances.shop !== null) {
+                    game.instances.shop.selected_tile = this.id;
+                    game.instances.shop.selected_type = this.tile_type;
                 }
                 this.follow_mouse = true;
             }
@@ -450,9 +493,15 @@ game.InventoryTile = me.GUI_Object.extend({
         }
     },
     update: function() {
-        var container = me.gamestat.getItemValue(this.tile_type);
+        var container;
+        if (this.tile_type === "shop") {
+            container = game.instances.shop_items;
+        } else {
+            container = me.gamestat.getItemValue(this.tile_type);
+        }
         if (this.icon === null && container[this.id] !== null) {
             this.icon_name = container[this.id].icon_name;
+            console.log(this.pos.x + " " + this.pos.y + " " + this.icon_name);
             this.icon = me.entityPool.newInstanceOf("Icon", this.pos.x, this.pos.y, this.icon_name);
             me.game.add(this.icon, this.z + 2);
             me.game.sort();
@@ -492,7 +541,7 @@ game.InventoryTile = me.GUI_Object.extend({
             var object = me.gamestat.getItemValue(this.tile_type)[this.id];
             if (object.tooltip_text !== null) {
                 this.tooltip = new game.gui.Tooltip(this.pos.x + this.width, this.pos.y, object.tooltip_text);
-                me.game.add(this.tooltip, this.z + 2);
+                me.game.add(this.tooltip, this.z + 3);
                 me.game.sort();
             }
         }
@@ -504,17 +553,18 @@ game.InventoryTile = me.GUI_Object.extend({
         }
     },
     mouseUp: function() {
+        console.log("mouse fucking up");
+        this.follow_mouse = false;
+        this.icon.pos.x = this.pos.x;
+        this.icon.pos.y = this.pos.y;
         if (game.instances.backpack !== null) {
-            this.follow_mouse = false;
-            this.icon.pos.x = this.pos.x;
-            this.icon.pos.y = this.pos.y;
             game.instances.backpack.selected_tile = null;
         } else if (game.instances.stash !== null) {
-            this.follow_mouse = false;
-            this.icon.pos.x = this.pos.x;
-            this.icon.pos.y = this.pos.y;
             game.instances.stash.selected_tile = null;
             game.instances.stash.selected_type = null;
+        } else if (game.instances.shop !== null) {
+            game.instances.shop.selected_tile = null;
+            game.instances.shop.selected_type = null;
         }
     }
 });
@@ -548,19 +598,20 @@ game.ExpBar = me.ObjectEntity.extend({
         });
     }, onUpdate: function(exp) {
         this.percent = Math.floor((100 / me.gamestat.getItemValue("next_level")) * exp);
-        console.log(this.percent);
         var context = this.renderable.image.getContext("2d");
         context.strokeStyle = "#958686";
-        context.moveTo(6,5);
-        context.lineTo(6 + 88, 5);
+        context.lineWidth = 1;
+        context.beginPath();
+        context.moveTo(6, 5);
+        context.lineTo(94, 5);
         context.stroke();
         var width = Math.floor(0.88 * this.percent);
         if (width >= 1) {
             context.strokeStyle = "green";
-            context.lineWidth = 1;
+            context.beginPath();
             context.moveTo(6, 5);
             context.lineTo(6 + width, 5);
-            console.log(6 + width);
+            console.log(6 + " " + width);
             context.stroke();
         }
         context.fillStyle = "#958686";
@@ -575,6 +626,7 @@ game.ExpBar = me.ObjectEntity.extend({
 
 game.Icon = me.ObjectEntity.extend({
     init: function(x, y, image) {
+        image = typeof image !== 'undefined' ? image : "undefined";
         settings = {};
         settings.spritewidth = 16;
         settings.spriteheight = 16;
@@ -594,10 +646,12 @@ game.Button = me.GUI_Object.extend({
     outline: null,
     inline: null,
     fill: null,
+    tooltip: null,
     init: function(x, y, text, title) {
         this.text = text;
         this.title = title;
         this.font = game.fonts.buttons_font;
+        this.tooltip = null;
         settings = {};
         settings.spritewidth = 75;
         settings.spriteheight = 13;
@@ -638,7 +692,16 @@ game.Button = me.GUI_Object.extend({
         }
     }, onClick: function() {
     }, onHover: function() {
+        if (this.tooltip === null && this.title !== "") {
+            this.tooltip = new game.gui.Tooltip(this.pos.x + this.width, this.pos.y, [new game.gui.TextLine(this.title, game.fonts.white)]);
+            me.game.add(this.tooltip, this.z + 1);
+            me.game.sort();
+        }
     }, onHoverOut: function() {
+        if (this.tooltip !== null) {
+            me.game.remove(this.tooltip);
+            this.tooltip = null;
+        }
     }, drawContext: function(context) {
         context.clearRect(0, 0, this.width, this.height);
         context.fillStyle = this.fill;
@@ -656,6 +719,13 @@ game.Button = me.GUI_Object.extend({
         context.lineTo(1, this.height);
         context.stroke();
         this.font.draw(context, this.text, 5, 4);
+    }, onDestroyEvent: function() {
+        this.parent();
+
+        if (this.tooltip !== null) {
+            me.game.remove(this.tooltip);
+            this.tooltip = null;
+        }
     }
 });
 
@@ -666,10 +736,14 @@ game.SmallButton = me.GUI_Object.extend({
     outline: null,
     inline: null,
     fill: null,
+    tooltip: null,
+    hovering: null,
     init: function(x, y, text, title) {
         this.text = text;
         this.title = title;
+        this.tooltip = null;
         this.font = game.fonts.buttons_font;
+        this.hovering = false;
         settings = {};
         settings.spritewidth = 11;
         settings.spriteheight = 11;
@@ -695,6 +769,7 @@ game.SmallButton = me.GUI_Object.extend({
 
         var context = this.image.getContext("2d");
         if (trigger) {
+            this.hovering = true;
             this.onHover();
             this.outline = "black";
             this.inline = "black";
@@ -703,16 +778,28 @@ game.SmallButton = me.GUI_Object.extend({
             this.drawContext(this.image.getContext("2d"));
 
         } else {
-            this.onHoverOut();
-            this.outline = "black";
-            this.inline = "#E26D6D";
-            this.fill = "#D83939";
+            if (this.hovering) {
+                this.hovering = false;
+                this.onHoverOut();
+                this.outline = "black";
+                this.inline = "#E26D6D";
+                this.fill = "#D83939";
 
-            this.drawContext(this.image.getContext("2d"));
+                this.drawContext(this.image.getContext("2d"));
+            }
         }
     }, onClick: function() {
     }, onHover: function() {
+        if (this.tooltip === null) {
+            this.tooltip = new game.gui.Tooltip(this.pos.x + this.width, this.pos.y + this.height, this.title);
+            me.game.add(this.tooltip, this.z + 1);
+            me.game.sort();
+        }
     }, onHoverOut: function() {
+        if (this.tooltip !== null) {
+            me.game.remove(this.tooltip);
+            this.tooltip = null;
+        }
     }, drawContext: function(context) {
         context.clearRect(0, 0, this.width, this.height);
         context.fillStyle = this.fill;
@@ -730,6 +817,13 @@ game.SmallButton = me.GUI_Object.extend({
         context.lineTo(1, this.height);
         context.stroke();
         this.font.draw(context, this.text, 2, 2);
+    }, onDestroyEvent: function() {
+        this.parent();
+
+        if (this.tooltip !== null) {
+            me.game.remove(this.tooltip);
+            this.tooltip = null;
+        }
     }
 });
 
@@ -739,11 +833,9 @@ game.DropButton = game.Button.extend({
     },
     onClick: function() {
         this.parent();
-        var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
         if (game.instances.backpack.selected_tile !== null) {
             me.gamestat.getItemValue("inventory").splice(game.instances.backpack.selected_tile, 1);
         }
-
     }
 });
 
@@ -758,7 +850,6 @@ game.UseButton = game.Button.extend({
         this.parent();
         var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
         if (game.instances.backpack.selected_tile !== null) {
-            console.log("use item on tile " + game.instances.backpack.selected_tile);
             var selected = me.gamestat.getItemValue("inventory")[game.instances.backpack.selected_tile];
             switch (selected.type) {
                 case "consumable":
@@ -778,31 +869,20 @@ game.UseButton = game.Button.extend({
 
 game.PlusSkillButton = game.SmallButton.extend({
     skill: null,
-    init: function(x, y, skill, title) {
+    init: function(x, y, skill) {
+        var title = [
+            new game.gui.TextLine(" 0-20 = 1 point", game.fonts.white),
+            new game.gui.TextLine("20-40 = 2 points", game.fonts.white),
+            new game.gui.TextLine("40-60 = 3 points", game.fonts.white),
+            new game.gui.TextLine("60-80 = 4 points", game.fonts.white)
+        ];
         this.parent(x, y, "+", title);
         this.skill = skill;
     },
     onClick: function() {
-        var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
-        switch (this.skill) {
-            case "str":
-                player.strUp();
-                me.gamestat.updateValue("skill", -1);
-                break;
-            case "end":
-                player.endUp();
-                me.gamestat.updateValue("skill", -1);
-                break;
-            case "agi":
-                player.agiUp();
-                me.gamestat.updateValue("skill", -1);
-                break;
-            case "int":
-                player.intUp();
-                me.gamestat.updateValue("skill", -1);
-                break;
-            default:
-        }
+        console.log("click");
+        game.mechanic.attributeUp(this.skill);
+        return true;
     }
 });
 
@@ -814,7 +894,7 @@ game.gui.TextLine = Object.extend({
         this.font = font;
     },
     setValue: function(value) {
-        this.text.replace("<value>", value);
+        this.text = this.text.replace("$value$", value.toString());
     }
 });
 
@@ -848,6 +928,9 @@ game.gui.Tooltip = me.ObjectEntity.extend({
         this.floating = true;
         this.renderable.setOpacity(0.85);
         //console.log("creating tooltip " + this.pos.x + " " + this.pos.y);
+    },
+    onDestroyEvent: function() {
+        this.lines = null;
     }
 });
 
@@ -906,11 +989,17 @@ game.gui.Console = me.ObjectEntity.extend({
         for (var i = 0; i < this.lines.length; i++) {
             this.lines[i].pos.y += 12;
         }
+        console.log(this.lines);
+    },
+    clearAll: function() {       
+        for (var i = 0; i < this.lines.length; i++) {
+            this.removeLast();
+        }
     }
 });
 
 game.instances.console = new game.gui.Console(0, 0);
-me.game.add(game.instances.console, game.guiLayer);
+me.game.add(game.instances.console, game.LAYERS.TOP);
 me.game.sort();
 
 game.gui.ConsoleLine = me.ObjectEntity.extend({
@@ -958,7 +1047,7 @@ game.gui.Belt = me.ObjectEntity.extend({
         me.game.sort();
     }, update: function() {
         for (var i = 0; i < this.tiles.length; i++) {
-            if (this.tiles[i].icon !== null && typeof me.gamestat.getItemValue("belt")[i] === "undefined") {
+            if (this.tiles[i].icon !== null && typeof me.gamestat.getItemValue("belt")[i] === null) {
                 me.game.remove(this.tiles[i].icon);
                 this.tiles[i].icon = null;
             }
@@ -1001,11 +1090,16 @@ game.gui.PauseMenu = me.ObjectEntity.extend({
 
         this.buttons = {};
         this.buttons.save = new game.gui.SaveButton(this.pos.x + (this.renderable.width / 2) - 40, this.pos.y + 10);
-        me.game.add(this.buttons.save, game.guiLayer + 2);
+        me.game.add(this.buttons.save, game.LAYERS.GUI + 2);
+        this.buttons.options = new game.gui.FuncButton(this.pos.x + (this.renderable.width / 2) - 40, this.pos.y + 25, "Options", "", game.mechanic.trigger_options);
+        me.game.add(this.buttons.options, game.LAYERS.GUI + 2);
         me.game.sort();
     },
     onDestroyEvent: function() {
         me.game.remove(this.buttons.save);
+        this.buttons.save = null;
+        me.game.remove(this.buttons.options);
+        this.buttons.option = null;
         this.buttons = null;
     }
 });
@@ -1014,24 +1108,12 @@ game.instances.pause_menu = null;
 
 game.gui.SaveButton = game.Button.extend({
     init: function(x, y) {
-        this.parent(x, y, "Save Hero", "title");
+        this.parent(x, y, "Save Hero", "Will Save hero to your LocalStorage");
         this.floating = true;
     },
     onClick: function() {
         this.parent();
-        localStorage.level = me.gamestat.getItemValue("level");
-        localStorage.next_level = me.gamestat.getItemValue("next_level");
-        localStorage.hp = me.gamestat.getItemValue("hp");
-        localStorage.max_hp = me.gamestat.getItemValue("maxhp");
-        localStorage.exp = me.gamestat.getItemValue("exp");
-        localStorage.stats = JSON.stringify(me.gamestat.getItemValue("stats"));
-        localStorage.equip = JSON.stringify(me.gamestat.getItemValue("equip"));
-        localStorage.inventory = JSON.stringify(me.gamestat.getItemValue("inventory"));
-        localStorage.belt = JSON.stringify(me.gamestat.getItemValue("belt"));
-        localStorage.skill_points = me.gamestat.getItemValue("skill");
-        localStorage.save = true;
-        console.log("save");
-        game.instances.console.post("Hero has been saved");
+        game.mechanic.save_game();
     }
 });
 
@@ -1050,7 +1132,6 @@ game.gui.DropItem = me.GUI_Object.extend({
 
         this.parent(x, y, settings);
         this.floating = true;
-        console.log(this);
     },
     mouseUp: function(selected) {
         if (this.containsPointV(me.input.mouse.pos)) {
@@ -1061,9 +1142,7 @@ game.gui.DropItem = me.GUI_Object.extend({
             //now clean this shit sort, equip and belt
             game.mechanic.inventory_sort();
             var equip = me.gamestat.getItemValue("equip");
-            console.log(equip);
             if (equip.weapon === guid) {
-                console.log("removig equiped weapon")
                 equip.weapon = null;
                 game.instances.backpack.weapon_tile.removeItem();
                 me.game.remove(game.instances.backpack.weapon_icon);
@@ -1137,6 +1216,9 @@ game.gui.Dialog = me.ObjectEntity.extend({
     text_object: null,
     human_test: null,
     guid: null,
+    question_mode: null,
+    option: null,
+    option_object: null,
     init: function(dialog, guid) {
         this.dialog = me.loader.getJSON(dialog);
         this.branch = 0;
@@ -1144,6 +1226,9 @@ game.gui.Dialog = me.ObjectEntity.extend({
         this.human_icon = null;
         this.human_test = new RegExp("(armor)$");
         this.guid = guid;
+        this.question_mode = false;
+        this.option = null;
+        this.option_object = null;
         settings = {};
         settings.spritewidth = 370;
         settings.spriteheight = 40;
@@ -1162,27 +1247,92 @@ game.gui.Dialog = me.ObjectEntity.extend({
 
         this.parent(10, 20, settings);
         this.floating = true;
-
+        
         this.text_object = new game.SmallText(this.pos.x + 45, this.pos.y + 5, this.getCurrentMessage(), game.fonts.white);
         this.text_object.floating = true;
         me.game.add(this.text_object, game.guiLayer + 1);
         this.createCurrentIcon();
         me.game.sort();
 
-    }, update: function() {
+    },
+    update: function() {
         if (me.input.isKeyPressed('use')) {
-            this.nextMessage();
+            if (this.question_mode) {
+                this.question_mode = false;
+                var message_object = this.dialog.branches[this.branch].messages[this.message];
+                var branch = message_object.answers[this.option_object.option].branch;
+                me.game.remove(this.option_object);
+                this.option_object = null;
+                this.setBranch(branch);
+            } else {
+                this.nextMessage();
+            }
         }
 
         this.parent();
         return true;
-    }, getCurrentMessage: function() {
+    },
+    setBranch: function(branch) {
+        this.branch = branch;
+        var text = this.getCurrentMessage();
+        if (text !== false) {
+            this.text_object.text = text;
+            this.createCurrentIcon();
+        }
+    },
+    getCurrentMessage: function() {
         var message_object = this.dialog.branches[this.branch].messages[this.message];
-
         if (message_object.type === "QUIT") {
             me.game.remove(game.instances.dialog);
             game.instances.dialog = null;
             return false;
+        } else if (message_object.type === "SET_HISTORY") {
+            me.gamestat.getItemValue("history").npcs_talks[message_object.variable] = message_object.value;
+            this.nextMessage();
+            return false;
+        } else if (message_object.type === "HEAL") {
+            me.gamestat.setValue("hp", me.gamestat.getItemValue("maxhp"));
+            this.nextMessage();
+            return false;
+        } else if (message_object.type === "QUESTION") {
+            this.question_mode = true;
+            this.option = 0;
+            this.option_object = new game.gui.DialogOptions(message_object.answers);
+            me.game.add(this.option_object, game.LAYERS.GUI);
+            me.game.sort();
+        } else if (message_object.type === "SHOP") {
+            game.instances.shop = new game.gui.Shop(this.dialog);
+            me.game.add(game.instances.shop, game.LAYERS.GUI);
+            me.game.remove(game.instances.dialog);
+            game.instances.dialog = null;
+            return false;
+        } else if (message_object.type === "STASH") {
+            game.mechanic.trigger_stash();
+            me.game.remove(game.instances.dialog);
+            game.instances.dialog = null;
+            return false;
+        } else if (message_object.type === "SPECIAL") {
+            switch (message_object.special_type) {
+                case "rain":
+                    game.mechanic.trigger_rain();
+                    break;
+            }
+            this.nextMessage();
+            return false;
+        } else if (message_object.type === "REQUIREMENT") {
+            switch (message_object.req_type) {
+                case "GOLD":
+                    if (message_object.value <= me.gamestat.getItemValue("money")) {
+                        game.instances.audio.channels.effects.addEffect("coins");
+                        me.gamestat.updateValue("money", -message_object.value);
+                        this.setBranch(message_object.r_true);
+                        return false;
+                    } else {
+                        this.setBranch(message_object.r_false);
+                        return false;
+                    }
+                    break;
+            }
         }
 
         return message_object.message;
@@ -1209,9 +1359,17 @@ game.gui.Dialog = me.ObjectEntity.extend({
                 }
                 this.human_icon = new game.gui.HumanIcon(this.pos.x + 5, this.pos.y + 2, armor);
                 me.game.add(this.human_icon, game.guiLayer + 1);
+                me.game.sort();
+                break;
+            case "QUESTION":
+                this.human_icon = new game.gui.NPCIcon(this.pos.x + 8, this.pos.y + 8, this.dialog.npc_image, this.dialog.image_size, this.dialog.anim_length);
+                me.game.add(this.human_icon, game.guiLayer + 1);
+                me.game.sort();
+                break;
+            default:
+                console.error("dialog message type not recognized");
                 break;
         }
-        me.game.sort();
     }, nextMessage: function() {
         this.message++;
         if (this.message === this.dialog.branches[this.branch].length) {
@@ -1227,6 +1385,73 @@ game.gui.Dialog = me.ObjectEntity.extend({
         this.text_object = null;
         me.game.remove(this.human_icon);
         this.human_icon = null;
+        if (this.option_object !== null) {
+            me.game.remove(this.option_object);
+            this.option_object = null;
+        }
+    }
+});
+
+game.gui.DialogOptions = me.ObjectEntity.extend({
+    cursor: null,
+    option: null,
+    option_length: null,
+    cursor_start: null,
+    init: function(options) {
+        settings = {};
+        settings.spritewidth = 200;
+        var f_height = game.fonts.white.measureText(me.video.getScreenContext(), "M").height;
+        var height = f_height * (options.length + 1) + 2 * (options.length + 1);
+        height += 4;
+        settings.spriteheight = height;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+
+        var context = settings.image.getContext("2d");
+        context.fillStyle = "#958686";
+        context.strokeStyle = "black";
+        context.lineWidth = 2;
+
+        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
+        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+        game.fonts.white.draw(context, "A for up, S for down", 5, 2);
+        for (var i = 0; i < options.length; i++) {
+            game.fonts.white.draw(context, options[i].message, 25, 2 + (f_height * (i + 1) + (i * 2)));
+        }
+        this.parent(50, 62, settings);
+        this.floating = true;
+        this.option = 0;
+        this.option_length = options.length - 1;
+        this.cursor_start = 62 + 2 + f_height;
+        this.cursor = new game.Icon(50 + 4, this.cursor_start, "item-sword1");
+        this.cursor.floating = true;
+        me.game.add(this.cursor, game.LAYERS.GUI + 1);
+        me.game.sort();
+    },
+    update: function() {
+        if (me.input.isKeyPressed("option_up")) {
+            game.instances.audio.channels.effects.addEffect("exp_click");
+            if (this.option === 0) {
+                this.option = this.option_length;
+            } else {
+                this.option--;
+            }
+        } else if (me.input.isKeyPressed("option_down")) {
+            game.instances.audio.channels.effects.addEffect("exp_click");
+            if (this.option === this.option_length) {
+                this.option = 0;
+            } else {
+                this.option++;
+            }
+        }
+
+        this.cursor.pos.y = this.cursor_start + this.option * game.fonts.white.measureText(me.video.getScreenContext(), "M").height;
+
+        this.parent();
+        return true;
+    },
+    onDestroyEvent: function() {
+        me.game.remove(this.cursor);
+        this.cursor = null;
     }
 });
 
@@ -1248,7 +1473,9 @@ game.gui.CloseButton = me.GUI_Object.extend({
 
 game.gui.Window = me.ObjectEntity.extend({
     close_button: null,
+    init_v: null,
     init: function(x, y, width, height) {
+        this.init_v = true;
         settings = {};
         settings.spritewidth = width;
         settings.spriteheight = height;
@@ -1265,8 +1492,16 @@ game.gui.Window = me.ObjectEntity.extend({
         this.parent(x, y, settings);
         this.floating = true;
         this.close_button = new game.gui.CloseButton(this.pos.x + width - 8, this.pos.y, this);
-        me.game.add(this.close_button, game.guiLayer + 1);
-        me.game.sort();
+    },
+    update: function() {
+        if (this.init_v) {
+            this.init_v = false;
+            me.game.add(this.close_button, this.z + 1);
+            me.game.sort();
+        }
+
+        this.parent();
+        return true;
     },
     onDestroyEvent: function() {
         me.game.remove(this.close_button);
@@ -1355,15 +1590,12 @@ game.gui.Stash = game.gui.Window.extend({
         me.input.releasePointerEvent('mouseup', me.game.viewport);
     },
     mouseUp: function() {
-        console.log("tile " + this.selected_tile);
         if (this.selected_tile !== null) {
-            console.log("type " + this.selected_type);
             if (this.selected_type === "stash") {
                 var flag = false;
                 for (var row = 0; row < this.inventory_tiles.length; row++) {
                     for (var column = 0; column < this.inventory_tiles[row].length; column++) {
                         if (this.inventory_tiles[row][column].containsPointV(me.input.mouse.pos)) {
-                            console.log("inventory " + row + "/" + column);
                             var item = me.gamestat.getItemValue("stash")[this.selected_tile];
                             game.mechanic.inventory_push(item);
                             game.mechanic.stash_drop(item.guid);
@@ -1381,7 +1613,6 @@ game.gui.Stash = game.gui.Window.extend({
                 for (var row = 0; row < this.stash_tiles.length; row++) {
                     for (var column = 0; column < this.stash_tiles[row].length; column++) {
                         if (this.stash_tiles[row][column].containsPointV(me.input.mouse.pos)) {
-                            console.log("stash " + row + "/" + column);
                             var item = me.gamestat.getItemValue("inventory")[this.selected_tile];
                             game.mechanic.stash_push(item);
                             game.mechanic.inventory_drop(item.guid);
@@ -1389,7 +1620,7 @@ game.gui.Stash = game.gui.Window.extend({
                             break;
                         }
                     }
-                    if(flag){
+                    if (flag) {
                         break;
                     }
                 }
@@ -1440,7 +1671,6 @@ game.gui.MoneyTab = me.ObjectEntity.extend({
         this.label.floating = true;
         me.game.add(this.label, game.guiLayer + 1);
         me.game.sort();
-        console.log("hey");
     },
     onDestroyEvent: function() {
         me.game.remove(this.icon);
@@ -1459,6 +1689,285 @@ game.gui.MoneyTab = me.ObjectEntity.extend({
             this.icon.renderable.image = me.loader.getImage("money-3");
         } else {
             this.icon.renderable.image = me.loader.getImage("money-4");
+        }
+    }
+});
+
+game.gui.EnemyPanel = me.ObjectEntity.extend({
+    font: null,
+    name: null,
+    name_object: null,
+    percent: null,
+    init: function() {
+        this.font = game.fonts.white;
+        this.name = "";
+        this.percent = 0;
+        settings = {};
+        settings.spritewidth = 102;
+        settings.spriteheight = 12;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+
+        var context = settings.image.getContext("2d");
+        context.fillStyle = "#958686";
+        context.strokeStyle = "black";
+        context.lineWidth = 2;
+
+        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
+        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+        this.parent((game.screenWidth / 2) - (settings.spritewidth / 2), 0, settings);
+        this.floating = true;
+        this.name_object = new game.SmallText(this.pos.x + ((settings.spritewidth / 2) - game.fonts.white.measureText(me.video.getScreenContext(), this.name).width), 1, this.name, game.fonts.white);
+        this.name_object.floating = true;
+        me.game.add(this.name_object, game.guiLayer + 1);
+        me.game.sort();
+    },
+    setName: function(name) {
+        this.name = name;
+        this.name_object.text = this.name;
+    },
+    onUpdate: function(percent) {
+        if (percent <= 0) {
+            me.game.remove(this);
+            game.instances.enemy_panel = null;
+            return;
+        }
+        var context = this.renderable.image.getContext("2d");
+        context.fillStyle = "#958686";
+        context.strokeStyle = "black";
+        context.lineWidth = 2;
+
+        context.fillRect(0, 0, this.renderable.width, this.renderable.height);
+        context.fillStyle = "red";
+        context.fillRect(1, 1, percent, 14);
+        context.strokeRect(0, 0, this.renderable.width, this.renderable.height);
+
+    },
+    onDestroyEvent: function() {
+        me.game.remove(this.name_object);
+        this.name_object = null;
+    }
+});
+
+game.instances.enemy_panel = null;
+
+game.mechanic.set_enemy_panel = function(name, percent) {
+    if (game.instances.enemy_panel === null) {
+        game.instances.enemy_panel = new game.gui.EnemyPanel();
+        me.game.add(game.instances.enemy_panel, game.guiLayer);
+        me.game.sort();
+    }
+
+    game.instances.enemy_panel.setName(name);
+    game.instances.enemy_panel.onUpdate(percent);
+};
+
+game.gui.Shop = game.gui.Window.extend({
+    shop_tiles: null,
+    inventory_tiles: null,
+    inventory_money: null,
+    entity_layer: null,
+    human_icon: null,
+    items: null,
+    init: function(shop) {
+        game.instances.shop_items = new Array(48);
+        for (var i = 0; i < game.instances.shop_items.length; i++) {
+            game.instances.shop_items[i] = null;
+        }
+        console.log(this.items);
+        this.entity_layer = game.LAYERS.GUI + 1;
+        this.parent(20, 10, 300, 180);
+        var context = this.renderable.image.getContext("2d");
+        context.fillStyle = "black";
+        context.fillRect(20, 20, 40, 40);
+        game.fonts.basic.draw(context, shop.npc_name, 15, 5);
+        game.fonts.basic.draw(context, "You", 225, 5);
+
+        this.human_icon = new game.gui.NPCIcon(this.pos.x + 20 + 8, this.pos.y + 20 + 8, shop.npc_image, shop.image_size, shop.anim_length);
+        me.game.add(this.human_icon, game.guiLayer + 1);
+
+        this.inventory_tiles = new Array(6);
+        for (var i = 0; i < this.inventory_tiles.length; i++) {
+            this.inventory_tiles[i] = new Array(5);
+        }
+        for (var row = 0; row < this.inventory_tiles.length; row++) {
+            for (var column = 0; column < this.inventory_tiles[row].length; column++) {
+                this.inventory_tiles[row][column] = me.entityPool.newInstanceOf("InventoryTile", this.pos.x + 200 + (column * 16), this.pos.y + 15 + (row * 16), (row * (this.inventory_tiles.length - 1)) + column, "inventory");
+                me.game.add(this.inventory_tiles[row][column], this.entity_layer);
+            }
+        }
+
+        this.shop_tiles = new Array(8);
+        for (var i = 0; i < this.shop_tiles.length; i++) {
+            this.shop_tiles[i] = new Array(6);
+        }
+
+        var i = 0;
+        for (var row = 0; row < this.shop_tiles.length; row++) {
+            for (var column = 0; column < this.shop_tiles[row].length; column++) {
+                this.shop_tiles[row][column] = me.entityPool.newInstanceOf("InventoryTile", this.pos.x + 75 + (column * 16), this.pos.y + 15 + (row * 16), i, "shop");
+                me.game.add(this.shop_tiles[row][column], this.entity_layer);
+                i++;
+            }
+        }
+
+        this.inventory_money = new game.gui.MoneyTab(this.pos.x + 215, this.pos.y + 150);
+        me.game.add(this.inventory_money, this.entity_layer);
+        me.game.sort();
+        me.input.registerPointerEvent('mouseup', me.game.viewport, this.mouseUp.bind(this));
+    },
+    onDestroyEvent: function() {
+        this.parent();
+
+        for (var row = 0; row < this.inventory_tiles.length; row++) {
+            for (var column = 0; column < this.inventory_tiles[row].length; column++) {
+                me.game.remove(this.inventory_tiles[row][column]);
+                this.inventory_tiles[row][column] = null;
+            }
+        }
+
+        me.game.remove(this.human_icon);
+        this.human_icon = null;
+
+        me.game.remove(this.inventory_money);
+        this.inventory_money = null;
+        game.instances.shop = null;
+
+        me.input.releasePointerEvent('mouseup', me.game.viewport);
+    },
+    mouseUp: function() {
+
+    }
+});
+
+game.gui.Options = game.gui.Window.extend({
+    entity_layers: null,
+    checkboxes: null,
+    buttons: null,
+    init: function() {
+        this.checkboxes = {};
+        this.buttons = {};
+        this.parent(20, 10, 300, 170);
+        var context = this.renderable.image.getContext("2d");
+        game.fonts.white.draw(context, "Enable sounds", 20, 20);
+        var bmf = new me.BitmapFont("geebeeyay-8x8", 8, 1.0);
+        bmf.draw(context, "OPTIONS", (300 - bmf.measureText(context, "OPTIONS").width) / 2, 5);
+        this.checkboxes.enable_sound = new game.gui.CheckBox(45, 43, me.audio.isAudioEnable(), game.instances.audio.switchEnable);
+        me.game.add(this.checkboxes.enable_sound, game.LAYERS.TOP + 1);
+        this.buttons.save = new game.gui.FuncButton(30, 160, "Save", "", game.mechanic.save_settings);
+        me.game.add(this.buttons.save, game.LAYERS.TOP + 1);
+        me.game.sort();
+    },
+    onDestroyEvent: function() {
+        this.parent();
+
+        me.game.remove(this.checkboxes.enable_sound);
+        this.checkboxes.enable_sound = null;
+        this.checkboxes = null;
+        me.game.remove(this.buttons.save);
+        this.buttons.save = null;
+        this.buttons = null;
+    }
+});
+
+game.gui.FuncButton = game.Button.extend({
+    func: null,
+    init: function(x, y, text, title, func) {
+        this.parent(x, y, text, title);
+        this.floating = true;
+        this.func = func;
+    },
+    onClick: function() {
+        this.parent();
+        this.func();
+    }
+});
+
+game.gui.CheckBox = me.GUI_Object.extend({
+    checked: null,
+    update_func: null,
+    init: function(x, y, state, update_func) {
+        this.update_func = update_func;
+        this.checked = state;
+        settings = {};
+        settings.spritewidth = 12;
+        settings.spriteheight = 12;
+        if (state) {
+            settings.image = "checkbox_checked";
+        } else {
+            settings.image = "checkbox_unchecked";
+        }
+        this.parent(x, y, settings);
+        this.floating = true;
+    },
+    onClick: function() {
+        if (this.checked) {
+            this.image = me.loader.getImage("checkbox_unchecked");
+            this.checked = false;
+        } else {
+            this.image = me.loader.getImage("checkbox_checked");
+            this.checked = true;
+        }
+        this.update_func(this.checked);
+        return true;
+    }
+});
+
+game.gui.AttributeText = game.SmallText.extend({
+    attribute: null,
+    hovering: null,
+    tooltip: null,
+    init: function(x, y, attribute) {
+        this.hovering = false;
+        this.attribute = attribute;
+        this.parent(x, y, this.getText(), this.getFont());
+        this.floating = true;
+    },
+    getText: function() {
+        var result = me.gamestat.getItemValue("stats").getBonusAttr(this.attribute);
+        return result.toString();
+    },
+    getFont: function() {
+        if (me.gamestat.getItemValue("stats")["bons_" + this.attribute] > 0) {
+            return game.fonts.teal;
+        } else {
+            return game.fonts.basic;
+        }
+    },
+    update: function() {
+        this.text = this.getText();
+        this.font = this.getFont();
+
+        var trigger = false;
+        if (me.input.mouse.pos.x >= this.pos.x && me.input.mouse.pos.x <= this.pos.x + this.font.measureText(me.video.getScreenContext(), this.text).width) {
+            if (me.input.mouse.pos.y >= this.pos.y && me.input.mouse.pos.y <= this.pos.y + this.font.measureText(me.video.getScreenContext(), this.text).height) {
+                trigger = true;
+            }
+        }
+
+        if (trigger) {
+            this.hovering = true;
+            if (this.tooltip === null) {
+                this.tooltip = new game.gui.Tooltip(this.pos.x + this.font.measureText(me.video.getScreenContext(), this.text).width, this.pos.y, game.mechanic.get_attribute_tooltip(this.attribute));
+                me.game.add(this.tooltip, game.LAYERS.TOP);
+                me.game.sort();
+            }
+        } else {
+            if (this.hovering) {
+                this.hovering = false;
+                if (this.tooltip !== null) {
+                    me.game.remove(this.tooltip);
+                    this.tooltip = null;
+                }
+            }
+        }
+        this.parent();
+        return true;
+    },
+    onDestroyEvent: function() {
+        this.parent();
+        if (this.tooltip !== null) {
+            me.game.remove(this.tooltip);
+            this.tooltip = null;
         }
     }
 });
