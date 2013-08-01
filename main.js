@@ -132,6 +132,9 @@ var game =
                 me.gamestat.add("stash_money", 0);
                 me.gamestat.add("equip", equip);
                 var belt = new Array(8);
+                for(var i = 0; i < belt.length; i++){
+                    belt[i] = null;
+                }
                 me.gamestat.add("belt", belt);
                 var history = new game.mechanic.History();
                 me.gamestat.add("history", history);
