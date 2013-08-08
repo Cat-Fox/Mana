@@ -39,7 +39,7 @@ game.npcs.King = game.npcs.AllyNPC.extend({
 
 game.npcs.Priest = game.npcs.AllyNPC.extend({
     init: function(x, y) {
-        this.parent(x, y, "Priest", "npc_priest", 24, 2, "dialog_priest");
+        this.parent(x - 5, y - 5, "Priest", "npc_priest", 24, 2, "dialog_priest");
     },
     onUse: function() {
         if (game.instances.dialog === null) {
@@ -84,14 +84,17 @@ game.npcs.ManaChest = game.npcs.AllyNPC.extend({
             game.instances.dialog = new game.gui.Dialog("dialog_chest", this.GUID);
             me.game.add(game.instances.dialog, game.LAYERS.GUI);
             me.game.sort();
-            if(me.gamestat.getItemValue("history").npcs_talks.stash){
+            if (me.gamestat.getItemValue("history").npcs_talks.stash) {
                 game.instances.dialog.setBranch(1);
             }
-            
+
         }
     },
     cleanup: function() {
         game.mechanic.destroy_dialoge(this.GUID);
+        if (game.instances.stash !== null) {
+            game.mechanic.close_stash();
+        }
     }
 });
 

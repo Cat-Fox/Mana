@@ -12,12 +12,14 @@ var game =
             destroyable: {},
             mechanic: {},
             instances: {},
+            entities: {},
             object_layer: 4,
             effects: {},
             npcs: {},
             audio: {},
-            LAYERS: {GUI: 15, NPC: 4, ITEMS: 8, TOP: 20},
-            version: "0.0.2",
+            pathfinding: {},
+            LAYERS: {GUI: 15, NPC: 5, ITEMS: 4, TOP: 20},
+            version: "0.0.3",
             onload: function()
             {
                 if (!me.video.init('screen', this.screenWidth, this.screenHeight, true, 2.0, true)) {
@@ -62,7 +64,7 @@ var game =
                 me.entityPool.add("Sparks", game.Sparks, true);
                 me.entityPool.add("Smile", game.Smile, true);
                 me.entityPool.add("Target", game.Target, true);
-                me.entityPool.add("Fire", game.Fire);
+                me.entityPool.add("Firecamp", game.entities.Firecamp);
                 me.entityPool.add("CollisionBox", game.CollisionBox, true);
                 me.entityPool.add("Message", game.Message);
                 me.entityPool.add("Exit", game.Exit);
@@ -136,10 +138,11 @@ var game =
                     belt[i] = null;
                 }
                 me.gamestat.add("belt", belt);
-                console.log(me.gamestat.getItemValue("belt"));
                 var history = new game.mechanic.History();
                 me.gamestat.add("history", history);
                 
+                //max fps is 45
+                me.sys.fps = 45;
                 
                 //audio need to be global and set before menu
                 game.instances.audio = new game.audio.Main();
@@ -243,6 +246,7 @@ game.MenuScreen = game.AnimatedScreen.extend({
 
     },
     onResetEvent: function() {
+        game.instances.console.clearAll();
         me.levelDirector.loadLevel("sewers_menu");
         me.game.viewport.move(17 * 16, 18 * 16);
         this.parent();
@@ -365,6 +369,7 @@ game.CreditsScreen = me.ScreenObject.extend({
         this.credits = new game.gui.Credits(0, 0);
         me.game.add(this.credits, 8);
         me.game.sort();
+        game.instances.console.clearAll();
     },
     update: function() {
         if (me.input.isKeyPressed('enter')) {
@@ -399,6 +404,7 @@ game.PlayScreen = game.AnimatedScreen.extend({
         me.input.bindKey(me.input.KEY.M, "mana", true);
         me.input.bindKey(me.input.KEY.A, "option_up", true);
         me.input.bindKey(me.input.KEY.S, "option_down", true);
+        me.input.bindKey(me.input.KEY.G, "collision", true);
 
         me.input.bindKey(me.input.KEY.NUM1, "1", true);
         me.input.bindKey(me.input.KEY.NUM2, "2", true);
@@ -415,8 +421,11 @@ game.PlayScreen = game.AnimatedScreen.extend({
         game.instances.shop = null;
         game.instances.options = null;
         game.instances.rain = null;
+        game.instances.battle_mode = new game.mechanic.BattleMode();
 
         me.input.registerPointerEvent('mousemove', me.game.viewport, this.mouse);
+        
+        console.log(me.game.currentLevel);
         
         game.mechanic.initialize_level();
         game.instances.console.clearAll();

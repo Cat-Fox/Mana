@@ -46,6 +46,7 @@ game.audio.Channel = Object.extend({
         me.audio.play(name, false, this.remove(guid), this.volume);
     },
     changeAmbient: function(name) {
+        console.log("volume " + this.volume);
         if (this.ambient === null) {
             this.ambient = name;
             me.audio.playTrack(name, this.volume);

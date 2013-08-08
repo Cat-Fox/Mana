@@ -28,7 +28,7 @@ game.Spawn = me.ObjectEntity.extend({
             this.init_v = false;
         }
         for (var i = 0; i < this.guids.length; i++) {
-            if (me.game.getEntityByGUID(this.guids[i]).alive === false) {
+            if (me.game.getEntityByGUID(this.guids[i]) === null) {
                 this.guids.splice(i, 1);
                 this.respawn_timers.push(me.timer.getTime());
                 console.log(this.respawn_timers.length + " " + this.npc + " will be spawned");
@@ -58,7 +58,7 @@ game.Spawn = me.ObjectEntity.extend({
                 tmp = new game.npcs.Goblin(r_pos.x, r_pos.y);
                 break;
         }
-        tmp.mode_select = "walking";
+        tmp.stats.stance = "passive";
         me.game.add(tmp, this.z);
         me.game.sort();
         this.guids.push(tmp.GUID);

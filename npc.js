@@ -7,7 +7,8 @@ game.npcStats = Object.extend({
     magic_armor: null,
     dmg_type: null,
     exp: null,
-    init: function(max_hp, dmg_min, dmg_max, dmg_type, armor_normal, armor_magic, exp) {
+    stance: null,
+    init: function(max_hp, dmg_min, dmg_max, dmg_type, armor_normal, armor_magic, exp, stance) {
         this.hp = max_hp;
         this.max_hp = max_hp;
         this.dmg_min = dmg_min;
@@ -16,6 +17,7 @@ game.npcStats = Object.extend({
         this.normal_armor = armor_normal;
         this.magic_armor = armor_magic;
         this.exp = exp;
+        this.stance = stance;
     }
 });
 
@@ -120,6 +122,7 @@ game.WalkerNPC = me.ObjectEntity.extend({
                     } else if (res[i].obj.type === "human_target") {
                         this.onTarget();
                     } else if (res[i].obj.type === "human_use") {
+                        game.instances.player.destroyUse();
                         this.onUse();
                     } else if (res[i].obj.type === "human_attack") {
                         this.onHit();
@@ -151,7 +154,6 @@ game.WalkerNPC = me.ObjectEntity.extend({
         if (this.type === me.game.ENEMY_OBJECT) {
             var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
             var dmg = me.gamestat.getItemValue("stats").getDmg();
-            console.log(dmg);
             for (var i = 0; i < dmg.length; i++) {
                 var result_dmg = this.hurt(dmg[i].min_dmg, dmg[i].max_dmg, dmg[i].type);
                 var font = game.fonts.white;
@@ -162,7 +164,7 @@ game.WalkerNPC = me.ObjectEntity.extend({
                         font = game.fonts.magic_blue;
                     }
                 }
-                this.hit_text = me.entityPool.newInstanceOf("HitText", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2), result_dmg, font);
+                this.hit_text = me.entityPool.newInstanceOf("HitText", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2) + (i * 6), result_dmg, font);
                 me.game.add(this.hit_text, this.z + 1);
             }
 
@@ -258,15 +260,25 @@ game.npcs.EnemyNPC = game.WalkerNPC.extend({
     attack_cooldown: null,
     attack_cooldown_run: false,
     attack_time: null,
+    path: null,
     init: function(x, y, settings, c_shadow, stats) {
         this.parent(x, y, settings, c_shadow, stats);
         this.attack_cooldown_run = false;
         this.targeted = false;
         this.target_offset = new me.Vector2d(15, 16);
+        this.mode_select = "walking";
+        this.path = null;
     },
     update: function() {
         this.targeted = false;
         this.parent();
+
+        if (this.stats.stance === "aggresive" && this.mode_select !== "attacking" && this.mode_select !== "dying" && game.instances.player !== null) {
+            var distance = Math.floor(this.pos.distance(game.instances.player.pos));
+            if (distance < 100) {
+                this.mode_select = "attacking";
+            }
+        }
 
         if (this.target !== null) {
             if (this.targeted === false) {
@@ -278,6 +290,8 @@ game.npcs.EnemyNPC = game.WalkerNPC.extend({
                 this.target.pos.x = this.pos.x + this.target_offset.x;
                 this.target.pos.y = this.pos.y + this.target_offset.y;
                 this.target_text.text = this.stats.hp + "/" + this.stats.max_hp;
+                this.target_text.pos.x = this.pos.x + (this.renderable.width / 4);
+                this.target_text.pos.y = this.pos.y + (this.renderable.height / 1.5);
             }
         }
     },
@@ -319,61 +333,128 @@ game.npcs.EnemyNPC = game.WalkerNPC.extend({
     modeAttacking: function() {
         var this_vector = new me.Vector2d(this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2));
         var player = game.instances.player;
+        var player_vector = new me.Vector2d(player.pos.x + (player.width / 2), player.pos.y + (player.height / 2));
+        var angle = (this_vector.angle(player_vector) * (180 / Math.PI));
+        var player = game.instances.player;
         if (player === null) {
             this.mode_select = "walking";
             return;
         }
-        var player_vector = new me.Vector2d(player.pos.x + (player.width / 2), player.pos.y + (player.height / 2));
-        var angle = (this_vector.angle(player_vector) * (180 / Math.PI));
+
         this.vel.x = 0;
         this.vel.y = 0;
-        if (this_vector.distance(player_vector) < 25) {
-            if (this.attack_cooldown_run) {
-                if (me.timer.getTime() > (this.attack_time + this.attack_cooldown)) {
-                    this.attack_cooldown_run = false;
+
+        if (this.attack_cooldown_run) {
+            if (me.timer.getTime() > (this.attack_time + this.attack_cooldown)) {
+                this.attack_cooldown_run = false;
+                player.hurt(this.stats.dmg_min, this.stats.dmg_max, this.stats.dmg_type);
+            } else {
+                return;
+            }
+        }
+
+        if (this.path === null && parseInt(this_vector.distance(player_vector)) > 25) {
+            this.path = game.pathfinding.findPath(game.pathfinding.getObjectNode(this), game.pathfinding.getPlayerNode());
+            for (var i = 0; i < this.path.length; i++) {
+                this.path[i].x = (this.path[i].x * 16) + 8;
+                this.path[i].y = (this.path[i].y * 16) + 8;
+            }
+        } else if (this.path === null && parseInt(this_vector.distance(player_vector)) <= 25) {
+            this.attack_cooldown_run = true;
+            this.attack_time = me.timer.getTime();
+            var angle = (this_vector.angle(player_vector) * (180 / Math.PI));
+            if (angle <= 45 && angle >= -45) {
+                this.renderable.setCurrentAnimation("attack_right", "iddle_right");
+                this.flipX(false);
+            } else if (angle < -45 && angle >= -120) {
+                this.renderable.setCurrentAnimation("attack_up", "iddle_up");
+                this.flipX(false);
+            } else if ((angle < -120 && angle >= -180) || (angle > 120 && angle <= 180)) {
+                this.renderable.setCurrentAnimation("attack_right", "iddle_right");
+                this.flipX(true);
+            } else if (angle > 45 && angle <= 120) {
+                this.renderable.setCurrentAnimation("attack_down", "iddle_down");
+                this.flipX(false);
+            }
+        }
+
+        if (this.path !== null) {
+            if (parseInt(this_vector.distance(this.path[0])) > 0) {
+                var angle = (this_vector.angle(this.path[0]) * (180 / Math.PI));
+                if (angle <= 45 && angle >= -45) {
+                    this.vel.x += this.accel.x * me.timer.tick;
+                    this.renderable.setCurrentAnimation("right");
+                    this.flipX(false);
+                } else if (angle < -45 && angle >= -120) {
+                    this.vel.y -= this.accel.y * me.timer.tick;
+                    this.renderable.setCurrentAnimation("up");
+                    this.flipX(false);
+                } else if ((angle < -120 && angle >= -180) || (angle > 120 && angle <= 180)) {
+                    this.vel.x -= this.accel.x * me.timer.tick;
+                    this.renderable.setCurrentAnimation("right");
+                    this.flipX(true);
+                } else if (angle > 45 && angle <= 120) {
+                    this.vel.y += this.accel.y * me.timer.tick;
+                    this.renderable.setCurrentAnimation("down");
+                    this.flipX(false);
                 }
             } else {
-                player.hurt(this.stats.dmg_min, this.stats.dmg_max, this.stats.dmg_type);
-                this.attack_cooldown_run = true;
-                this.attack_time = me.timer.getTime();
+                this.path.splice(0, 1);
+                if (this.path.length === 0) {
+                    this.path = null;
+                }
             }
         }
-        if (angle <= 45 && angle >= -45) {
-            //right
-            this.flipX(false);
-            if (this_vector.distance(player_vector) >= 25) {
-                this.vel.x += this.accel.x * me.timer.tick;
-                this.renderable.setCurrentAnimation("right");
-            } else {
-                this.renderable.setCurrentAnimation("attack_right");
-            }
-        } else if (angle < -45 && angle >= -120) {
-            //top
-            if (this_vector.distance(player_vector) >= 25) {
-                this.vel.y -= this.accel.x * me.timer.tick;
-                this.renderable.setCurrentAnimation("up");
-            } else {
-                this.renderable.setCurrentAnimation("attack_up");
-            }
-        } else if ((angle < -120 && angle >= -180) || (angle > 120 && angle <= 180)) {
-            //right_flipped
-            this.flipX(true);
-            if (this_vector.distance(player_vector) >= 25) {
-                this.vel.x -= this.accel.x * me.timer.tick;
-                this.renderable.setCurrentAnimation("right");
-            } else {
-                this.renderable.setCurrentAnimation("attack_right");
-            }
-        } else if (angle > 45 && angle <= 120) {
-            //down
-            if (this_vector.distance(player_vector) >= 25) {
-                this.vel.y += this.accel.x * me.timer.tick;
-                this.renderable.setCurrentAnimation("down");
-            } else {
-                this.renderable.setCurrentAnimation("attack_down");
-            }
-        }
-    },
+        /*
+         
+         if (this_vector.distance(player_vector) < 25) {
+         if (this.attack_cooldown_run) {
+         if (me.timer.getTime() > (this.attack_time + this.attack_cooldown)) {
+         this.attack_cooldown_run = false;
+         }
+         } else {
+         player.hurt(this.stats.dmg_min, this.stats.dmg_max, this.stats.dmg_type);
+         this.attack_cooldown_run = true;
+         this.attack_time = me.timer.getTime();
+         }
+         }
+         if (angle <= 45 && angle >= -45) {
+         //right
+         this.flipX(false);
+         if (this_vector.distance(player_vector) >= 25) {
+         this.vel.x += this.accel.x * me.timer.tick;
+         this.renderable.setCurrentAnimation("right");
+         } else {
+         this.renderable.setCurrentAnimation("attack_right");
+         }
+         } else if (angle < -45 && angle >= -120) {
+         //top
+         if (this_vector.distance(player_vector) >= 25) {
+         this.vel.y -= this.accel.x * me.timer.tick;
+         this.renderable.setCurrentAnimation("up");
+         } else {
+         this.renderable.setCurrentAnimation("attack_up");
+         }
+         } else if ((angle < -120 && angle >= -180) || (angle > 120 && angle <= 180)) {
+         //right_flipped
+         this.flipX(true);
+         if (this_vector.distance(player_vector) >= 25) {
+         this.vel.x -= this.accel.x * me.timer.tick;
+         this.renderable.setCurrentAnimation("right");
+         } else {
+         this.renderable.setCurrentAnimation("attack_right");
+         }
+         } else if (angle > 45 && angle <= 120) {
+         //down
+         if (this_vector.distance(player_vector) >= 25) {
+         this.vel.y += this.accel.x * me.timer.tick;
+         this.renderable.setCurrentAnimation("down");
+         } else {
+         this.renderable.setCurrentAnimation("attack_down");
+         }
+         }*/
+    }
+    ,
     modeDying: function() {
         this.alive = false;
         if (this.target_text !== null) {
@@ -440,6 +521,7 @@ game.npcs.AllyNPC = game.ShadowObject.extend({
                 if (res[i].obj.type === "human_target") {
                     this.onTarget();
                 } else if (res[i].obj.type === "human_use") {
+                    game.instances.player.destroyUse();
                     this.onUse();
                 } else if (res[i].obj.type === "human_attack") {
                     this.onHit();
