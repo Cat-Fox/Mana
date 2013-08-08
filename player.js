@@ -80,7 +80,7 @@ game.Player = me.ObjectEntity.extend({
 
         game.instances.belt = new game.gui.Belt();
         me.game.add(game.instances.belt, game.guiLayer);
-        
+
         this.hp_text = new game.SmallText(this.pos.x + 5, this.posy + this.renderable.height, me.gamestat.getItemValue("hp") + "/" + me.gamestat.getItemValue("maxhp"), this.hp_font);
         me.game.add(this.hp_text, game.LAYERS.GUI - 1);
         me.game.sort();
@@ -96,15 +96,18 @@ game.Player = me.ObjectEntity.extend({
             me.game.sort();
         }
 
+        console.log(this);
 
     },
     update: function() {
         if (this.dying) {
             me.game.remove(this);
-            var dieText = me.entityPool.newInstanceOf("BigText", "YOU HAVE DIED\nAND YOU LOSE ALL YOUR MONEY IDIOT");
+            var dieText = me.entityPool.newInstanceOf("BigText", "YOU HAVE DIED\nAND YOU LOSE ALL YOUR MONEY\nPRES C TO RESPAWN");
             var deathSmoke = me.entityPool.newInstanceOf("DeathSmoke", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2));
-            me.game.add(deathSmoke, this.z);
+            me.game.add(deathSmoke);
             me.game.add(dieText, game.guiLayer);
+            var respawn_entity = new game.entities.Respawn(this.pos.x, this.pos.y);
+            me.game.add(respawn_entity)
             me.game.sort();
         }
 
@@ -112,7 +115,7 @@ game.Player = me.ObjectEntity.extend({
             me.debug.renderHitBox = !me.debug.renderHitBox;
         }
 
-        if(me.input.isKeyPressed("mana")) {
+        if (me.input.isKeyPressed("mana")) {
             this.updateEXP(100);
         }
 
@@ -151,7 +154,7 @@ game.Player = me.ObjectEntity.extend({
         // TODO:CHANGE
         //me.game.HUD.setItemValue("HP", me.gamestat.getItemValue("hp"));
         if (this.use_box !== null) {
-            if ((me.timer.getTime() - this.use_box_timer) > 200) {
+            if (me.timer.getTime() > (this.use_box_timer + 200)) {
                 this.destroyUse();
             }
         }
@@ -229,6 +232,7 @@ game.Player = me.ObjectEntity.extend({
                     //i need to handle use carefully
                     if (game.instances.dialog === null) {
                         if (me.input.isKeyPressed('use')) {
+                            console.log("use");
                             this.createUse();
                         }
                     }
@@ -303,10 +307,15 @@ game.Player = me.ObjectEntity.extend({
         this.target_box = null;
         me.game.remove(this.hp_text);
         this.hp_text = null;
-        
+
         game.instances.player = null;
     },
     updateHP: function(value) {
+        if (value > 0) {
+            var text = new game.effects.HealText(this.pos.x, this.pos.y, value+"HP");
+            me.game.add(text, game.LAYERS.GUI - 1);
+            me.game.sort();
+        }
         if ((me.gamestat.getItemValue("hp") + value) > me.gamestat.getItemValue("maxhp")) {
             me.gamestat.setValue("hp", me.gamestat.getItemValue("maxhp"));
         } else {
@@ -360,7 +369,6 @@ game.Player = me.ObjectEntity.extend({
     }, destroyUse: function() {
         me.game.remove(this.use_box);
         this.use_box = null;
-        this.use_box_timer = me.timer.getTime();
     }, updateTargetBox: function() {
         if ((this.renderable.isCurrentAnimation("up") === true) || (this.renderable.isCurrentAnimation("iddle_up") === true)) {
             this.target_box.pos.x = this.pos.x + 10;
@@ -380,6 +388,7 @@ game.Player = me.ObjectEntity.extend({
     }, createUse: function() {
         if (this.use_box === null) {
             this.use_box = me.entityPool.newInstanceOf("CollisionBox", this.target_box.pos.x, this.target_box.pos.y, "human_use");
+            this.use_box_timer = me.timer.getTime();
             me.game.add(this.use_box, 5);
             me.game.sort();
         }
@@ -423,7 +432,7 @@ game.Player = me.ObjectEntity.extend({
                 me.gamestat.getItemValue("equip").armor = null;
                 return false;
             }
-            this.renderable.image = me.loader.getImage(armor.attributes.image_name); 
+            this.renderable.image = me.loader.getImage(armor.attributes.image_name);
         }
         game.mechanic.updateStats();
         return true;

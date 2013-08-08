@@ -4,8 +4,8 @@ game.WalkerRat = game.npcs.EnemyNPC.extend({
         settings.image = me.loader.getImage("npc_rat");
         settings.spritewidth = 48;
         settings.spriteheight = 48;
-        var stats = new game.npcStats(20, 1, 4, "normal", 0, 0, 15);
-        this.parent(x, y, settings, true, stats);
+        var stats = new game.npcStats(20, 1, 4, "normal", 0, 0, 15, "aggresive");
+        this.parent(x - 15, y - 18, settings, true, stats);
         this.renderable.anim = [];
         this.renderable.addAnimation("iddle_right", [18, 19], 30);
         this.renderable.addAnimation("iddle_up", [36, 37, 38, 39], 30);
@@ -23,7 +23,6 @@ game.WalkerRat = game.npcs.EnemyNPC.extend({
         this.attack_cooldown = 1500;
         this.drop = new game.mechanic.DropTable(200, 999, 200);
         this.value = 200;
-        this.mode_select = "attacking";
         this.name = "Rat";
     }
 });
@@ -84,7 +83,6 @@ game.npcs.MimicWeapon = game.WalkerNPC.extend({
         this.updateColRect(0, 16, 0, 16);
         this.target_box = null;
         this.tooltip = null;
-        console.log(this);
     },
     update: function() {
         this.targeted = false;
@@ -208,8 +206,8 @@ game.npcs.Goblin = game.npcs.EnemyNPC.extend({
         settings.image = me.loader.getImage("npc_goblin");
         settings.spritewidth = 26;
         settings.spriteheight = 26;
-        var stats = new game.npcStats(30, 2, 12, "normal", 2, 0, 50);
-        this.parent(x, y, settings, true, stats);
+        var stats = new game.npcStats(30, 2, 12, "normal", 2, 0, 50, "aggresive");
+        this.parent(x - 10, y - 22, settings, true, stats);
         this.renderable.anim = [];
         this.renderable.addAnimation("attack_right", [0, 1, 2], 9);
         this.renderable.addAnimation("right", [4, 5, 6]);
@@ -226,7 +224,6 @@ game.npcs.Goblin = game.npcs.EnemyNPC.extend({
         this.attack_cooldown = 1500;
         this.drop = new game.mechanic.DropTable(200, 50, 200);
         this.attack_cooldown_run = false;
-        this.mode_select = "attacking";
         this.target_box = null;
         this.target_text = null;
         this.name = "Goblin";

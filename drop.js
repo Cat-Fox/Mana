@@ -101,24 +101,32 @@ game.mechanic.drop = function(x, y, container_value, drop_table) {
             //Dont generate too shitty items!
             var tooltip = [];
             var attributes = {};
+            var adjective = "";
             if (equip_type < 45) {
                 //ARMOR
                 equip_type = "armor";
                 armor_type = Number.prototype.random(0, 100);
-                if (armor_type < 50) {
+                if (armor_type < 25) {
                     armor_type = "light";
                     icon_image = "item-leatherarmor";
                     equip_image = "leatherarmor";
-                    attributes.sound = "itempick2";
+                    attributes.sound = "leather";
                     attributes.image_name = equip_image;
-                    name = "Light Armor";
-                } else {
-                    armor_type = "heavy";
+                    name = "Leather Armor";
+                } else if (armor_type < 50) {
+                    armor_type = "light";
                     icon_image = "item-mailarmor";
                     equip_image = "mailarmor";
                     attributes.sound = "itempick2";
                     attributes.image_name = equip_image;
-                    name = "Heavy Armor";
+                    name = "Mail Armor";
+                } else {
+                    armor_type = "heavy";
+                    icon_image = "item-platearmor";
+                    equip_image = "platearmor";
+                    attributes.sound = "itempick2";
+                    attributes.image_name = equip_image;
+                    name = "Plate Armor";
                 }
 
 
@@ -179,6 +187,16 @@ game.mechanic.drop = function(x, y, container_value, drop_table) {
                 //generate attributes
                 switch (equip_type) {
                     case "weapon":
+                        if (equip_value < 100) {
+                            adjective = "Rusty";
+                        } else if (equip_value < 200) {
+                            adjective = "Sharped";
+                        } else if (equip_value < 300) {
+                            adjective = "Famous";
+                        } else if (equip_value < 400) {
+                            adjective = "Superior";
+                        }
+
                         var dmg_min;
                         var dmg_max;
                         var normal_dmg = equip_value * 0.15;
@@ -208,10 +226,22 @@ game.mechanic.drop = function(x, y, container_value, drop_table) {
                         attributes.max_dmg = dmg_max;
                         tooltip.push(new game.gui.TextLine("Weapon type: " + weapon_type, game.fonts.white));
                         tooltip.push(new game.gui.TextLine("Damage: " + dmg_min + "-" + dmg_max, game.fonts.white));
-                        attributes.str_req = Math.floor(normal_dmg / 2);
-                        tooltip.push(new game.gui.TextLine("STR req. " + attributes.str_req, game.fonts.bad_red));
+                        if (equip_value >= 150) {
+                            attributes.str_req = Math.floor(normal_dmg / 2);
+                            tooltip.push(new game.gui.TextLine("STR req. " + attributes.str_req, game.fonts.bad_red));
+                        }
                         break;
                     case "armor":
+                        if (equip_value < 100) {
+                            adjective = "Useless";
+                        } else if (equip_value < 200) {
+                            adjective = "Weak";
+                        } else if (equip_value < 300) {
+                            adjective = "Thick";
+                        } else if (equip_value < 400) {
+                            adjective = "Sick";
+                        }
+
                         var armor = equip_value * 0.070;
                         var normal_armor, magic_armor;
                         switch (armor_type) {
@@ -234,6 +264,7 @@ game.mechanic.drop = function(x, y, container_value, drop_table) {
                         tooltip.push(new game.gui.TextLine("Magic Armor: " + magic_armor, game.fonts.white));
                         break;
                 }
+                name = adjective + " " + name;
                 if (stats_type === "magic") {
                     var effect = Number.prototype.random(0, game.mechanic.magic_effects.length - 1);
                     var picked_up = game.mechanic.magic_effects[effect];
@@ -255,7 +286,7 @@ game.mechanic.drop = function(x, y, container_value, drop_table) {
                 }
                 tooltip.splice(0, 0, new game.gui.TextLine(name, font));
                 var price = equip_value;
-                if(stats_type !== "magic"){
+                if (stats_type !== "magic") {
                     price = Math.floor(price / 2);
                 }
                 attributes.price = price;

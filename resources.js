@@ -48,6 +48,10 @@
     type: "image",
     src: "data/mailarmor.png"
 },  {
+    name: "platearmor",
+    type: "image",
+    src: "data/platearmor.png"
+},  {
     name: "firefox",
     type: "image",
     src: "data/firefox.png"
@@ -250,9 +254,9 @@
     type: "image",
     src: "data/death.png"
 },{
-    name: "message",
+    name: "firecamp1",
     type: "image",
-    src: "data/message.png"
+    src: "data/firecamp1.png"
 },{
     name: "particle",
     type: "image",
@@ -313,6 +317,14 @@
     src: "data/sounds/"
 }, {
     name: "coins",
+    type: "audio",
+    src: "data/sounds/"
+}, {
+    name: "chest_open",
+    type: "audio",
+    src: "data/sounds/"
+}, {
+    name: "chest_close",
     type: "audio",
     src: "data/sounds/"
 }, {

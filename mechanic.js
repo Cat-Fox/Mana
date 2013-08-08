@@ -82,7 +82,7 @@ game.mechanic.Stats = Object.extend({
         result = 30 + hp_end_plus + hp_level_plus + equip_plus;
         return result;
     },
-    getSale: function(){
+    getSale: function() {
         return Math.floor(this.int * 0.3);
     },
     getSalePrice: function(price) {
@@ -116,10 +116,10 @@ game.mechanic.Stats = Object.extend({
             var result = [];
             weapon = game.mechanic.get_inventory_item(weapon);
             result.push({type: "normal", min_dmg: weapon.attributes.min_dmg, max_dmg: weapon.attributes.max_dmg});
-            if (typeof weapon.fire_dmg !== "undefined") {
+            if (typeof weapon.attributes.fire_dmg !== "undefined") {
                 result.push({type: "magic", element: "fire", min_dmg: 0, max_dmg: weapon.attributes.fire_dmg});
             }
-            if (typeof weapon.ice_dmg !== "undefined") {
+            if (typeof weapon.attributes.ice_dmg !== "undefined") {
                 result.push({type: "magic", element: "ice", min_dmg: 0, max_dmg: weapon.attributes.ice_dmg});
             }
             return result;
@@ -223,13 +223,23 @@ game.mechanic.trigger_inventory = function() {
 
 game.mechanic.trigger_stash = function() {
     if (game.instances.stash === null && game.instances.backpack === null) {
-        game.instances.stash = new game.gui.Stash();
-        me.game.add(game.instances.stash, game.LAYERS.GUI);
-        me.game.sort();
+        game.mechanic.open_stash();
     } else if (game.instances.stash !== null) {
-        me.game.remove(game.instances.stash);
-        game.instances.stash = null;
+        game.mechanic.close_stash();
     }
+};
+
+game.mechanic.open_stash = function() {
+    game.instances.stash = new game.gui.Stash();
+    me.game.add(game.instances.stash, game.LAYERS.GUI);
+    me.game.sort();
+    game.instances.audio.channels.effects.addEffect("chest_open");
+};
+
+game.mechanic.close_stash = function() {
+    me.game.remove(game.instances.stash);
+    game.instances.stash = null;
+    game.instances.audio.channels.effects.addEffect("chest_close");
 };
 
 game.mechanic.inventory_push = function(item) {
@@ -360,7 +370,7 @@ game.mechanic.trigger_item = function(guid) {
             var belt = me.gamestat.getItemValue("belt");
             for (var i = 0; i < belt.length; i++) {
                 if (belt[i] === guid) {
-                    belt.splice(i, 1);
+                    belt[i] = null;
                 }
             }
             game.mechanic.inventory_drop(guid);
@@ -413,17 +423,55 @@ game.mechanic.load_game = function() {
     me.gamestat.setValue("maxhp", parseInt(localStorage.max_hp));
     me.gamestat.setValue("exp", parseInt(localStorage.exp));
     me.gamestat.setValue("money", parseInt(localStorage.money));
-    me.gamestat.setValue("inventory", JSON.parse(localStorage.inventory));
+    var inventory = JSON.parse(localStorage.inventory);
+    for(var i = 0; i < inventory.length; i++){
+        if(inventory[i] === null){
+            break;
+        }
+        var tooltip = [];
+        for(var j = 0; j < inventory[i].tooltip_text.length; j++){
+            var font = game.fonts.basic;
+            switch(inventory[i].tooltip_text[j].font.color){
+                case "black":
+                    break;
+                case "red":
+                    font = game.fonts.bad_red;
+                    break;
+                case "lime":
+                    font = game.fonts.good_green;
+                    break;
+                case "gold":
+                    font = game.fonts.gold;
+                    break;
+                case "purple":
+                    font = game.fonts.rare_purple;
+                    break;
+                case "teal":
+                    font = game.fonts.teal;
+                    break;
+                case "white":
+                    font = game.fonts.white;
+                    break;
+                case "blue":
+                    font = game.fonts.magic_blue;
+                    break;
+                default:
+                    font = game.fonts.basic;
+                    break;
+            }
+            tooltip.push(new game.gui.TextLine(inventory[i].tooltip_text[j].text, font));
+        }
+        inventory[i] = new game.ItemObject(inventory[i].name, inventory[i].icon_name, inventory[i].type, inventory[i].rarity, inventory[i].attributes, tooltip, inventory[i].guid);
+    }
+    me.gamestat.setValue("inventory", inventory);
     me.gamestat.setValue("stash", JSON.parse(localStorage.stash));
     me.gamestat.setValue("stash_money", parseInt(JSON.parse(localStorage.stash_money)));
     me.gamestat.setValue("equip", JSON.parse(localStorage.equip));
     me.gamestat.setValue("belt", JSON.parse(localStorage.belt));
-    console.log(me.gamestat.getItemValue("belt"));
     me.gamestat.setValue("skill", parseInt(localStorage.skill_points));
     var json = JSON.parse(localStorage.history);
-    var history = new game.mechanic.History(json.killed_monsters, json.npcs_talks);
+    var history = new game.mechanic.History(json.killed_monsters, json.npcs_talks, json.deaths);
     me.gamestat.setValue("history", history);
-    console.log(me.gamestat.getItemValue("history"));
     var old_stats = JSON.parse(localStorage.stats);
     var stats = new game.mechanic.Stats(old_stats.str, old_stats.agi, old_stats.end, old_stats.int, true);
     stats.getBonusAttr("str");
@@ -434,7 +482,11 @@ game.mechanic.load_game = function() {
 };
 
 game.mechanic.respawn = function() {
-
+    me.gamestat.getItemValue("history").previous_level = "respawn";
+    me.gamestat.setValue("hp", me.gamestat.getItemValue("maxhp"));
+    me.gamestat.setValue("money", 0);
+    me.levelDirector.loadLevel("test_map");
+    game.mechanic.initialize_level();
 };
 
 game.mechanic.generateShop = function(type, value) {
@@ -508,7 +560,6 @@ game.mechanic.stat_requirement = function(stat) {
 };
 
 game.mechanic.trigger_rain = function() {
-    console.log(game.instances.rain);
     if (game.instances.rain === null) {
         game.instances.rain = new game.effects.Rain();
         me.game.add(game.instances.rain, game.guiLayer - 1);
@@ -530,6 +581,8 @@ game.mechanic.initialize_level = function() {
     } else if (me.game.currentLevel.name === "cave") {
         game.instances.audio.channels.ambient.changeAmbient("battle_of_souls");
     }
+    
+    game.instances.collisionMap = new game.pathfinding.CollisionMap();
 };
 
 game.mechanic.trigger_options = function() {
@@ -545,25 +598,32 @@ game.mechanic.trigger_options = function() {
 
 game.mechanic.save_settings = function() {
     localStorage.options = true;
-    if(me.audio.isAudioEnable()){
+    if (me.audio.isAudioEnable()) {
         localStorage.audio_enabled = true;
     } else {
         localStorage.audio_enabled = false;
     }
-    
+
     localStorage.ambient_volume = game.instances.audio.channels.ambient.volume;
     localStorage.effects_volume = game.instances.audio.channels.effects.volume;
     game.instances.console.post("Options has been saved");
 };
 
-game.mechanic.load_settings = function(){
-    if(typeof localStorage.options !== "undefined"){
+game.mechanic.load_settings = function() {
+    if (typeof localStorage.options !== "undefined") {
         game.instances.console.post("Options save found");
         var boolean = (localStorage.audio_enabled === "true");
-        console.log(boolean);
         game.instances.audio.switchEnable(boolean);
         game.instances.audio.channels.ambient.volume = parseFloat(localStorage.ambient_volume);
         game.instances.audio.channels.effects.volume = parseFloat(localStorage.effects_volume);
-        
     }
 };
+
+game.mechanic.BattleMode = Object.extend({
+    in_battle: null,
+    alive_enemies: null,
+    init: function() {
+        this.in_battle = false;
+        this.alive_enemies = [];
+    }
+});

@@ -70,9 +70,19 @@ game.Backpack = me.ObjectEntity.extend({
         context.lineTo(0, 0);
         context.stroke();
 
+        context.fillStyle = "black";
+        context.fillRect(42, 15, 40, 40);
+
+
         //Texts
         this.font = game.fonts.basic;
         this.bm_font = new me.BitmapFont("geebeeyay-8x8", 8);
+
+        var height = 58;
+
+        this.font.draw(context, "Armor", 7, height);
+        this.font.draw(context, "Weapon", 43, height);
+        this.font.draw(context, "Artefact", 87, height);
 
         this.font.draw(context, "Inventory", 15 + 135, 5 + 2);
         this.font.draw(context, "Belt", 15 + 135, 147);
@@ -113,7 +123,6 @@ game.Backpack = me.ObjectEntity.extend({
         height = height + this.font.measureText(context, "HP").height;
         this.attributes.str = new game.gui.AttributeText(105, height, "str");
         me.game.add(this.attributes.str, this.entity_layer);
-        console.log(this.attributes.str);
         height = height + this.font.measureText(context, "HP").height;
         this.attributes.agi = new game.gui.AttributeText(105, height, "agi");
         me.game.add(this.attributes.agi, this.entity_layer);
@@ -229,17 +238,7 @@ game.Backpack = me.ObjectEntity.extend({
         }
     }, draw: function(context) {
         this.parent(context);
-
-        context.fillStyle = "black";
-        context.fillRect(57, 20, 40, 40);
-
-        var height = 65;
-
-        this.font.draw(context, "Armor", 22, height);
-        this.font.draw(context, "Weapon", 58, height);
-        this.font.draw(context, "Artefact", 102, height);
-
-        height = 100;
+        var height = 100;
         var x_pos = this.pos.x + 90;
         this.bm_font.draw(context, me.gamestat.getItemValue("level"), x_pos, height);
     },
@@ -327,9 +326,15 @@ game.Backpack = me.ObjectEntity.extend({
                 this.belt_tiles[i].iconDown(this.selected_tile);
             }
 
+            if (me.input.mouse.pos.x >= this.pos.x + 42 && me.input.mouse.pos.x <= this.pos.x + 42 + 40) {
+                if (me.input.mouse.pos.y >= this.pos.y + 15 && me.input.mouse.pos.y <= this.pos.y + 15 + 40) {
+                    game.mechanic.trigger_item(me.gamestat.getItemValue("inventory")[this.selected_tile].guid);
+                }
+            }
+
             //then drop tile
             this.drop_tile.mouseUp(this.selected_tile);
-            console.log(selected);
+
             //then tile
             this.tiles[selected.row][selected.column].mouseUp();
         }
@@ -340,6 +345,7 @@ game.CharacterTile = me.GUI_Object.extend({
     id: null,
     icon: null,
     type: null,
+    tooltip: null,
     init: function(x, y, type, id) {
         settings = {};
         settings.image = "inventory_tile";
@@ -349,7 +355,7 @@ game.CharacterTile = me.GUI_Object.extend({
         this.floating = true;
         this.type = type;
         this.id = id;
-
+        this.tooltip = null;
         if (this.type !== "belt") {
             if (me.gamestat.getItemValue("equip")[this.type] !== null) {
                 this.addIcon(me.gamestat.getItemValue("equip")[this.type]);
@@ -359,8 +365,27 @@ game.CharacterTile = me.GUI_Object.extend({
                 this.addIcon(me.gamestat.getItemValue("belt")[this.id]);
             }
         }
-    }
-    , removeItem: function() {
+    },
+    update: function() {
+        if (this.containsPointV(me.input.mouse.pos)) {
+            this.onMouseOver();
+        } else {
+            this.onMouseOut();
+        }
+
+        if (this.type !== "belt") {
+            if (me.gamestat.getItemValue("equip")[this.type] !== null && this.icon === null) {
+                this.addIcon(me.gamestat.getItemValue("equip")[this.type]);
+            } else if (me.gamestat.getItemValue("equip")[this.type] !== null && this.icon !== null) {
+                if ((game.mechanic.get_inventory_item(me.gamestat.getItemValue("equip")[this.type]).icon_name !== this.icon.image)) {
+                    this.addIcon(me.gamestat.getItemValue("equip")[this.type]);
+                }
+            }
+        }
+
+        this.parent();
+    },
+    removeItem: function() {
         this.removeIcon();
         if (this.type !== "belt") {
             switch (this.type) {
@@ -372,9 +397,12 @@ game.CharacterTile = me.GUI_Object.extend({
                     break;
             }
         }
-    }, onDestroyEvent: function() {
+    },
+    onDestroyEvent: function() {
         this.removeIcon();
-    }, addIcon: function(guid) {
+        this.onMouseOut();
+    },
+    addIcon: function(guid) {
         this.removeIcon();
 
         var object = game.mechanic.get_inventory_item(guid);
@@ -392,7 +420,6 @@ game.CharacterTile = me.GUI_Object.extend({
                     break;
             }
             if (success) {
-                console.log(this.pos.x + " " + this.pos.y + " " + object.icon_name);
                 this.icon = new game.Icon(this.pos.x, this.pos.y, object.icon_name);
                 me.game.add(this.icon, this.z + 1);
                 me.game.sort();
@@ -417,20 +444,44 @@ game.CharacterTile = me.GUI_Object.extend({
 
         return true;
 
-    }, removeIcon: function() {
+    },
+    removeIcon: function() {
         if (this.icon !== null) {
             me.game.remove(this.icon);
             this.icon = null;
         }
 
-    }, onClick: function() {
+    },
+    onClick: function() {
 
-    }, iconDown: function(selected_tile) {
+    },
+    iconDown: function(selected_tile) {
         if (this.containsPoint(me.input.mouse.pos.x, me.input.mouse.pos.y)) {
             var object = me.gamestat.getItemValue("inventory")[selected_tile];
             if (object.type === this.type || this.type === "belt") {
                 this.addIcon(object.guid);
             }
+        }
+    },
+    onMouseOver: function() {
+        if (this.tooltip === null && this.icon !== null) {
+            var object;
+            if (this.type === "belt") {
+                object = game.mechanic.get_inventory_item(me.gamestat.getItemValue(this.type)[this.id]);
+            } else {
+                object = game.mechanic.get_inventory_item(me.gamestat.getItemValue("equip")[this.type]);
+            }
+            if (object.tooltip_text !== null) {
+                this.tooltip = new game.gui.Tooltip(this.pos.x + this.width, this.pos.y, object.tooltip_text);
+                me.game.add(this.tooltip, this.z + 3);
+                me.game.sort();
+            }
+        }
+    },
+    onMouseOut: function() {
+        if (this.tooltip !== null) {
+            me.game.remove(this.tooltip);
+            this.tooltip = null;
         }
     }
 });
@@ -500,7 +551,6 @@ game.InventoryTile = me.GUI_Object.extend({
         }
         if (this.icon === null && container[this.id] !== null) {
             this.icon_name = container[this.id].icon_name;
-            console.log(this.pos.x + " " + this.pos.y + " " + this.icon_name);
             this.icon = me.entityPool.newInstanceOf("Icon", this.pos.x, this.pos.y, this.icon_name);
             me.game.add(this.icon, this.z + 2);
             me.game.sort();
@@ -624,6 +674,7 @@ game.ExpBar = me.ObjectEntity.extend({
 });
 
 game.Icon = me.ObjectEntity.extend({
+    image: null,
     init: function(x, y, image) {
         image = typeof image !== 'undefined' ? image : "undefined";
         settings = {};
@@ -635,6 +686,7 @@ game.Icon = me.ObjectEntity.extend({
         this.renderable.addAnimation("active", [0, 1, 2, 3, 4]);
         this.renderable.addAnimation("inactive", [2]);
         this.renderable.setCurrentAnimation("inactive");
+        this.image = image;
     }
 });
 
@@ -650,7 +702,7 @@ game.Button = me.GUI_Object.extend({
     init: function(x, y, text, title) {
         this.text = text;
         this.title = title;
-        this.font = game.fonts.buttons_font;
+        this.font = game.fonts.basic;
         this.tooltip = null;
         settings = {};
         settings.spritewidth = 75;
@@ -723,7 +775,7 @@ game.Button = me.GUI_Object.extend({
         context.lineTo(this.width, this.height);
         context.lineTo(1, this.height);
         context.stroke();
-        this.font.draw(context, this.text, 5, 4);
+        this.font.draw(context, this.text, 5, 2);
     }, onDestroyEvent: function() {
         this.parent();
 
@@ -906,7 +958,6 @@ game.gui.TextLine = Object.extend({
 game.gui.Tooltip = me.ObjectEntity.extend({
     lines: null,
     init: function(x_pos, y_pos, text_lines) {
-
         //creating context
         settings = {};
         var height = 6;
@@ -994,7 +1045,6 @@ game.gui.Console = me.ObjectEntity.extend({
         for (var i = 0; i < this.lines.length; i++) {
             this.lines[i].pos.y += 12;
         }
-        console.log(this.lines);
     },
     clearAll: function() {
         for (var i = 0; i < this.lines.length; i++) {
@@ -1052,7 +1102,7 @@ game.gui.Belt = me.ObjectEntity.extend({
         me.game.sort();
     }, update: function() {
         for (var i = 0; i < this.tiles.length; i++) {
-            if (this.tiles[i].icon !== null && typeof me.gamestat.getItemValue("belt")[i] === null) {
+            if (this.tiles[i].icon !== null && me.gamestat.getItemValue("belt")[i] === null) {
                 me.game.remove(this.tiles[i].icon);
                 this.tiles[i].icon = null;
             }
@@ -1188,21 +1238,19 @@ game.gui.Credits = me.ObjectEntity.extend({
 
         var height = font.measureText(context, "M").height;
         var total_height = 120;
-        font.draw(context, "PROGRAMMING - ZARAKA", 50, total_height);
-        total_height += height;
-        font.draw(context, "MELONJS GAME ENGINE", 50, total_height);
-        total_height += height;
-        total_height += height;
-        font.draw(context, "TILESETS", 50, total_height);
-        total_height += height;
-        font.draw(context, "MOZZILA BROWSERQUEST", 50, total_height);
-        total_height += height;
-        font.draw(context, "OPENGAMEART.ORG", 50, total_height);
-        total_height += height;
-        font.draw(context, "ADDITIONAL ART - VOX", 50, total_height);
-        total_height += height;
-        total_height += height;
-        font.draw(context, "HELP WANTED! CAN YOU CREATE GAME?", 50, total_height);
+        font.draw(context,
+                "PROGRAMMING - ZARAKA\n\
+        MELONJS GAME ENGINE\n\
+        \n\
+        TILESETS\n\
+        MOZZILA BROWSERQUEST\n\
+        OPENGAMEART.ORG\n\
+        \n\
+        MUSIC\n\
+        ORI DACHOVSKY\n\
+        HELP WANTED! CAN YOU CREATE GAME?",
+                50,
+                total_height);
         this.parent(x, y, settings);
         this.setVelocity(0.1, -0.1);
     }, update: function() {
@@ -1668,7 +1716,7 @@ game.gui.MoneyTab = me.ObjectEntity.extend({
         context.strokeRect(0, 0, 65, 16);
         this.parent(x, y, settings);
         this.floating = true;
-        this.icon = new game.Icon(this.pos.x, this.pos.y, "money-1");
+        this.icon = new game.Icon(this.pos.x, this.pos.y + 1, "money-1");
         this.icon.floating = true;
         me.game.add(this.icon, game.guiLayer + 1);
         this.font = game.fonts.white;
@@ -1721,7 +1769,7 @@ game.gui.EnemyPanel = me.ObjectEntity.extend({
         context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
         this.parent((game.screenWidth / 2) - (settings.spritewidth / 2), 0, settings);
         this.floating = true;
-        this.name_object = new game.SmallText(this.pos.x + ((settings.spritewidth / 2) - game.fonts.white.measureText(me.video.getScreenContext(), this.name).width), 1, this.name, game.fonts.white);
+        this.name_object = new game.SmallText(this.pos.x + 3, 1, this.name, game.fonts.white);
         this.name_object.floating = true;
         me.game.add(this.name_object, game.guiLayer + 1);
         me.game.sort();
@@ -1864,7 +1912,6 @@ game.gui.Options = game.gui.Window.extend({
         this.sliders.ambient = new game.gui.SliderContainer(45, 72, parseInt(game.instances.audio.channels.ambient.volume * 100), game.instances.audio.channels.ambient);
         me.game.add(this.sliders.ambient, game.LAYERS.TOP + 1);
         game.fonts.white.draw(context, "Effects volume", 20, 78);
-        console.log(game.instances.audio.channels.effects.volume);
         this.sliders.effects = new game.gui.SliderContainer(45, 100, parseInt(game.instances.audio.channels.effects.volume * 100), game.instances.audio.channels.effects);
         me.game.add(this.sliders.effects, game.LAYERS.TOP + 1);
         this.buttons.save = new game.gui.FuncButton(30, 160, "Save", "", game.mechanic.save_settings);

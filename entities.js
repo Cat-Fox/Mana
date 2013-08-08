@@ -72,7 +72,6 @@ game.Shadow = me.ObjectEntity.extend({
 game.Smile = me.ObjectEntity.extend({
     timer: null,
     init: function(x, y, smile) {
-        console.log("creating smile");
         settings = {};
         settings.image = "smiles16";
         settings.spritewidth = 16;
@@ -98,14 +97,15 @@ game.Smile = me.ObjectEntity.extend({
     }
 });
 
-game.Fire = me.ObjectEntity.extend({
+game.entities.Firecamp = me.ObjectEntity.extend({
     attack_timer: null,
     attacking: false,
     init: function(x, y) {
         settings = {};
         settings.spritewidth = 16;
-        settings.sriteheight = 16;
-        this.parent(x, y, settings);
+        settings.sriteheight = 32;
+        settings.image = "firecamp1";
+        this.parent(x, y + 16, settings);
         this.updateColRect(0, 16, 0, 16);
         this.collidable = true;
         this.type = "fire";
@@ -241,11 +241,9 @@ game.DeathSmoke = me.ObjectEntity.extend({
 game.Exit = me.ObjectEntity.extend({
     from: null,
     init: function(x, y, settings){
-        settings.spritewidth;
         this.parent(x, y, settings);
         this.from = settings.from;
         this.name = "exit";
-        console.log(this);
     }
 });
 
@@ -275,5 +273,21 @@ game.ChangeLevel = me.LevelEntity.extend({
         }
         
         game.mechanic.initialize_level();
+    }
+});
+
+
+game.entities.Respawn = me.ObjectEntity.extend({
+    init: function(x, y){
+        settings = {};
+        settings.spritewidth = 16;
+        settings.spritewidth = 16;
+        this.parent(x, y, settings);
+    },
+    update: function(){
+        if(me.input.isKeyPressed("use")){
+            me.game.remove(this);
+            game.mechanic.respawn();
+        }
     }
 });

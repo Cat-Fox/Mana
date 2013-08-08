@@ -6,8 +6,9 @@ game.ItemObject = Object.extend({
     attributes: null,
     tooltip_text: null,
     rarity: null,
-    init: function(name, icon_name, type, rarity, attributes, tooltip) {
-        this.guid = game.mechanic.guid();
+    init: function(name, icon_name, type, rarity, attributes, tooltip, guid) {
+        guid = typeof guid !== 'undefined' ? guid : game.mechanic.guid();
+        this.guid = guid;
         this.name = name;
         this.icon_name = icon_name;
         this.type = type;               //weapon, armor, artefact, consumable, others
@@ -47,6 +48,7 @@ game.consumables.Layout = game.ShadowObject.extend({
                 if (res[i].obj.type === "human_target") {
                     targeted = true;
                 } else if (res[i].obj.type === "human_use") {
+                    game.instances.player.destroyUse();
                     this.onUse();
                 } else if (res[i].obj.type === "player" && this.autopick) {
                     this.onUse();
@@ -125,8 +127,8 @@ game.consumables.HealthPotion = game.consumables.Layout.extend({
     onUse: function() {
         var tooltip_text = [];
         tooltip_text.push(new game.gui.TextLine("Health Potion", game.fonts.bad_red));
-        tooltip_text.push(new game.gui.TextLine("Heals 75 HP", game.fonts.bad_red));
-        var item = new game.ItemObject("Health Potion", "item-flask-red", "consumable", "normal", {heal: 75, sound: "bottle"}, tooltip_text);
+        tooltip_text.push(new game.gui.TextLine("Heals 30 HP", game.fonts.bad_red));
+        var item = new game.ItemObject("Health Potion", "item-flask-red", "consumable", "normal", {heal: 30, sound: "bottle"}, tooltip_text);
 
         this.onPickup(item)
     }
@@ -145,8 +147,6 @@ game.consumables.Burger = game.consumables.Layout.extend({
     onUse: function() {
         game.instances.audio.channels.effects.addEffect("itempick2");
         game.instances.player.updateHP(30);
-        var text = new game.effects.HealText(this.pos.x, this.pos.y, "30HP");
-        me.game.add(text, game.LAYERS.GUI - 1);
         me.game.sort();
         me.game.remove(this);
     }
