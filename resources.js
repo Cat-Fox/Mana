@@ -516,6 +516,10 @@
     type: "image",
     src: "data/backpack_icon.png"
 },{
+    name: "options_icon",
+    type: "image",
+    src: "data/options_icon.png"
+},{
     name: "death",
     type: "image",
     src: "data/death.png"
