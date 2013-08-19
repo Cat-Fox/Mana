@@ -101,7 +101,7 @@ game.gui.InventoryWindow = me.ObjectEntity.extend({
         me.game.add(this.inventory_buttons.backpack, this.entity_layer);
         this.inventory_buttons.manabook = new game.gui.InventoryButton(384 - 80, 5 + 2 + 16 + 2, "Mana Book", "book", game.mechanic.open_manabook);
         me.game.add(this.inventory_buttons.manabook, this.entity_layer);
-        this.inventory_buttons.options = new game.gui.InventoryButton(384 - 80, 5 + (2 * 2) + (16 * 2) + 2, "Options", "book", game.mechanic.open_options);
+        this.inventory_buttons.options = new game.gui.InventoryButton(384 - 80, 5 + (2 * 2) + (16 * 2) + 2, "Options", "options_icon", game.mechanic.open_options);
         me.game.add(this.inventory_buttons.options, this.entity_layer);
         me.game.sort();
         me.input.registerPointerEvent('mouseup', me.game.viewport, this.mouseUp.bind(this));
@@ -132,7 +132,6 @@ game.gui.ManaBook = game.gui.InventoryWindow.extend({
         game.fonts.basic.draw(context, "Belt", 30, 152);
 
         this.selected_tile = null;
-
         this.tiles = new Array(64);
         var i = 0;
         for (var row = 0; row < 8; row++) {
@@ -152,9 +151,7 @@ game.gui.ManaBook = game.gui.InventoryWindow.extend({
     },
     onDestroyEvent: function() {
         this.parent();
-
-
-
+        
         for (var i = 0; i < this.tiles.length; i++) {
             me.game.remove(this.tiles[i]);
             this.tiles[i] = null;
@@ -164,7 +161,6 @@ game.gui.ManaBook = game.gui.InventoryWindow.extend({
             me.game.remove(this.belt_tiles[i]);
             this.belt_tiles[i] = null;
         }
-
     },
     getTileFromID: function(id) {
         if (id < this.tiles.length - 1) {
@@ -204,18 +200,18 @@ game.gui.InventoryOptions = game.gui.InventoryWindow.extend({
         var context = this.renderable.image.getContext("2d");
         game.fonts.white.draw(context, "Enable sounds", 20, 20);
         game.fonts.basic.draw(context, "Options", 150, 7);
-        this.checkboxes.enable_sound = new game.gui.CheckBox(this.pos.x + 10, this.pos.y + 40, me.audio.isAudioEnable(), game.instances.audio.switchEnable);
+        this.checkboxes.enable_sound = new game.gui.CheckBox(this.pos.x + 20, this.pos.y + 30, me.audio.isAudioEnable(), game.instances.audio.switchEnable);
         me.game.add(this.checkboxes.enable_sound, this.entity_layer);
         game.fonts.white.draw(context, "Music volume", 20, 50);
-        this.sliders.ambient = new game.gui.SliderContainer(this.pos.x + 10, 72, parseInt(game.instances.audio.channels.ambient.volume * 100), game.instances.audio.channels.ambient);
+        this.sliders.ambient = new game.gui.SliderContainer(this.pos.x + 10, 68, parseInt(game.instances.audio.channels.ambient.volume * 100), game.instances.audio.channels.ambient);
         me.game.add(this.sliders.ambient, this.entity_layer);
         game.fonts.white.draw(context, "Effects volume", 20, 78);
-        this.sliders.effects = new game.gui.SliderContainer(this.pos.x + 10, 100, parseInt(game.instances.audio.channels.effects.volume * 100), game.instances.audio.channels.effects);
+        this.sliders.effects = new game.gui.SliderContainer(this.pos.x + 10, 95, parseInt(game.instances.audio.channels.effects.volume * 100), game.instances.audio.channels.effects);
         me.game.add(this.sliders.effects, this.entity_layer);
-        this.buttons.save = new game.gui.FuncButton(this.pos.x + 10, this.pos.y + 140, "Save Options", "", null, game.mechanic.save_settings);
-        this.buttons.save_game = game.gui.FuncButton(this.pos.x + 10, this.pos.y + 150, "Save Hero", "Will save game", null, game.mechanic.save_game);
-        me.game.add(this.buttons.save_game, this.entity_layer);
+        this.buttons.save = new game.gui.FuncButton(this.pos.x + 10, this.pos.y + 120, "Save Options", "", null, game.mechanic.save_settings);
         me.game.add(this.buttons.save, this.entity_layer);
+        this.buttons.save_game = new game.gui.FuncButton(this.pos.x + 10, this.pos.y + 140, "Save Hero", "", null, game.mechanic.save_game);
+        me.game.add(this.buttons.save_game, this.entity_layer);
     },
     onDestroyEvent: function() {
         this.parent();
