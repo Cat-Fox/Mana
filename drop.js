@@ -164,8 +164,8 @@ game.mechanic.drop = function(x, y, container_value, drop_table) {
                     equip_image = "Morningstar";
                     weapon_type = "mace";
                     name = "Mace";
-                    attributes.offset_x = -6;
-                    attributes.offset_y = -10;
+                    attributes.offset_x = -4;
+                    attributes.offset_y = -4;
                 }
                 attributes.object_name = equip_image;
                 attributes.sound = "metal-clash";

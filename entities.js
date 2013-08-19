@@ -66,6 +66,7 @@ game.Shadow = me.ObjectEntity.extend({
         settings.spriteheight = 16;
         this.parent(x, y, settings);
         this.collidable = false;
+        this.isPersistent = true;
     }
 });
 
@@ -289,5 +290,20 @@ game.entities.Respawn = me.ObjectEntity.extend({
             me.game.remove(this);
             game.mechanic.respawn();
         }
+    }
+});
+
+game.entities.Fireball = me.ObjectEntity.extend({
+    init: function(x, y){
+        settings = {};
+        settings.spritewidth = 16;
+        settings.spriteheight = 16;
+        settings.image = "sparks";
+        this.parent(x, y, settings);
+        this.renderable.addAnimation("right", [0,1,2,3,4], 4);
+        this.renderable.setCurrentAnimation("right");
+        
+        
+        this.setVelocity(2.0, 0.0);
     }
 });

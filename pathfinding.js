@@ -15,8 +15,8 @@ game.pathfinding.CollisionMap = Object.extend({
             this.array[i] = new Array(collisionLayer.cols);
         }
 
-        for (var row = 0; row < this.array.length; row++) {
-            for (var column = 0; column < this.array[row].length; column++) {
+        for (var column = 0; column < collisionLayer.cols; column++) {
+            for (var row = 0; row < collisionLayer.rows; row++) {
                 if (collisionLayer.layerData[row][column] === null) {
                     this.array[row][column] = true;
                 } else {
@@ -24,11 +24,52 @@ game.pathfinding.CollisionMap = Object.extend({
                 }
             }
         }
+        /*
+        for (var column = 0; column < this.array[1].length; column++) {
+            for (var row = 0; row < this.array.length; row++) {
+                var node;
+                if (this.array[row][column]) {
+                    node = new game.pathfinding.Node(row , column);
+                } else
+                {
+                    node = new game.pathfinding.CollisionNode(row , column);
 
-    }
+                }
+                me.game.add(node, game.LAYERS.ITEMS);
+
+            }
+        }
+        me.game.sort();*/ 
+   }
 });
 
 game.pathfinding.Node = me.ObjectEntity.extend({
+    timer: null,
+    init: function(x, y) {
+        settings = {};
+        settings.spritewidth = 16;
+        settings.spriteheight = 16;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+
+        var context = settings.image.getContext("2d");
+        context.strokeStyle = "green";
+        context.lineWidth = 2;
+        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+        this.parent(x * 16, y * 16, settings);
+        this.timer = me.timer.getTime();
+    },
+    update: function() {
+        /*
+         if (me.timer.getTime() > (this.timer + 5000)) {
+         me.game.remove(this);
+         }
+         
+         this.parent();
+         return false;*/
+    }
+});
+
+game.pathfinding.CollisionNode = me.ObjectEntity.extend({
     timer: null,
     init: function(x, y) {
         settings = {};
@@ -43,13 +84,13 @@ game.pathfinding.Node = me.ObjectEntity.extend({
         this.parent(x * 16, y * 16, settings);
         this.timer = me.timer.getTime();
     },
-    update: function(){
-        if(me.timer.getTime() > (this.timer + 5000)){
-            me.game.remove(this);
-        }
-    
-        this.parent();
-        return false;
+    update: function() {/*
+     if (me.timer.getTime() > (this.timer + 5000)) {
+     me.game.remove(this);
+     }
+     
+     this.parent();
+     return false;*/
     }
 });
 
@@ -109,8 +150,6 @@ game.pathfinding.getSuroundingNodes = function(node) {
         var collision = game.instances.collisionMap.array[possible[i].x][possible[i].y];
         if (collision) {
             result.push(new me.Vector2d(possible[i].x, possible[i].y));
-            //var square = new game.pathfinding.Node(possible[i].x, possible[i].y);
-            //me.game.add(square, game.LAYERS.ITEMS);
         }
     }
     //me.game.sort();
@@ -124,9 +163,9 @@ game.pathfinding.AStarNode = Object.extend({
     init: function(cost, current, target, closed_list) {
         this.cost = cost + 1;
         this.nodes = game.pathfinding.getSuroundingNodes(current);
-        for(var i = 0; i < this.nodes.length; i++){
-            for(var j = 0; j < closed_list.length; j++){
-                if(this.nodes[i].equals(closed_list[j])){
+        for (var i = 0; i < this.nodes.length; i++) {
+            for (var j = 0; j < closed_list.length; j++) {
+                if (this.nodes[i].equals(closed_list[j])) {
                     this.nodes.splice(i, 1);
                     i = this.nodes.length;
                     break;
@@ -145,7 +184,6 @@ game.pathfinding.AStarNode = Object.extend({
                 lowest = i;
             }
         }
-
         return lowest;
     }
 });

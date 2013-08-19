@@ -1,4 +1,3 @@
-
 game.BackpackIcon = me.GUI_Object.extend({
     backpack: null,
     button_timer: 0,
@@ -12,30 +11,232 @@ game.BackpackIcon = me.GUI_Object.extend({
 
         this.floating = true;
     },
-    update: function() {
-        if (this.timing === true) {
-            if (me.timer.getTime() > this.button_timer + 300) {
-                this.timing = false;
-                this.button_timer = 0;
-            }
-        } else {
-            if (me.input.isKeyPressed("inventory")) {
-                this.triggerBackpack();
-                this.button_timer = me.timer.getTime();
-                this.timing = true;
-            }
-        }
-        this.parent();
-    },
     onClick: function() {
-        this.triggerBackpack();
-    },
-    triggerBackpack: function() {
-        game.mechanic.trigger_inventory();
+        game.mechanic.trigger_backpack();
     }
 });
 
-game.Backpack = me.ObjectEntity.extend({
+game.gui.InventoryButton = me.GUI_Object.extend({
+    text_object: null,
+    image_icon: null,
+    hovering: null,
+    callback: null,
+    func: null,
+    init: function(x, y, text, image, func) {
+        settings = {};
+        settings.spritewidth = 80;
+        settings.spriteheight = 16;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+
+        var context = settings.image.getContext('2d');
+        context.fillStyle = "#E26D6D";
+        context.strokeStyle = "black";
+        context.lineWidth = 2;
+        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
+        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+
+        this.parent(x, y, settings);
+        this.floating = true;
+        this.text_object = new game.gui.SmallText(x + 20, y + 3, text, game.fonts.basic);
+        this.text_object.floating = true;
+        this.image_icon = new game.Icon(x + 2, y + 0, image);
+        me.game.add(this.image_icon, game.LAYERS.TOP);
+        me.game.add(this.text_object, game.LAYERS.TOP);
+        me.game.sort();
+        this.hovering = false;
+        this.func = func;
+    },
+    update: function() {
+        var trigger = false;
+        if (me.input.mouse.pos.x >= this.pos.x && me.input.mouse.pos.x <= this.pos.x + this.width) {
+            if (me.input.mouse.pos.y >= this.pos.y && me.input.mouse.pos.y <= this.pos.y + this.height) {
+                trigger = true;
+            }
+        }
+
+        if (trigger) {
+            this.hovering = true;
+        } else {
+            if (this.hovering) {
+                this.hovering = false;
+            }
+        }
+    }, onClick: function() {
+        this.func();
+    }, onDestroyEvent: function() {
+        me.game.remove(this.text_object);
+        this.text_object = null;
+        me.game.remove(this.image_icon);
+        this.image_icon = null;
+    }
+});
+
+game.gui.InventoryWindow = me.ObjectEntity.extend({
+    entity_layer: game.LAYERS.GUI + 1,
+    inventory_type: null,
+    inventory_buttons: null,
+    init: function(type) {
+        this.inventory_type = type;
+        settings = {};
+        settings.spritewidth = 370;
+        settings.spriteheight = 190;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+        //drawing backpack image
+        var context = settings.image.getContext("2d");
+        context.fillStyle = "#958686";
+        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
+        context.strokeStyle = "black";
+        context.moveTo(0, 0);
+        context.lineWidth = 3;
+        context.lineTo(settings.spritewidth, 0);
+        context.lineTo(settings.spritewidth, settings.spriteheight);
+        context.lineTo(0, settings.spriteheight);
+        context.lineTo(0, 0);
+        context.stroke();
+
+        this.parent(15, 5, settings);
+        this.floating = true;
+        this.inventory_buttons = {};
+        this.inventory_buttons.backpack = new game.gui.InventoryButton(384 - 80, 5 + 2, "Backpack", "backpack_icon", game.mechanic.open_backpack);
+        me.game.add(this.inventory_buttons.backpack, this.entity_layer);
+        this.inventory_buttons.manabook = new game.gui.InventoryButton(384 - 80, 5 + 2 + 16 + 2, "Mana Book", "book", game.mechanic.open_manabook);
+        me.game.add(this.inventory_buttons.manabook, this.entity_layer);
+        this.inventory_buttons.options = new game.gui.InventoryButton(384 - 80, 5 + (2 * 2) + (16 * 2) + 2, "Options", "book", game.mechanic.open_options);
+        me.game.add(this.inventory_buttons.options, this.entity_layer);
+        me.game.sort();
+        me.input.registerPointerEvent('mouseup', me.game.viewport, this.mouseUp.bind(this));
+    },
+    onDestroyEvent: function() {
+        me.game.remove(this.inventory_buttons.backpack);
+        this.inventory_buttons.backpack = null;
+        me.game.remove(this.inventory_buttons.manabook);
+        this.inventory_buttons.manabook = null;
+        me.game.remove(this.inventory_buttons.options);
+        this.inventory_buttons.options = null;
+        this.inventory_buttons = null;
+        me.input.releasePointerEvent('mouseup', me.game.viewport);
+    },
+    mouseUp: function() {
+    }
+});
+
+game.gui.ManaBook = game.gui.InventoryWindow.extend({
+    tiles: null,
+    belt_tiles: null,
+    selected_tile: null,
+    init: function() {
+        this.parent("manabook");
+
+        var context = this.renderable.image.getContext('2d');
+        game.fonts.basic.draw(context, "Mana Book", 150, 7);
+        game.fonts.basic.draw(context, "Belt", 30, 152);
+
+        this.selected_tile = null;
+
+        this.tiles = new Array(64);
+        var i = 0;
+        for (var row = 0; row < 8; row++) {
+            for (var column = 0; column < 8; column++) {
+                this.tiles[i] = new game.InventoryTile(this.pos.x + 25 + (row * 16), 25 + (column * 16), i, "spells");
+                me.game.add(this.tiles[i], this.entity_layer);
+                i++;
+            }
+        }
+
+        this.belt_tiles = new Array(8);
+        for (var i = 0; i < this.belt_tiles.length; i++) {
+            this.belt_tiles[i] = me.entityPool.newInstanceOf("CharacterTile", this.pos.x + 25 + (i * 16), this.pos.y + 165, "belt", i);
+            me.game.add(this.belt_tiles[i], this.entity_layer);
+        }
+        me.game.sort();
+    },
+    onDestroyEvent: function() {
+        this.parent();
+
+
+
+        for (var i = 0; i < this.tiles.length; i++) {
+            me.game.remove(this.tiles[i]);
+            this.tiles[i] = null;
+        }
+
+        for (var i = 0; i < this.belt_tiles.length; i++) {
+            me.game.remove(this.belt_tiles[i]);
+            this.belt_tiles[i] = null;
+        }
+
+    },
+    getTileFromID: function(id) {
+        if (id < this.tiles.length - 1) {
+            return {row: 0, column: id};
+        } else {
+            var row = Math.floor(id / (this.tiles.length - 1));
+            var column = id - ((this.tiles.length - 1) * row);
+            return {row: row, column: column};
+        }
+    },
+    mouseUp: function() {
+        this.parent();
+        if (this.selected_tile !== null) {
+            var object = me.gamestat.getItemValue("spells")[this.selected_tile];
+
+            //then belt
+            for (var i = 0; i < this.belt_tiles.length; i++) {
+                this.belt_tiles[i].iconDown(object);
+            }
+
+            //then tile
+            this.tiles[this.selected_tile].mouseUp();
+            console.log(this.tiles[this.selected_tile]);
+        }
+    }
+});
+
+game.gui.InventoryOptions = game.gui.InventoryWindow.extend({
+    checkboxes: null,
+    buttons: null,
+    sliders: null,
+    init: function() {
+        this.parent("options");
+        this.checkboxes = {};
+        this.buttons = {};
+        this.sliders = {};
+        var context = this.renderable.image.getContext("2d");
+        game.fonts.white.draw(context, "Enable sounds", 20, 20);
+        game.fonts.basic.draw(context, "Options", 150, 7);
+        this.checkboxes.enable_sound = new game.gui.CheckBox(this.pos.x + 10, this.pos.y + 40, me.audio.isAudioEnable(), game.instances.audio.switchEnable);
+        me.game.add(this.checkboxes.enable_sound, this.entity_layer);
+        game.fonts.white.draw(context, "Music volume", 20, 50);
+        this.sliders.ambient = new game.gui.SliderContainer(this.pos.x + 10, 72, parseInt(game.instances.audio.channels.ambient.volume * 100), game.instances.audio.channels.ambient);
+        me.game.add(this.sliders.ambient, this.entity_layer);
+        game.fonts.white.draw(context, "Effects volume", 20, 78);
+        this.sliders.effects = new game.gui.SliderContainer(this.pos.x + 10, 100, parseInt(game.instances.audio.channels.effects.volume * 100), game.instances.audio.channels.effects);
+        me.game.add(this.sliders.effects, this.entity_layer);
+        this.buttons.save = new game.gui.FuncButton(this.pos.x + 10, this.pos.y + 140, "Save Options", "", null, game.mechanic.save_settings);
+        this.buttons.save_game = game.gui.FuncButton(this.pos.x + 10, this.pos.y + 150, "Save Hero", "Will save game", null, game.mechanic.save_game);
+        me.game.add(this.buttons.save_game, this.entity_layer);
+        me.game.add(this.buttons.save, this.entity_layer);
+    },
+    onDestroyEvent: function() {
+        this.parent();
+
+        me.game.remove(this.checkboxes.enable_sound);
+        this.checkboxes.enable_sound = null;
+        this.checkboxes = null;
+        me.game.remove(this.buttons.save);
+        this.buttons.save = null;
+        me.game.remove(this.buttons.save_game);
+        this.buttons.save_game = null;
+        this.buttons = null;
+        me.game.remove(this.sliders.ambient);
+        this.sliders.ambient = null;
+        me.game.remove(this.sliders.effects);
+        this.sliders.effects = null;
+        this.sliders = null;
+    }
+});
+
+game.Backpack = game.gui.InventoryWindow.extend({
     tiles: null,
     font: null,
     bm_font: null,
@@ -45,7 +246,6 @@ game.Backpack = me.ObjectEntity.extend({
     artefact_tile: null,
     belt_tiles: null,
     selected_tile: null,
-    entity_layer: game.guiLayer + 1,
     human_icon: null,
     weapon_icon: null,
     money_icon: null,
@@ -53,26 +253,11 @@ game.Backpack = me.ObjectEntity.extend({
     money_tab: null,
     attributes: null,
     init: function() {
-        settings = {};
-        settings.spritewidth = 370;
-        settings.spriteheight = 190;
-        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
-        //drawing backpack image
-        var context = settings.image.getContext("2d");
-        context.fillStyle = "#958686";
-        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
-        context.fillStyle = "black";
-        context.moveTo(0, 0);
-        context.lineWidth = 3;
-        context.lineTo(settings.spritewidth, 0);
-        context.lineTo(settings.spritewidth, settings.spriteheight);
-        context.lineTo(0, settings.spriteheight);
-        context.lineTo(0, 0);
-        context.stroke();
+        this.parent("backpack");
+        var context = this.renderable.image.getContext('2d');
 
         context.fillStyle = "black";
         context.fillRect(42, 15, 40, 40);
-
 
         //Texts
         this.font = game.fonts.basic;
@@ -87,10 +272,11 @@ game.Backpack = me.ObjectEntity.extend({
         this.font.draw(context, "Inventory", 15 + 135, 5 + 2);
         this.font.draw(context, "Belt", 15 + 135, 147);
 
-        var height = 95, attr_height;
+        this.bm_font.draw(context, me.gamestat.getItemValue("body").name, 10, 92);
+        var height = 105, attr_height;
         this.bm_font.draw(context, "LEVEL", 15, height);
-        height = height + 2 + this.bm_font.measureText(context, "HP").height;
         attr_height = height;
+        height = height + 2 + this.bm_font.measureText(context, "HP").height;
         this.font.draw(context, "Experience", 15, height);
         height = height + this.font.measureText(context, "HP").height;
         this.font.draw(context, "HP", 15, height);
@@ -105,19 +291,19 @@ game.Backpack = me.ObjectEntity.extend({
         height = height + this.font.measureText(context, "HP").height;
         this.font.draw(context, "Skill Points", 15, height);
 
-        this.parent(15, 5, settings);
-        game.instances.backpack = this;
-        this.floating = true;
-
         this.attributes = {};
         this.labels = {};
         height = attr_height;
         height += 4;
-        this.labels.exp = new game.SmallText(105, height, me.gamestat.getItemValue("exp") + "/" + me.gamestat.getItemValue("next_level"), game.fonts.basic);
+        this.labels.level = new game.effects.BMF_Font(105, height, me.gamestat.getItemValue("level"));
+        this.labels.level.floating = true;
+        me.game.add(this.labels.level, this.entity_layer);
+        height = height + this.labels.level.font.measureText(context, "L").height;
+        this.labels.exp = new game.gui.SmallText(105, height, me.gamestat.getItemValue("exp") + "/" + me.gamestat.getItemValue("next_level"), game.fonts.basic);
         this.labels.exp.floating = true;
         me.game.add(this.labels.exp, this.entity_layer);
         height = height + this.font.measureText(context, "HP").height;
-        this.labels.hp = new game.SmallText(105, height, me.gamestat.getItemValue("hp") + "/" + me.gamestat.getItemValue("maxhp"), game.fonts.basic);
+        this.labels.hp = new game.gui.SmallText(105, height, me.gamestat.getItemValue("hp") + "/" + me.gamestat.getItemValue("maxhp"), game.fonts.basic);
         this.labels.hp.floating = true;
         me.game.add(this.labels.hp, this.entity_layer);
         height = height + this.font.measureText(context, "HP").height;
@@ -133,12 +319,11 @@ game.Backpack = me.ObjectEntity.extend({
         this.attributes.int = new game.gui.AttributeText(105, height, "int");
         me.game.add(this.attributes.int, this.entity_layer);
         height = height + this.font.measureText(context, "HP").height;
-        this.labels.skill = new game.SmallText(105, height, me.gamestat.getItemValue("skill"), game.fonts.basic);
+        this.labels.skill = new game.gui.SmallText(105, height, me.gamestat.getItemValue("skill"), game.fonts.basic);
         this.labels.skill.floating = true;
         me.game.add(this.labels.skill, this.entity_layer);
 
-        var armor = "clotharmor";
-        this.human_icon = new game.gui.HumanIcon(60, 23, armor);
+        this.human_icon = new game.gui.HumanIcon(60, 23, "predefined");
         me.game.add(this.human_icon, this.entity_layer);
 
         this.tiles = new Array(6);
@@ -191,7 +376,6 @@ game.Backpack = me.ObjectEntity.extend({
         me.game.add(this.money_tab, this.entity_layer);
         me.game.sort();
 
-        me.input.registerPointerEvent('mouseup', me.game.viewport, this.mouseUp.bind(this));
     }, update: function() {
         if (me.gamestat.getItemValue("skill") === 0 && this.buttons_add !== null) {
             me.game.remove(this.buttons_add.str);
@@ -214,15 +398,14 @@ game.Backpack = me.ObjectEntity.extend({
         this.parent();
         return true;
     }, updateEquip: function() {
-        var equip = me.gamestat.getItemValue("equip");
-        var armor;
-        if (equip.armor === null) {
-            armor = "clotharmor";
-        } else {
-            var equip = game.mechanic.get_inventory_item(me.gamestat.getItemValue("equip").armor);
-            armor = equip.attributes.image_name;
+        me.game.remove(this.human_icon);
+        this.human_icon = new game.gui.HumanIcon(60, 23, "predefined");
+        me.game.add(this.human_icon, this.entity_layer);
+
+        if (this.weapon_icon !== null) {
+            me.game.remove(this.weapon_icon);
+            this.weapon_icon = null;
         }
-        this.human_icon.renderable.image = me.loader.getImage(armor);
 
         if (me.gamestat.getItemValue("equip").weapon !== null) {
             if (this.weapon !== null) {
@@ -236,13 +419,9 @@ game.Backpack = me.ObjectEntity.extend({
             me.game.add(this.weapon_icon, this.entity_layer + 1);
             me.game.sort();
         }
-    }, draw: function(context) {
-        this.parent(context);
-        var height = 100;
-        var x_pos = this.pos.x + 90;
-        this.bm_font.draw(context, me.gamestat.getItemValue("level"), x_pos, height);
     },
     onDestroyEvent: function() {
+        this.parent();
         me.game.remove(this.human_icon);
         this.human_icon = null;
         me.game.remove(this.money_tab);
@@ -286,6 +465,8 @@ game.Backpack = me.ObjectEntity.extend({
         this.attributes.int = null;
         this.attributes = null;
 
+        me.game.remove(this.labels.level);
+        this.labels.level = null;
         me.game.remove(this.labels.exp);
         this.labels.exp = null;
         me.game.remove(this.labels.hp);
@@ -301,9 +482,6 @@ game.Backpack = me.ObjectEntity.extend({
         this.belt_tiles = null;
 
         this.selected_tile = null;
-
-        me.input.releasePointerEvent('mouseup', me.game.viewport);
-        me.input.releasePointerEvent('mousedown', me.game.viewport);
     },
     getTileFromID: function(id) {
         if (id < this.tiles.length - 1) {
@@ -313,17 +491,21 @@ game.Backpack = me.ObjectEntity.extend({
             var column = id - ((this.tiles.length - 1) * row);
             return {row: row, column: column};
         }
-    }, mouseUp: function() {
+    },
+    mouseUp: function() {
+        this.parent();
         if (this.selected_tile !== null) {
             var selected = this.getTileFromID(this.selected_tile);
+
+            var object = me.gamestat.getItemValue("inventory")[this.selected_tile];
             //noticed equip first
-            this.weapon_tile.iconDown(this.selected_tile);
-            this.armor_tile.iconDown(this.selected_tile);
-            this.artefact_tile.iconDown(this.selected_tile);
+            this.weapon_tile.iconDown(object);
+            this.armor_tile.iconDown(object);
+            this.artefact_tile.iconDown(object);
 
             //then belt
             for (var i = 0; i < this.belt_tiles.length; i++) {
-                this.belt_tiles[i].iconDown(this.selected_tile);
+                this.belt_tiles[i].iconDown(object);
             }
 
             if (me.input.mouse.pos.x >= this.pos.x + 42 && me.input.mouse.pos.x <= this.pos.x + 42 + 40) {
@@ -405,7 +587,11 @@ game.CharacterTile = me.GUI_Object.extend({
     addIcon: function(guid) {
         this.removeIcon();
 
-        var object = game.mechanic.get_inventory_item(guid);
+        var object;
+        object = game.mechanic.get_inventory_item(guid);
+        if (!object) {
+            object = game.mechanic.get_manabook_item(guid);
+        }
         if (this.type !== "belt") {
             var success = false;
             switch (object.type) {
@@ -455,9 +641,8 @@ game.CharacterTile = me.GUI_Object.extend({
     onClick: function() {
 
     },
-    iconDown: function(selected_tile) {
+    iconDown: function(object) {
         if (this.containsPoint(me.input.mouse.pos.x, me.input.mouse.pos.y)) {
-            var object = me.gamestat.getItemValue("inventory")[selected_tile];
             if (object.type === this.type || this.type === "belt") {
                 this.addIcon(object.guid);
             }
@@ -535,6 +720,9 @@ game.InventoryTile = me.GUI_Object.extend({
                 } else if (game.instances.shop !== null) {
                     game.instances.shop.selected_tile = this.id;
                     game.instances.shop.selected_type = this.tile_type;
+                } else if (game.instances.manabook !== null) {
+                    game.instances.manabook.selected_tile = this.id;
+                    console.log(game.instances.manabook.selected_tile);
                 }
                 this.follow_mouse = true;
             }
@@ -543,9 +731,12 @@ game.InventoryTile = me.GUI_Object.extend({
         }
     },
     update: function() {
+        //container is Array storing Items in memory
         var container;
         if (this.tile_type === "shop") {
             container = game.instances.shop_items;
+        } else if (this.tile_type === "spells") {
+            container = me.gamestat.getItemValue("spells");
         } else {
             container = me.gamestat.getItemValue(this.tile_type);
         }
@@ -587,7 +778,8 @@ game.InventoryTile = me.GUI_Object.extend({
     },
     onMouseOver: function() {
         if (this.tooltip === null && this.icon !== null) {
-            var object = me.gamestat.getItemValue(this.tile_type)[this.id];
+            var object; //stores Item_Object
+            object = me.gamestat.getItemValue(this.tile_type)[this.id];
             if (object.tooltip_text !== null) {
                 this.tooltip = new game.gui.Tooltip(this.pos.x + this.width, this.pos.y, object.tooltip_text);
                 me.game.add(this.tooltip, this.z + 3);
@@ -602,7 +794,6 @@ game.InventoryTile = me.GUI_Object.extend({
         }
     },
     mouseUp: function() {
-        console.log("mouse fucking up");
         this.follow_mouse = false;
         this.icon.pos.x = this.pos.x;
         this.icon.pos.y = this.pos.y;
@@ -614,6 +805,8 @@ game.InventoryTile = me.GUI_Object.extend({
         } else if (game.instances.shop !== null) {
             game.instances.shop.selected_tile = null;
             game.instances.shop.selected_type = null;
+        } else if (game.instances.manabook !== null) {
+            game.instances.manabook.selected_tile = null;
         }
     }
 });
@@ -660,7 +853,6 @@ game.ExpBar = me.ObjectEntity.extend({
             context.beginPath();
             context.moveTo(6, 5);
             context.lineTo(6 + width, 5);
-            console.log(6 + " " + width);
             context.stroke();
         }
         context.fillStyle = "#958686";
@@ -680,11 +872,15 @@ game.Icon = me.ObjectEntity.extend({
         settings = {};
         settings.spritewidth = 16;
         settings.spriteheight = 16;
-        settings.image = image;
+        settings.image = me.loader.getImage(image);
         this.parent(x, y, settings);
         this.floating = true;
-        this.renderable.addAnimation("active", [0, 1, 2, 3, 4]);
-        this.renderable.addAnimation("inactive", [2]);
+        if (settings.image.naturalWidth > 16) {
+            this.renderable.addAnimation("active", [0, 1, 2, 3, 4]);
+            this.renderable.addAnimation("inactive", [0]);
+        } else {
+            this.renderable.addAnimation("inactive", [0]);
+        }
         this.renderable.setCurrentAnimation("inactive");
         this.image = image;
     }
@@ -937,7 +1133,6 @@ game.PlusSkillButton = game.SmallButton.extend({
         this.skill = skill;
     },
     onClick: function() {
-        console.log("click");
         game.mechanic.attributeUp(this.skill);
         return true;
     }
@@ -948,6 +1143,9 @@ game.gui.TextLine = Object.extend({
     font: null,
     init: function(text, font) {
         this.text = text;
+        if (this.text.length > 23) {
+            this.text.splice(23, 0, '\n');
+        }
         this.font = font;
     },
     setValue: function(value) {
@@ -982,8 +1180,7 @@ game.gui.Tooltip = me.ObjectEntity.extend({
         this.parent(x_pos, y_pos, settings);
         this.lines = text_lines;
         this.floating = true;
-        this.renderable.setOpacity(0.85);
-        //console.log("creating tooltip " + this.pos.x + " " + this.pos.y);
+        this.renderable.setOpacity(0.9);
     },
     onDestroyEvent: function() {
         this.lines = null;
@@ -995,10 +1192,22 @@ game.gui.HumanIcon = me.ObjectEntity.extend({
         settings = {};
         settings.spritewidth = 32;
         settings.spriteheight = 32;
-        settings.image = image;
+        if (image === "predefined") {
+            settings.image = game.createPlayerCanvas();
+        } else {
+            settings.image = image;
+        }
         this.parent(x, y, settings);
-        this.renderable.addAnimation("inactive", [40, 41], 30);
-        this.renderable.setCurrentAnimation("inactive");
+        this.renderable.addAnimation("right", [5, 6, 7, 8]);
+        this.renderable.addAnimation("up", [20, 21, 22, 23]);
+        this.renderable.addAnimation("down", [35, 36, 37, 38]);
+        this.renderable.addAnimation("iddle_right", [10, 11], 30);
+        this.renderable.addAnimation("iddle_up", [25, 26], 30);
+        this.renderable.addAnimation("iddle_down", [40, 41], 30);
+        this.renderable.addAnimation("attack_down", [30, 31, 32, 33, 34], 1);
+        this.renderable.addAnimation("attack_up", [15, 16, 17, 18, 19], 1);
+        this.renderable.addAnimation("attack_right", [0, 1, 2, 3, 4], 1);
+        this.renderable.setCurrentAnimation("iddle_down");
         this.floating = true;
     }
 });
@@ -1006,8 +1215,13 @@ game.gui.HumanIcon = me.ObjectEntity.extend({
 game.gui.NPCIcon = me.ObjectEntity.extend({
     init: function(x, y, image, size, anim_length) {
         settings = {};
-        settings.spritewidth = size;
-        settings.spriteheight = size;
+        if (Object.prototype.toString.call(size) === '[object Array]') {
+            settings.spritewidth = size[0];
+            settings.spriteheight = size[1];
+        } else {
+            settings.spritewidth = size;
+            settings.spriteheight = size;
+        }
         settings.image = image;
         this.parent(x, y, settings);
         var animation = [];
@@ -1052,10 +1266,6 @@ game.gui.Console = me.ObjectEntity.extend({
         }
     }
 });
-
-game.instances.console = new game.gui.Console(0, 0);
-me.game.add(game.instances.console, game.LAYERS.TOP);
-me.game.sort();
 
 game.gui.ConsoleLine = me.ObjectEntity.extend({
     timer_run: null,
@@ -1146,7 +1356,7 @@ game.gui.PauseMenu = me.ObjectEntity.extend({
         this.buttons = {};
         this.buttons.save = new game.gui.SaveButton(this.pos.x + (this.renderable.width / 2) - 40, this.pos.y + 10);
         me.game.add(this.buttons.save, game.LAYERS.GUI + 2);
-        this.buttons.options = new game.gui.FuncButton(this.pos.x + (this.renderable.width / 2) - 40, this.pos.y + 25, "Options", "", game.mechanic.trigger_options);
+        this.buttons.options = new game.gui.FuncButton(this.pos.x + (this.renderable.width / 2) - 40, this.pos.y + 25, "Options", "", null, game.mechanic.trigger_options);
         me.game.add(this.buttons.options, game.LAYERS.GUI + 2);
         me.game.sort();
     },
@@ -1236,7 +1446,6 @@ game.gui.Credits = me.ObjectEntity.extend({
         game.fonts.loading.draw(context, "MANA", (game.screenWidth - 60) / 2, 70);
         game.fonts.white.draw(context, "The Adventure full of bugs", (game.screenWidth - 80) / 2, 105);
 
-        var height = font.measureText(context, "M").height;
         var total_height = 120;
         font.draw(context,
                 "PROGRAMMING - ZARAKA\n\
@@ -1245,6 +1454,9 @@ game.gui.Credits = me.ObjectEntity.extend({
         TILESETS\n\
         MOZZILA BROWSERQUEST\n\
         OPENGAMEART.ORG\n\
+        ADITIONAL ART\n\
+        ANAFOX\n\
+        VOX\n\
         \n\
         MUSIC\n\
         ORI DACHOVSKY\n\
@@ -1301,7 +1513,7 @@ game.gui.Dialog = me.ObjectEntity.extend({
         this.parent(10, 20, settings);
         this.floating = true;
 
-        this.text_object = new game.SmallText(this.pos.x + 45, this.pos.y + 5, this.getCurrentMessage(), game.fonts.white);
+        this.text_object = new game.gui.SmallText(this.pos.x + 45, this.pos.y + 5, this.getCurrentMessage(), game.fonts.white);
         this.text_object.floating = true;
         me.game.add(this.text_object, game.guiLayer + 1);
         this.createCurrentIcon();
@@ -1360,7 +1572,7 @@ game.gui.Dialog = me.ObjectEntity.extend({
             game.instances.dialog = null;
             return false;
         } else if (message_object.type === "STASH") {
-            game.mechanic.trigger_stash();
+            game.mechanic.trigger_stash(this.guid);
             me.game.remove(game.instances.dialog);
             game.instances.dialog = null;
             return false;
@@ -1402,15 +1614,7 @@ game.gui.Dialog = me.ObjectEntity.extend({
                 me.game.add(this.human_icon, game.guiLayer + 1);
                 break;
             case "PLAYER":
-                var armor;
-                if (me.gamestat.getItemValue("equip").armor === null) {
-                    armor = "clotharmor";
-                } else {
-                    var armor = game.mechanic.get_inventory_item(me.gamestat.getItemValue("equip").armor);
-
-                    armor = armor.attributes.image_name;
-                }
-                this.human_icon = new game.gui.HumanIcon(this.pos.x + 5, this.pos.y + 2, armor);
+                this.human_icon = new game.gui.HumanIcon(this.pos.x + 5, this.pos.y + 2, "predefined");
                 me.game.add(this.human_icon, game.guiLayer + 1);
                 me.game.sort();
                 break;
@@ -1570,7 +1774,10 @@ game.gui.Stash = game.gui.Window.extend({
     selected_type: null,
     inventory_money: null,
     stash_money: null,
+    buttons: null,
+    modal: null,
     init: function() {
+        this.modal = null;
         this.selected_tile = null;
         this.selected_type = null;
         this.entity_layer = game.guiLayer + 1;
@@ -1608,9 +1815,26 @@ game.gui.Stash = game.gui.Window.extend({
         this.inventory_money = new game.gui.MoneyTab(this.pos.x + 115, this.pos.y + 150);
         me.game.add(this.inventory_money, this.entity_layer);
 
+        this.buttons = {};
+        this.buttons.money2inventory = new game.gui.ImageButton(this.pos.x + 88, this.pos.y + 150, "arrow_right", this, "showDialogInventory");
+        me.game.add(this.buttons.money2inventory, this.entity_layer);
+        this.buttons.money2stash = new game.gui.ImageButton(this.pos.x + 97, this.pos.y + 150, "arrow_left", this, "showDialogStash");
+        me.game.add(this.buttons.money2stash, this.entity_layer);
         me.game.sort();
 
         me.input.registerPointerEvent('mouseup', me.game.viewport, this.mouseUp.bind(this));
+    },
+    showDialogStash: function() {
+        this.showDialog("stash");
+    },
+    showDialogInventory: function() {
+        this.showDialog("inventory");
+    },
+    showDialog: function(where) {
+        if (this.modal === null) {
+            this.modal = new game.gui.MoneyInput(50, 50, where);
+            me.game.add(this.modal, this.z + 2);
+        }
     },
     update: function() {
         this.inventory_money.onUpdate(me.gamestat.getItemValue("money"));
@@ -1640,6 +1864,11 @@ game.gui.Stash = game.gui.Window.extend({
         this.inventory_money = null;
         me.game.remove(this.stash_money);
         this.stash_money = null;
+        me.game.remove(this.buttons.money2stash);
+        this.buttons.money2stash = null;
+        me.game.remove(this.buttons.money2inventory);
+        this.buttons.money2inventory = null;
+        this.buttons = {};
         me.input.releasePointerEvent('mouseup', me.game.viewport);
     },
     mouseUp: function() {
@@ -1650,7 +1879,7 @@ game.gui.Stash = game.gui.Window.extend({
                     for (var column = 0; column < this.inventory_tiles[row].length; column++) {
                         if (this.inventory_tiles[row][column].containsPointV(me.input.mouse.pos)) {
                             var item = me.gamestat.getItemValue("stash")[this.selected_tile];
-                            game.mechanic.inventory_push(item);
+                            game.mechanic.inventory_push(item, "inventory");
                             game.mechanic.stash_drop(item.guid);
                             flag = true;
                             break;
@@ -1720,7 +1949,7 @@ game.gui.MoneyTab = me.ObjectEntity.extend({
         this.icon.floating = true;
         me.game.add(this.icon, game.guiLayer + 1);
         this.font = game.fonts.white;
-        this.label = new game.SmallText(this.pos.x + 20, this.pos.y + 4, "0", this.font);
+        this.label = new game.gui.SmallText(this.pos.x + 20, this.pos.y + 4, "0", this.font);
         this.label.floating = true;
         me.game.add(this.label, game.guiLayer + 1);
         me.game.sort();
@@ -1769,7 +1998,7 @@ game.gui.EnemyPanel = me.ObjectEntity.extend({
         context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
         this.parent((game.screenWidth / 2) - (settings.spritewidth / 2), 0, settings);
         this.floating = true;
-        this.name_object = new game.SmallText(this.pos.x + 3, 1, this.name, game.fonts.white);
+        this.name_object = new game.gui.SmallText(this.pos.x + 3, 1, this.name, game.fonts.white);
         this.name_object.floating = true;
         me.game.add(this.name_object, game.guiLayer + 1);
         me.game.sort();
@@ -1790,7 +2019,7 @@ game.gui.EnemyPanel = me.ObjectEntity.extend({
         context.lineWidth = 2;
 
         context.fillRect(0, 0, this.renderable.width, this.renderable.height);
-        context.fillStyle = "red";
+        context.fillStyle = "#E26D6D";
         context.fillRect(1, 1, percent, 14);
         context.strokeRect(0, 0, this.renderable.width, this.renderable.height);
 
@@ -1878,6 +2107,13 @@ game.gui.Shop = game.gui.Window.extend({
             }
         }
 
+        for (var row = 0; row < this.shop_tiles.length; row++) {
+            for (var column = 0; column < this.shop_tiles[row].length; column++) {
+                me.game.remove(this.shop_tiles[row][column]);
+                this.shop_tiles[row][column] = null;
+            }
+        }
+
         me.game.remove(this.human_icon);
         this.human_icon = null;
 
@@ -1892,61 +2128,78 @@ game.gui.Shop = game.gui.Window.extend({
     }
 });
 
-game.gui.Options = game.gui.Window.extend({
-    entity_layers: null,
-    checkboxes: null,
-    buttons: null,
-    sliders: null,
-    init: function() {
-        this.checkboxes = {};
-        this.buttons = {};
-        this.sliders = {};
-        this.parent(20, 10, 300, 170);
-        var context = this.renderable.image.getContext("2d");
-        game.fonts.white.draw(context, "Enable sounds", 20, 20);
-        var bmf = new me.BitmapFont("geebeeyay-8x8", 8, 1.0);
-        bmf.draw(context, "OPTIONS", (300 - bmf.measureText(context, "OPTIONS").width) / 2, 5);
-        this.checkboxes.enable_sound = new game.gui.CheckBox(45, 43, me.audio.isAudioEnable(), game.instances.audio.switchEnable);
-        me.game.add(this.checkboxes.enable_sound, game.LAYERS.TOP + 1);
-        game.fonts.white.draw(context, "Music volume", 20, 50);
-        this.sliders.ambient = new game.gui.SliderContainer(45, 72, parseInt(game.instances.audio.channels.ambient.volume * 100), game.instances.audio.channels.ambient);
-        me.game.add(this.sliders.ambient, game.LAYERS.TOP + 1);
-        game.fonts.white.draw(context, "Effects volume", 20, 78);
-        this.sliders.effects = new game.gui.SliderContainer(45, 100, parseInt(game.instances.audio.channels.effects.volume * 100), game.instances.audio.channels.effects);
-        me.game.add(this.sliders.effects, game.LAYERS.TOP + 1);
-        this.buttons.save = new game.gui.FuncButton(30, 160, "Save", "", game.mechanic.save_settings);
-        me.game.add(this.buttons.save, game.LAYERS.TOP + 1);
-
-
-        me.game.sort();
-    },
-    onDestroyEvent: function() {
-        this.parent();
-
-        me.game.remove(this.checkboxes.enable_sound);
-        this.checkboxes.enable_sound = null;
-        this.checkboxes = null;
-        me.game.remove(this.buttons.save);
-        this.buttons.save = null;
-        this.buttons = null;
-        me.game.remove(this.sliders.ambient);
-        this.sliders.ambient = null;
-        me.game.remove(this.sliders.effects);
-        this.sliders.effects = null;
-        this.sliders = null;
-    }
-});
-
 game.gui.FuncButton = game.Button.extend({
     func: null,
-    init: function(x, y, text, title, func) {
+    object: null,
+    init: function(x, y, text, title, object, func) {
         this.parent(x, y, text, title);
         this.floating = true;
         this.func = func;
+        this.object = object;
     },
     onClick: function() {
         this.parent();
-        this.func();
+        if (this.object === null) {
+            this.func();
+        } else {
+            this.object[this.func]();
+        }
+        return true
+    }
+});
+
+game.gui.ImageButton = me.GUI_Object.extend({
+    func: null,
+    object: null,
+    init: function(x, y, image, object, func) {
+        this.func = func;
+        this.object = object;
+        settings = {};
+        settings.spritwidth = 16;
+        settings.spriteheight = 16;
+        settings.image = image;
+        this.parent(x, y, settings);
+        this.floating = true;
+    },
+    onClick: function() {
+        this.parent();
+        if (this.object === null) {
+            this.func();
+        } else {
+            this.object[this.func]();
+        }
+        return true;
+    }
+});
+
+game.gui.ColorButton = me.GUI_Object.extend({
+    object: null,
+    func: null,
+    init: function(x, y, color, object, func) {
+        this.object = object;
+        this.func = func;
+        settings = {};
+        settings.spritwidth = 10;
+        settings.spriteheight = 10;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+        var context = settings.image.getContext('2d');
+        context.fillStyle = color;
+        context.strokeStyle = "black";
+        context.lineWidth = 2;
+        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
+        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+
+        this.parent(x, y, settings);
+        this.floating = true;
+    },
+    onClick: function() {
+        this.parent();
+        if (this.object === null) {
+            this.func();
+        } else {
+            this.object[this.func]();
+        }
+        return true;
     }
 });
 
@@ -1980,7 +2233,7 @@ game.gui.CheckBox = me.GUI_Object.extend({
     }
 });
 
-game.gui.AttributeText = game.SmallText.extend({
+game.gui.AttributeText = game.gui.SmallText.extend({
     attribute: null,
     hovering: null,
     tooltip: null,
@@ -2114,7 +2367,7 @@ game.gui.Slider = me.GUI_Object.extend({
                 this.pos.x = me.input.mouse.pos.x;
             }
             var value = this.pos.x - this.parent_container.pos.x;
-            this.parent_container.func.volume = value / 100;
+            this.parent_container.func.setVolume(value);
             return true;
         }
 
@@ -2127,5 +2380,360 @@ game.gui.Slider = me.GUI_Object.extend({
     mouseUp: function() {
         this.moving = false;
         this.parent_container.activated = false;
+    }
+});
+
+game.gui.Background = me.ObjectEntity.extend({
+    init: function() {
+        settings = {};
+        settings.spritewidth = game.screenWidth;
+        settings.spriteheight = game.screenHeight;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+
+        var context = settings.image.getContext('2d');
+        context.fillStyle = "black";
+        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
+
+        var bmf_font = new me.BitmapFont("geebeeyay-8x8", 8, 1.0)
+        bmf_font.draw(context, "CHOOSE YOUR HERO", 125, 10);
+        bmf_font.draw(context, "YOUR NAME", 60, 134);
+        this.parent(0, 0, settings);
+        this.floating = true;
+
+    }
+});
+
+game.gui.TextInput = me.ObjectEntity.extend({
+    focus: null,
+    text: null,
+    text_object: null,
+    array: null,
+    max_char: null,
+    type_input: null,
+    init: function(x, y, type, length) {
+        this.type_input = type;
+        this.max_char = length;
+        settings = {};
+        settings.spritewidth = 2 + (9 * this.max_char);
+        settings.spriteheight = 15;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+        var context = settings.image.getContext('2d');
+        context.strokeStyle = "white";
+        context.lineWidth = 2;
+        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+        this.parent(x, y, settings);
+        this.floating = true;
+        this.text_object = new game.effects.BMF_Font(this.pos.x + 2, this.pos.y + 4, "");
+        this.text_object.floating = true;
+        me.game.add(this.text_object, game.LAYERS.TOP + 1);
+        me.game.sort();
+
+        if (this.type_input === "text") {
+            this.text = "";
+            me.input.bindKey(me.input.KEY.A, "A", true);
+            me.input.bindKey(me.input.KEY.B, "B", true);
+            me.input.bindKey(me.input.KEY.C, "C", true);
+            me.input.bindKey(me.input.KEY.D, "D", true);
+            me.input.bindKey(me.input.KEY.E, "E", true);
+            me.input.bindKey(me.input.KEY.F, "F", true);
+            me.input.bindKey(me.input.KEY.G, "G", true);
+            me.input.bindKey(me.input.KEY.H, "H", true);
+            me.input.bindKey(me.input.KEY.I, "I", true);
+            me.input.bindKey(me.input.KEY.J, "J", true);
+            me.input.bindKey(me.input.KEY.K, "K", true);
+            me.input.bindKey(me.input.KEY.L, "L", true);
+            me.input.bindKey(me.input.KEY.M, "M", true);
+            me.input.bindKey(me.input.KEY.N, "N", true);
+            me.input.bindKey(me.input.KEY.O, "O", true);
+            me.input.bindKey(me.input.KEY.P, "P", true);
+            me.input.bindKey(me.input.KEY.R, "R", true);
+            me.input.bindKey(me.input.KEY.S, "S", true);
+            me.input.bindKey(me.input.KEY.T, "T", true);
+            me.input.bindKey(me.input.KEY.U, "U", true);
+            me.input.bindKey(me.input.KEY.V, "V", true);
+            me.input.bindKey(me.input.KEY.W, "W", true);
+            me.input.bindKey(me.input.KEY.X, "X", true);
+            me.input.bindKey(me.input.KEY.Y, "Y", true);
+            me.input.bindKey(me.input.KEY.Z, "Z", true);
+            me.input.bindKey(me.input.KEY.NUM0, "0", true);
+            me.input.bindKey(me.input.KEY.NUM1, "1", true);
+            me.input.bindKey(me.input.KEY.NUM2, "2", true);
+            me.input.bindKey(me.input.KEY.NUM3, "3", true);
+            me.input.bindKey(me.input.KEY.NUM4, "4", true);
+            me.input.bindKey(me.input.KEY.NUM5, "5", true);
+            me.input.bindKey(me.input.KEY.NUM6, "6", true);
+            me.input.bindKey(me.input.KEY.NUM7, "7", true);
+            me.input.bindKey(me.input.KEY.NUM8, "8", true);
+            me.input.bindKey(me.input.KEY.NUM9, "9", true);
+            me.input.bindKey(me.input.KEY.SPACE, "SPACE", true);
+        } else if (this.type_input === "numbers") {
+            if (typeof me.state.current().isGame() !== "undefined") {
+                me.input.unbindKey(me.input.KEY.NUM0);
+                me.input.unbindKey(me.input.KEY.NUM1);
+                me.input.unbindKey(me.input.KEY.NUM2);
+                me.input.unbindKey(me.input.KEY.NUM3);
+                me.input.unbindKey(me.input.KEY.NUM4);
+                me.input.unbindKey(me.input.KEY.NUM5);
+                me.input.unbindKey(me.input.KEY.NUM6);
+                me.input.unbindKey(me.input.KEY.NUM7);
+                me.input.unbindKey(me.input.KEY.NUM8);
+            }
+            this.text = 0;
+            me.input.bindKey(me.input.KEY.NUM0, "0", true);
+            me.input.bindKey(me.input.KEY.NUM1, "1", true);
+            me.input.bindKey(me.input.KEY.NUM2, "2", true);
+            me.input.bindKey(me.input.KEY.NUM3, "3", true);
+            me.input.bindKey(me.input.KEY.NUM4, "4", true);
+            me.input.bindKey(me.input.KEY.NUM5, "5", true);
+            me.input.bindKey(me.input.KEY.NUM6, "6", true);
+            me.input.bindKey(me.input.KEY.NUM7, "7", true);
+            me.input.bindKey(me.input.KEY.NUM8, "8", true);
+            me.input.bindKey(me.input.KEY.NUM9, "9", true);
+        }
+        me.input.bindKey(me.input.KEY.ESC, "BACKSPACE", true);
+
+        this.array = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+    }, update: function() {
+        if (this.type_input === "text" && this.text.length < 18) {
+            for (var i = 0; i < this.array.length; i++) {
+                if (me.input.isKeyPressed(this.array[i])) {
+                    this.text = this.text + this.array[i];
+                    this.text_object.text = this.text_object.text + this.array[i];
+                }
+            }
+
+            if (me.input.isKeyPressed("SPACE")) {
+                this.text = this.text + " ";
+                this.text_object.text = this.text_object.text + " ";
+            }
+
+            if (me.input.isKeyPressed("BACKSPACE")) {
+                this.text = this.text.substring(0, this.text.length - 1);
+                this.text_object.text = this.text_object.text.substring(0, this.text_object.text.length - 1);
+            }
+        } else if (this.type_input === "numbers") {
+            if (this.text_object.text.length < this.max_char) {
+                if (me.input.isKeyPressed("0")) {
+                    if (this.text > 0) {
+                        this.text = this.text * 10;
+
+                    }
+                } else if (me.input.isKeyPressed("1")) {
+                    this.text = this.text * 10;
+                    this.text = this.text + 1;
+                } else if (me.input.isKeyPressed("2")) {
+                    this.text = this.text * 10;
+                    this.text = this.text + 2;
+                } else if (me.input.isKeyPressed("3")) {
+                    this.text = this.text * 10;
+                    this.text = this.text + 3;
+                } else if (me.input.isKeyPressed("4")) {
+                    this.text = this.text * 10;
+                    this.text = this.text + 4;
+                } else if (me.input.isKeyPressed("5")) {
+                    this.text = this.text * 10;
+                    this.text = this.text + 5;
+                } else if (me.input.isKeyPressed("6")) {
+                    this.text = this.text * 10;
+                    this.text = this.text + 6;
+                } else if (me.input.isKeyPressed("7")) {
+                    this.text = this.text * 10;
+                    this.text = this.text + 7;
+                } else if (me.input.isKeyPressed("8")) {
+                    this.text = this.text * 10;
+                    this.text = this.text + 8;
+                } else if (me.input.isKeyPressed("9")) {
+                    this.text = this.text * 10;
+                    this.text = this.text + 9;
+                }
+                this.text_object.text = this.text.toString();
+            }
+            if (me.input.isKeyPressed("BACKSPACE")) {
+                if (this.text_object.text.length > 1) {
+                    this.text_object.text = this.text_object.text.substring(0, this.text_object.text.length - 1);
+                    this.text = parseInt(this.text_object.text);
+                } else {
+                    this.text_object.text = "0";
+                    this.text = 0;
+                }
+            }
+        }
+
+        this.parent();
+        return false;
+    }, onDestroyEvent: function() {
+        if (this.type_input === "text") {
+            me.input.unbindKey(me.input.KEY.A);
+            me.input.unbindKey(me.input.KEY.B);
+            me.input.unbindKey(me.input.KEY.C);
+            me.input.unbindKey(me.input.KEY.D);
+            me.input.unbindKey(me.input.KEY.E);
+            me.input.unbindKey(me.input.KEY.F);
+            me.input.unbindKey(me.input.KEY.G);
+            me.input.unbindKey(me.input.KEY.H);
+            me.input.unbindKey(me.input.KEY.I);
+            me.input.unbindKey(me.input.KEY.J);
+            me.input.unbindKey(me.input.KEY.K);
+            me.input.unbindKey(me.input.KEY.L);
+            me.input.unbindKey(me.input.KEY.M);
+            me.input.unbindKey(me.input.KEY.N);
+            me.input.unbindKey(me.input.KEY.O);
+            me.input.unbindKey(me.input.KEY.P);
+            me.input.unbindKey(me.input.KEY.Q);
+            me.input.unbindKey(me.input.KEY.R);
+            me.input.unbindKey(me.input.KEY.S);
+            me.input.unbindKey(me.input.KEY.T);
+            me.input.unbindKey(me.input.KEY.U);
+            me.input.unbindKey(me.input.KEY.V);
+            me.input.unbindKey(me.input.KEY.W);
+            me.input.unbindKey(me.input.KEY.X);
+            me.input.unbindKey(me.input.KEY.Y);
+            me.input.unbindKey(me.input.KEY.Z);
+            me.input.unbindKey(me.input.KEY.NUM0);
+            me.input.unbindKey(me.input.KEY.NUM1);
+            me.input.unbindKey(me.input.KEY.NUM2);
+            me.input.unbindKey(me.input.KEY.NUM3);
+            me.input.unbindKey(me.input.KEY.NUM4);
+            me.input.unbindKey(me.input.KEY.NUM5);
+            me.input.unbindKey(me.input.KEY.NUM6);
+            me.input.unbindKey(me.input.KEY.NUM7);
+            me.input.unbindKey(me.input.KEY.NUM8);
+            me.input.unbindKey(me.input.KEY.NUM9);
+            me.input.unbindKey(me.input.KEY.SPACE);
+        } else if (this.type_input === "numbers") {
+            me.input.unbindKey(me.input.KEY.NUM0);
+            me.input.unbindKey(me.input.KEY.NUM1);
+            me.input.unbindKey(me.input.KEY.NUM2);
+            me.input.unbindKey(me.input.KEY.NUM3);
+            me.input.unbindKey(me.input.KEY.NUM4);
+            me.input.unbindKey(me.input.KEY.NUM5);
+            me.input.unbindKey(me.input.KEY.NUM6);
+            me.input.unbindKey(me.input.KEY.NUM7);
+            me.input.unbindKey(me.input.KEY.NUM8);
+            me.input.unbindKey(me.input.KEY.NUM9);
+
+            if (typeof me.state.current().isGame() !== "undefined") {
+                me.input.bindKey(me.input.KEY.NUM1, "belt1", true);
+                me.input.bindKey(me.input.KEY.NUM2, "belt2", true);
+                me.input.bindKey(me.input.KEY.NUM3, "belt3", true);
+                me.input.bindKey(me.input.KEY.NUM4, "belt4", true);
+                me.input.bindKey(me.input.KEY.NUM5, "belt5", true);
+                me.input.bindKey(me.input.KEY.NUM6, "belt6", true);
+                me.input.bindKey(me.input.KEY.NUM7, "belt7", true);
+                me.input.bindKey(me.input.KEY.NUM8, "belt8", true);
+            }
+        }
+        me.input.unbindKey(me.input.KEY.ESC);
+        me.game.remove(this.text_object);
+        this.text_object = null;
+    }
+});
+
+
+game.gui.MoneyInput = me.ObjectEntity.extend({
+    where: null,
+    input: null,
+    button: null,
+    money_icon: null,
+    init: function(x, y, where) {
+        this.where = where;
+
+        settings = {};
+        settings.spritewidth = 150;
+        settings.spriteheight = 50;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+
+        var context = settings.image.getContext('2d');
+        context.fillStyle = "#958686";
+        context.strokeStyle = "black";
+        context.lineWidth = 2;
+
+        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
+        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+        this.parent(x, y, settings);
+        this.floating = true;
+
+        this.money_icon = new game.Icon(x + 15, y + 5, "money-1");
+        me.game.add(this.money_icon, game.LAYERS.TOP);
+        this.input = new game.gui.TextInput(x + 30, y + 5, "numbers", 10);
+        me.game.add(this.input, game.LAYERS.TOP);
+        this.button = new game.gui.FuncButton(x + 50, y + 30, "Ok", "", this, "onSubmit");
+        me.game.add(this.button, game.LAYERS.TOP);
+        me.game.sort();
+    }, onDestroyEvent: function() {
+        me.game.remove(this.input);
+        this.input = null;
+        me.game.remove(this.button);
+        this.button = null;
+        me.game.remove(this.money_icon);
+        this.money_icon = null;
+    }, onSubmit: function() {
+        if (this.where === "inventory") {
+            var value = this.input.text;
+            if (me.gamestat.getItemValue("stash_money") >= value) {
+                me.gamestat.updateValue("stash_money", -value);
+                me.gamestat.updateValue("money", value);
+            } else {
+                me.gamestat.updateValue("money", me.gamestat.getItemValue("stash_money"));
+                me.gamestat.setValue("stash_money", 0);
+            }
+        } else {
+            console.log("to stash");
+            var value = this.input.text;
+            if (me.gamestat.getItemValue("money") >= value) {
+                me.gamestat.updateValue("money", -value);
+                me.gamestat.updateValue("stash_money", value);
+            } else {
+                me.gamestat.updateValue("stash_money", me.gamestat.getItemValue("money"));
+                me.gamestat.setValue("money", 0);
+            }
+        }
+        me.game.remove(this);
+        game.instances.stash.modal = null;
+    }
+});
+
+game.gui.Options = game.gui.Window.extend({
+    entity_layers: null,
+    checkboxes: null,
+    buttons: null,
+    sliders: null,
+    init: function() {
+        this.checkboxes = {};
+        this.buttons = {};
+        this.sliders = {};
+        this.parent(20, 10, 300, 170);
+        var context = this.renderable.image.getContext("2d");
+        game.fonts.white.draw(context, "Enable sounds", 20, 20);
+        var bmf = new me.BitmapFont("geebeeyay-8x8", 8, 1.0);
+        bmf.draw(context, "OPTIONS", (300 - bmf.measureText(context, "OPTIONS").width) / 2, 5);
+        this.checkboxes.enable_sound = new game.gui.CheckBox(45, 43, me.audio.isAudioEnable(), game.instances.audio.switchEnable);
+        me.game.add(this.checkboxes.enable_sound, game.LAYERS.TOP + 1);
+        game.fonts.white.draw(context, "Music volume", 20, 50);
+        this.sliders.ambient = new game.gui.SliderContainer(45, 72, parseInt(game.instances.audio.channels.ambient.volume * 100), game.instances.audio.channels.ambient);
+        me.game.add(this.sliders.ambient, game.LAYERS.TOP + 1);
+        game.fonts.white.draw(context, "Effects volume", 20, 78);
+        this.sliders.effects = new game.gui.SliderContainer(45, 100, parseInt(game.instances.audio.channels.effects.volume * 100), game.instances.audio.channels.effects);
+        me.game.add(this.sliders.effects, game.LAYERS.TOP + 1);
+        this.buttons.save = new game.gui.FuncButton(30, 160, "Save", "", null, game.mechanic.save_settings);
+        me.game.add(this.buttons.save, game.LAYERS.TOP + 1);
+
+
+        me.game.sort();
+    },
+    onDestroyEvent: function() {
+        this.parent();
+
+        me.game.remove(this.checkboxes.enable_sound);
+        this.checkboxes.enable_sound = null;
+        this.checkboxes = null;
+        me.game.remove(this.buttons.save);
+        this.buttons.save = null;
+        this.buttons = null;
+        me.game.remove(this.sliders.ambient);
+        this.sliders.ambient = null;
+        me.game.remove(this.sliders.effects);
+        this.sliders.effects = null;
+        this.sliders = null;
     }
 });

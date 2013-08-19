@@ -13,9 +13,9 @@ game.WalkerRat = game.npcs.EnemyNPC.extend({
         this.renderable.addAnimation("right", [12, 13, 14], 7);
         this.renderable.addAnimation("down", [49, 50, 51, 52], 7);
         this.renderable.addAnimation("up", [30, 31, 32, 33], 7);
-        this.renderable.addAnimation("attack_right", [6, 7, 8, 9, 10, 11], 5);
-        this.renderable.addAnimation("attack_up", [24, 25, 26, 27], 5);
-        this.renderable.addAnimation("attack_down", [42, 43, 44, 45], 5);
+        this.renderable.addAnimation("attack_right", [6, 7, 8, 9, 10, 11], 2);
+        this.renderable.addAnimation("attack_up", [24, 25, 26, 27], 2);
+        this.renderable.addAnimation("attack_down", [42, 43, 44, 45], 2);
         this.renderable.addAnimation("die", [0, 0, 1, 2, 3, 4, 4], 7);
         this.renderable.setCurrentAnimation("iddle_right");
         this.updateColRect(15, 18, 18, 12);
@@ -233,6 +233,62 @@ game.npcs.Goblin = game.npcs.EnemyNPC.extend({
         this.target_offset.y = 11;
         this.shadow_offset.x = 5;
         this.shadow_offset.y = 10;
+        this.updateColRect(5, 16, 10, 16);
+    },
+    modeDying: function() {
+        this.alive = false;
+        if (this.target_text !== null) {
+            me.game.remove(this.target_text);
+            this.target_text = null;
+        }
+        if (this.target !== null) {
+            me.game.remove(this.target);
+            this.target = null;
+        }
+
+        this.onDrop();
+        var deathSmoke = me.entityPool.newInstanceOf("DeathSmoke", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2));
+        me.game.add(deathSmoke, this.z);
+        me.game.sort();
+        me.game.remove(this);
+    }
+});
+
+game.npcs.Bat = game.npcs.EnemyNPC.extend({
+    target_box: null,
+    targe_text: null,
+    init: function(x, y) {
+        settings = {};
+        settings.image = me.loader.getImage("npc_bat");
+        settings.spritewidth = 32;
+        settings.spriteheight = 48;
+        var stats = new game.npcStats(15, 2, 5, "normal", 2, 0, 50, "passive");
+        this.parent(x, y, settings, true, stats);
+        this.renderable.anim = [];
+        this.renderable.addAnimation("attack_right", [0, 1, 2, 3, 4], 2);
+        this.renderable.addAnimation("right", [0, 1, 2, 3, 4], 6);
+        this.renderable.addAnimation("iddle_right", [0, 1, 2, 3, 4], 6);
+        this.renderable.addAnimation("attack_up", [5, 6, 7, 8, 9], 2);
+        this.renderable.addAnimation("up", [5, 6, 7, 8, 9], 6);
+        this.renderable.addAnimation("iddle_up", [5, 6, 7, 8, 9], 6);
+        this.renderable.addAnimation("attack_down", [10, 11, 12, 13, 14], 2);
+        this.renderable.addAnimation("down", [10, 11, 12, 13, 14], 6);
+        this.renderable.addAnimation("iddle_down", [10, 11, 12, 13, 14], 6);
+        this.renderable.setCurrentAnimation("iddle_right");
+        this.updateColRect(10, 16, 22, 16);
+        this.type = me.game.ENEMY_OBJECT;
+        this.attack_cooldown = 900;
+        this.drop = new game.mechanic.DropTable(400, 50, 200);
+        this.attack_cooldown_run = false;
+        this.target_box = null;
+        this.target_text = null;
+        this.name = "Bat";
+        this.setVelocity(1.0, 1.0);
+        this.value = 75;
+        this.target_offset.x = 9;
+        this.target_offset.y = 20;
+        this.shadow_offset.x = 9;
+        this.shadow_offset.y = 20;
         this.updateColRect(5, 16, 10, 16);
     },
     modeDying: function() {

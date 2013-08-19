@@ -1,3 +1,27 @@
+game.npcs.Fox = game.npcs.AllyWalker.extend({
+    init: function(x, y) {
+        settings = {};
+        settings.spritewidth = 32;
+        settings.spriteheight = 32;
+        settings.image = me.loader.getImage("npc_firefox");
+        this.parent(x, y, settings, true, null);
+        this.renderable.anim = [];
+        this.renderable.addAnimation("right", [8, 9, 10, 11], 10);
+        this.renderable.addAnimation("up", [32, 33, 34, 35, 36, 37, 38, 39]);
+        this.renderable.addAnimation("down", [56, 57, 58, 59]);
+        this.renderable.addAnimation("iddle_right", [16, 17, 18, 19, 20], 10);
+        this.renderable.addAnimation("iddle_up", [40, 41], 20);
+        this.renderable.addAnimation("iddle_down", [64, 65], 20);
+        this.renderable.addAnimation("attack_down", [48, 49, 50, 51, 52], 3);
+        this.renderable.addAnimation("attack_up", [24, 25, 26, 27, 28], 3);
+        this.renderable.addAnimation("attack_right", [0, 1, 2, 3, 4], 3);
+        this.renderable.setCurrentAnimation("iddle_right");
+        this.mode_select = "walking";
+        this.shadow_offset = new me.Vector2d(11, 13);
+        this.target_offset = new me.Vector2d(11, 13);
+    }
+});
+
 game.npcs.TalkyGuard = game.npcs.AllyNPC.extend({
     init: function(x, y) {
         this.parent(x, y, "Talky Guard", "npc_guard", 24, 2, "dialog_guard");
@@ -40,6 +64,7 @@ game.npcs.King = game.npcs.AllyNPC.extend({
 game.npcs.Priest = game.npcs.AllyNPC.extend({
     init: function(x, y) {
         this.parent(x - 5, y - 5, "Priest", "npc_priest", 24, 2, "dialog_priest");
+        this.target_offset.x = 4;
     },
     onUse: function() {
         if (game.instances.dialog === null) {
@@ -74,10 +99,14 @@ game.npcs.Octocat = game.npcs.AllyNPC.extend({
 
 game.npcs.ManaChest = game.npcs.AllyNPC.extend({
     init: function(x, y) {
-        this.parent(x, y, "Mana Chest", "chest_player", 16, 1, "dialog_chest");
+        this.parent(x, y - 16, "Mana Chest", "chest_player", [16, 32], 1, "dialog_chest");
+        this.renderable.anim = [];
+        this.renderable.addAnimation("closed", [0]);
+        this.renderable.addAnimation("open", [1]);
+        this.renderable.setCurrentAnimation("closed");
         this.tutorial = true;
         this.target_offset.x = 0;
-        this.target_offset.y = 2;
+        this.target_offset.y = 2 + 16;
     },
     onUse: function() {
         if (game.instances.dialog === null) {
@@ -93,7 +122,7 @@ game.npcs.ManaChest = game.npcs.AllyNPC.extend({
     cleanup: function() {
         game.mechanic.destroy_dialoge(this.GUID);
         if (game.instances.stash !== null) {
-            game.mechanic.close_stash();
+            game.mechanic.close_stash(this.GUID);
         }
     }
 });

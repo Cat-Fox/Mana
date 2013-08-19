@@ -8,7 +8,7 @@
  * @param {Font} font
  * @return {undefined} 
  */
-game.SmallText = me.ObjectEntity.extend({
+game.gui.SmallText = me.ObjectEntity.extend({
     font: null,
     text: null,
     init: function(x, y, text, font) {
@@ -24,7 +24,7 @@ game.SmallText = me.ObjectEntity.extend({
     }
 });
 
-game.BigText = me.ObjectEntity.extend({
+game.gui.BigText = me.ObjectEntity.extend({
     text: null,
     font: null,
     timer: 2500,
@@ -57,7 +57,7 @@ game.BigText = me.ObjectEntity.extend({
     }
 });
 
-game.BigStaticText = me.ObjectEntity.extend({
+game.gui.BigStaticText = me.ObjectEntity.extend({
     init: function(x, y, text, font) {
         settings = {};
         var size = font.measureText(me.video.getScreenContext(), text);
@@ -72,7 +72,7 @@ game.BigStaticText = me.ObjectEntity.extend({
     }
 });
 
-game.HitText = game.SmallText.extend({
+game.HitText = game.gui.SmallText.extend({
     timer: 0,
     local_pos: null,
     slower: null,
@@ -110,7 +110,7 @@ game.HitText = game.SmallText.extend({
     }
 });
 
-game.effects.SpeakText = game.SmallText.extend({
+game.effects.SpeakText = game.gui.SmallText.extend({
     timer: 1500,
     timer_run: null,
     init: function(x, y, text) {
@@ -127,7 +127,7 @@ game.effects.SpeakText = game.SmallText.extend({
     }
 });
 
-game.effects.ExpText = game.SmallText.extend({
+game.effects.ExpText = game.gui.SmallText.extend({
     timer: 700,
     timer_run: null,
     init: function(x, y, text) {
@@ -148,7 +148,7 @@ game.effects.ExpText = game.SmallText.extend({
     }
 });
 
-game.effects.HealText = game.SmallText.extend({
+game.effects.HealText = game.gui.SmallText.extend({
     timer: 700,
     timer_run: null,
     init: function(x, y, text) {
@@ -295,5 +295,23 @@ game.effects.RainDrop = me.ObjectEntity.extend({
         this.parent();
         //console.log(this.pos.y +" v" + this.vel.y + " a" + this.accel.y);
         return true;
+    }
+});
+
+game.effects.BMF_Font = me.ObjectEntity.extend({
+    font: null,
+    text: null,
+    init: function(x, y, text){
+        this.font = new me.BitmapFont("geebeeyay-8x8", 8, 1.0);
+        this.text = text;
+        settings = {};
+        settings.spritewidth = 0;
+        settings.spriteheight = 0;
+        this.parent(x, y, settings);
+    },
+    draw: function(context){
+        this.font.draw(context, this.text, this.pos.x, this.pos.y);
+    }, onDestroyEvent: function(){
+        this.font = null;
     }
 });
