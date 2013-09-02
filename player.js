@@ -1,3 +1,31 @@
+game.createPlayerCanvas = function(armor) {
+    armor = typeof armor !== 'undefined' ? armor : null;
+
+    var canvas = me.video.createCanvas(160, 288);
+    var context = canvas.getContext('2d');
+    var body = me.gamestat.getItemValue("body");
+
+    if (armor === null) {
+        if (body.gender === "m") {
+            context.drawImage(me.loader.getImage("m_body"), 0, 0);
+        } else {
+            context.drawImage(me.loader.getImage("f_body"), 0, 0);
+        }
+    } else {
+        context.drawImage(me.loader.getImage(armor + "_nohead"), 0, 0);
+    }
+    
+    var name;
+    if (body.color === null) {
+        name = body.gender + "_" + body.hair;
+    } else {
+        name = body.gender + "_" + body.hair + "_" + body.color;
+    }
+    context.drawImage(me.loader.getImage(name), 0, 0);
+    
+    return canvas;
+};
+
 game.Player = me.ObjectEntity.extend({
     shadow: null,
     //attacks
@@ -19,12 +47,17 @@ game.Player = me.ObjectEntity.extend({
     //efects
     magic_find: null,
     hp_text: null,
+    init_v: null,
     init: function(x, y) {
+        this.init_v = true;
         settings = {};
         settings.spritewidth = 32;
         settings.spriteheight = 32;
-        settings.image = "clotharmor";
+        settings.image = game.createPlayerCanvas();
+
         this.parent(x, y, settings);
+
+
         me.game.viewport.follow(this.pos, me.game.viewport.AXIS_BOTH);
         this.renderable.addAnimation("right", [5, 6, 7, 8]);
         this.renderable.addAnimation("up", [20, 21, 22, 23]);
@@ -36,7 +69,7 @@ game.Player = me.ObjectEntity.extend({
         this.renderable.addAnimation("attack_up", [15, 16, 17, 18, 19], 1);
         this.renderable.addAnimation("attack_right", [0, 1, 2, 3, 4], 1);
 
-        this.setVelocity(1.0, 1.0);
+        this.setVelocity(1.5, 1.5);
         this.gravity = 0;
         this.updateColRect(10, 12, 13, 14);
         this.renderable.setCurrentAnimation("iddle_down");
@@ -47,7 +80,6 @@ game.Player = me.ObjectEntity.extend({
         if (me.gamestat.getItemValue("player") === 0) {
             me.gamestat.add("player", this.GUID);
         } else {
-            console.log("Player old GUID " + me.gamestat.getItemValue("player") + " New GUID " + this.GUID);
             me.gamestat.setValue("player", this.GUID);
         }
         game.instances.player = this;
@@ -81,7 +113,7 @@ game.Player = me.ObjectEntity.extend({
         game.instances.belt = new game.gui.Belt();
         me.game.add(game.instances.belt, game.guiLayer);
 
-        this.hp_text = new game.SmallText(this.pos.x + 5, this.posy + this.renderable.height, me.gamestat.getItemValue("hp") + "/" + me.gamestat.getItemValue("maxhp"), this.hp_font);
+        this.hp_text = new game.gui.SmallText(this.pos.x + 5, this.posy + this.renderable.height, me.gamestat.getItemValue("hp") + "/" + me.gamestat.getItemValue("maxhp"), this.hp_font);
         me.game.add(this.hp_text, game.LAYERS.GUI - 1);
         me.game.sort();
         this.belt_cooldown_run = new Array(8);
@@ -90,13 +122,10 @@ game.Player = me.ObjectEntity.extend({
         }
 
         if (typeof me.game.currentLevel.level_name !== "undefined") {
-            var message = new game.BigText(me.game.currentLevel.level_name);
-            console.log("Level: " + me.game.currentLevel.level_name);
+            var message = new game.gui.BigText(me.game.currentLevel.level_name);
             me.game.add(message, game.guiLayer);
             me.game.sort();
         }
-
-        console.log(this);
 
     },
     update: function() {
@@ -113,32 +142,37 @@ game.Player = me.ObjectEntity.extend({
 
         if (me.input.isKeyPressed("debug")) {
             me.debug.renderHitBox = !me.debug.renderHitBox;
+            me.debug.renderVelocity = !me.debug.renderVelocity;
         }
 
         if (me.input.isKeyPressed("mana")) {
-            this.updateEXP(100);
+            game.mechanic.trigger_manabook();
         }
 
         if (me.input.isKeyPressed("esc")) {
-            game.mechanic.trigger_pause_menu();
+            game.mechanic.trigger_options();
+        }
+        
+        if(me.input.isKeyPressed("inventory")){
+            game.mechanic.trigger_backpack();
         }
 
         //BeltKeys
-        if (me.input.isKeyPressed("1")) {
+        if (me.input.isKeyPressed("belt1")) {
             game.mechanic.belt_use(0);
-        } else if (me.input.isKeyPressed("2")) {
+        } else if (me.input.isKeyPressed("belt2")) {
             game.mechanic.belt_use(1);
-        } else if (me.input.isKeyPressed("3")) {
+        } else if (me.input.isKeyPressed("belt3")) {
             game.mechanic.belt_use(2);
-        } else if (me.input.isKeyPressed("4")) {
+        } else if (me.input.isKeyPressed("belt4")) {
             game.mechanic.belt_use(3);
-        } else if (me.input.isKeyPressed("5")) {
+        } else if (me.input.isKeyPressed("belt5")) {
             game.mechanic.belt_use(4);
-        } else if (me.input.isKeyPressed("6")) {
+        } else if (me.input.isKeyPressed("belt6")) {
             game.mechanic.belt_use(5);
-        } else if (me.input.isKeyPressed("7")) {
+        } else if (me.input.isKeyPressed("belt7")) {
             game.mechanic.belt_use(6);
-        } else if (me.input.isKeyPressed("8")) {
+        } else if (me.input.isKeyPressed("belt8")) {
             game.mechanic.belt_use(7);
         }
 
@@ -232,7 +266,6 @@ game.Player = me.ObjectEntity.extend({
                     //i need to handle use carefully
                     if (game.instances.dialog === null) {
                         if (me.input.isKeyPressed('use')) {
-                            console.log("use");
                             this.createUse();
                         }
                     }
@@ -312,7 +345,7 @@ game.Player = me.ObjectEntity.extend({
     },
     updateHP: function(value) {
         if (value > 0) {
-            var text = new game.effects.HealText(this.pos.x, this.pos.y, value+"HP");
+            var text = new game.effects.HealText(this.pos.x, this.pos.y, value + "HP");
             me.game.add(text, game.LAYERS.GUI - 1);
             me.game.sort();
         }
@@ -362,14 +395,17 @@ game.Player = me.ObjectEntity.extend({
         me.game.add(this.attack_box, 4);
         me.game.sort();
 
-    }, destroyAttack: function() {
+    },
+    destroyAttack: function() {
         me.game.remove(this.attack_box);
         this.attack_box = null;
         this.use_box_timer = null;
-    }, destroyUse: function() {
+    }, 
+    destroyUse: function() {
         me.game.remove(this.use_box);
         this.use_box = null;
-    }, updateTargetBox: function() {
+    }, 
+    updateTargetBox: function() {
         if ((this.renderable.isCurrentAnimation("up") === true) || (this.renderable.isCurrentAnimation("iddle_up") === true)) {
             this.target_box.pos.x = this.pos.x + 10;
             this.target_box.pos.y = this.pos.y - 16 + 8;
@@ -385,14 +421,16 @@ game.Player = me.ObjectEntity.extend({
                 this.target_box.pos.y = this.pos.y + 8;
             }
         }
-    }, createUse: function() {
+    }, 
+    createUse: function() {
         if (this.use_box === null) {
             this.use_box = me.entityPool.newInstanceOf("CollisionBox", this.target_box.pos.x, this.target_box.pos.y, "human_use");
             this.use_box_timer = me.timer.getTime();
             me.game.add(this.use_box, 5);
             me.game.sort();
         }
-    }, hurt: function(dmg_min, dmg_max, dmg_type) {
+    }, 
+    hurt: function(dmg_min, dmg_max, dmg_type) {
         var dmg = game.mechanic.player_hurt(dmg_min, dmg_max, dmg_type);
         this.updateHP(-dmg);
         this.hit_text = me.entityPool.newInstanceOf("HitText", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2), dmg, game.fonts.bad_red);
@@ -404,7 +442,8 @@ game.Player = me.ObjectEntity.extend({
         } else {
             this.renderable.flicker(2);
         }
-    }, equipWeapon: function() {
+    }, 
+    equipWeapon: function() {
         if (this.weapon !== null) {
             me.game.remove(this.weapon);
             this.weapon = null;
@@ -422,9 +461,10 @@ game.Player = me.ObjectEntity.extend({
             game.mechanic.updateStats();
             return true;
         }
-    }, equipArmor: function() {
+    }, 
+    equipArmor: function() {
         if (me.gamestat.getItemValue("equip").armor === null) {
-            this.renderable.image = me.loader.getImage("clotharmor");
+            this.renderable.image = game.createPlayerCanvas();
         } else {
             var armor = game.mechanic.get_inventory_item(me.gamestat.getItemValue("equip").armor);
             if (armor === false) {
@@ -432,23 +472,28 @@ game.Player = me.ObjectEntity.extend({
                 me.gamestat.getItemValue("equip").armor = null;
                 return false;
             }
-            this.renderable.image = me.loader.getImage(armor.attributes.image_name);
+            this.renderable.image = game.createPlayerCanvas(armor.attributes.image_name);
         }
         game.mechanic.updateStats();
         return true;
-    }, syncWeapon: function() {
+    }, 
+    syncWeapon: function() {
         if (this.renderable.isCurrentAnimation("up")) {
             this.weapon.renderable.flipX(false);
             this.weapon.renderable.setCurrentAnimation("up");
+            this.weapon.z = this.z - 1;
         } else if (this.renderable.isCurrentAnimation("iddle_up")) {
             this.weapon.renderable.flipX(false);
             this.weapon.renderable.setCurrentAnimation("iddle_up");
+            this.weapon.z = this.z - 1;
         } else if (this.renderable.isCurrentAnimation("down")) {
             this.weapon.renderable.flipX(false);
             this.weapon.renderable.setCurrentAnimation("down");
+            this.weapon.z = this.z + 1;
         } else if (this.renderable.isCurrentAnimation("iddle_down")) {
             this.weapon.renderable.flipX(false);
             this.weapon.renderable.setCurrentAnimation("iddle_down");
+            this.weapon.z = this.z + 1;
         } else if (this.renderable.isCurrentAnimation("right")) {
             if (this.flipped) {
                 this.weapon.renderable.flipX(true);
@@ -456,6 +501,7 @@ game.Player = me.ObjectEntity.extend({
                 this.weapon.renderable.flipX(false);
             }
             this.weapon.renderable.setCurrentAnimation("right");
+            this.weapon.z = this.z + 1;
         } else if (this.renderable.isCurrentAnimation("iddle_right")) {
             if (this.flipped) {
                 this.weapon.renderable.flipX(true);
@@ -463,9 +509,11 @@ game.Player = me.ObjectEntity.extend({
                 this.weapon.renderable.flipX(false);
             }
             this.weapon.renderable.setCurrentAnimation("iddle_right");
+            this.weapon.z = this.z + 1;
         } else if (this.renderable.isCurrentAnimation("attack_down")) {
             this.weapon.renderable.flipX(false);
             this.weapon.renderable.setCurrentAnimation("attack_down");
+            this.weapon.z = this.z + 1;
         } else if (this.renderable.isCurrentAnimation("attack_right")) {
             if (this.flipped) {
                 this.weapon.renderable.flipX(true);
@@ -473,9 +521,24 @@ game.Player = me.ObjectEntity.extend({
                 this.weapon.renderable.flipX(false);
             }
             this.weapon.renderable.setCurrentAnimation("attack_right");
+            this.weapon.z = this.z + 1;
         } else if (this.renderable.isCurrentAnimation("attack_up")) {
             this.weapon.renderable.flipX(false);
             this.weapon.renderable.setCurrentAnimation("attack_up");
+            this.weapon.z = this.z - 1;
         }
-    }
+    },
+    getDirection: function(){
+        if(this.renderable.isCurrentAnimation("right") || this.renderable.isCurrentAnimation("iddle_right") || this.renderable.isCurrentAnimation("attack_right")){
+            if(this.flipped){
+                return "left";
+            } else {
+                return "right";
+            }
+        } else if(this.renderable.isCurrentAnimation("up") || this.renderable.isCurrentAnimation("iddle_up") || this.renderable.isCurrentAnimation("attack_up")){
+            return "up";
+        } else {
+            return "down";
+        }
+    }        
 });

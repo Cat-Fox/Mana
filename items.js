@@ -11,7 +11,7 @@ game.ItemObject = Object.extend({
         this.guid = guid;
         this.name = name;
         this.icon_name = icon_name;
-        this.type = type;               //weapon, armor, artefact, consumable, others
+        this.type = type;               //weapon, armor, artefact, consumable, others, spells
         this.rarity = rarity;
         this.attributes = attributes;   //Hash
         this.tooltip_text = tooltip;
@@ -36,10 +36,10 @@ game.consumables.Layout = game.ShadowObject.extend({
         this.rarity = rarity;
         this.life_timer = me.timer.getTime();
     }, update: function() {
-        if(me.timer.getTime() > (this.life_timer + 60000)){
+        if (me.timer.getTime() > (this.life_timer + 60000)) {
             me.game.remove(this);
         }
-        
+
         var res = me.game.collide(this, true);
         var targeted = false;
         if (res.length >= 1) {
@@ -100,12 +100,22 @@ game.consumables.Layout = game.ShadowObject.extend({
     onUse: function() {
     },
     onPickup: function(item) {
-        if (game.mechanic.inventory_push(item)) {
-            game.instances.audio.channels.effects.addEffect(item.attributes.sound);
-            me.game.remove(this);
-            this.collidable = false;
+        if (item.type === "spell") {
+            if(game.mechanic.inventory_push(item, "spells")){
+                game.instances.audio.channels.effects.addEffect(item.attributes.sound);
+                me.game.remove(this);
+                this.collidable = false;
+            } else {
+                console.log("Not enough room in Mana Book");
+            }
         } else {
-            console.log("not enough room in inventory");
+            if (game.mechanic.inventory_push(item, "inventory")) {
+                game.instances.audio.channels.effects.addEffect(item.attributes.sound);
+                me.game.remove(this);
+                this.collidable = false;
+            } else {
+                console.log("Not enough room in inventory");
+            }
         }
     },
     onDestroyEvent: function() {

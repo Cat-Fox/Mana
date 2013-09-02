@@ -1,7 +1,7 @@
 {
     "npc_name": "Mana Chest",
     "npc_image": "chest_player",
-    "image_size": 16,
+    "image_size": [16, 32],
     "anim_length": 1,
     "branches" : [
         {

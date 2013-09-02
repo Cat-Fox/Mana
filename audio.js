@@ -26,11 +26,10 @@ game.audio.Channel = Object.extend({
         this.tracks = [];
         this.volume = 1;
         this.ambient = null;
-        console.log("init");
     },
     setVolume: function(volume_v) {
         this.volume = volume_v / 100;
-        console.log(this.volume + " " + volume_v);
+        this.reloadAmbient();
     },
     stopAll: function() {
         for (var i = 0; i < this.tracks.length; i++) {
@@ -46,7 +45,6 @@ game.audio.Channel = Object.extend({
         me.audio.play(name, false, this.remove(guid), this.volume);
     },
     changeAmbient: function(name) {
-        console.log("volume " + this.volume);
         if (this.ambient === null) {
             this.ambient = name;
             me.audio.playTrack(name, this.volume);
@@ -57,6 +55,12 @@ game.audio.Channel = Object.extend({
             me.audio.playTrack(name, this.volume);
         }
 
+    },
+    reloadAmbient: function() {
+        if (this.ambient !== null) {
+            me.audio.stopTrack(this.ambient);
+            me.audio.playTrack(this.ambient, this.volume);
+        }
     },
     stopAmbient: function() {
         if (this.ambient !== null) {

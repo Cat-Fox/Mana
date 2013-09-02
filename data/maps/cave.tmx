@@ -60,6 +60,8 @@
     <property name="to" value="sewers"/>
    </properties>
   </object>
+  <object name="Bat" type="NPC_ENEMY" x="464" y="160" width="16" height="16"/>
+  <object name="Bat" type="NPC_ENEMY" x="688" y="160" width="16" height="16"/>
  </objectgroup>
  <layer name="foreground" width="150" height="150">
   <data encoding="base64">
