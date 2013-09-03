@@ -315,3 +315,19 @@ game.effects.BMF_Font = me.ObjectEntity.extend({
         this.font = null;
     }
 });
+
+game.effects.Explosion = me.ObjectEntity.extend({
+    init: function(x, y){
+        settings = {};
+        settings.spritewidth = 24;
+        settings.spriteheight = 24;
+        settings.image = "explosion";
+        
+        this.parent(x - 12, y - 12, settings);
+        this.renderable.addAnimation("always", [0, 1, 2, 3, 4, 5], 6);
+        this.renderable.setCurrentAnimation("always", this.cleanup);
+    },
+    cleanup: function(){
+        me.game.remove(this);
+    }
+});

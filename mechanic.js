@@ -248,6 +248,10 @@ game.mechanic.tiles_sort = function(gamestat) {
     inventory.sort(game.mechanic.sort);
 };
 
+game.mechanic.shop_sort = function() {
+    game.instances.shop_items.sort(game.mechanic.sort);
+};
+
 game.mechanic.inventory_drop = function(guid) {
     var inventory = me.gamestat.getItemValue("inventory");
     for (var i = 0; i < inventory.length; i++) {
@@ -270,7 +274,7 @@ game.mechanic.get_inventory_item = function(guid) {
             return inventory[i];
         }
     }
-    
+
     var inventory = me.gamestat.getItemValue("spells");
     for (var i = 0; i < inventory.length; i++) {
         if (inventory[i] === null) {
@@ -372,10 +376,10 @@ game.mechanic.trigger_item = function(guid) {
             return true;
             break;
         case "spell":
-            if(typeof selected.attributes.fireball !== "undefined") {
+            if (typeof selected.attributes.fireball !== "undefined") {
                 //PEWPEWPEW
                 var fireball;
-                switch(player.getDirection()){
+                switch (player.getDirection()) {
                     case "right":
                         fireball = new game.effects.Fireball(player.pos.x + 15, player.pos.y + 8, "right");
                         break;
@@ -506,8 +510,19 @@ game.mechanic.respawn = function() {
     game.mechanic.initialize_level();
 };
 
-game.mechanic.generateShop = function(type, value) {
-
+game.mechanic.generateShop = function(type, size, value) {
+    var result = new Array(size);
+    for (var i = 0; i < size; i++) {
+        if (Number.prototype.random(0, 100) < 75) {
+            //Generate Item
+            switch (type) {
+                case "blacksmith":
+                    result[i] = game.mechanic.generateItem(value);
+                    break;
+            }
+        }
+    }
+    return result;
 };
 
 game.mechanic.check_requirements = function(item) {
@@ -602,16 +617,22 @@ game.mechanic.initialize_level = function() {
     game.instances.collisionMap = new game.pathfinding.CollisionMap();
 };
 
-game.mechanic.trigger_options = function() {
+game.mechanic.trigger_options = function(menu) {
+    menu = typeof menu !== 'undefined' ? menu : true;
     if (game.instances.options === null) {
-        game.instances.options = new game.gui.Options();
-        me.game.add(game.instances.options, game.LAYERS.TOP);
-        me.game.sort();
+        if (menu) {
+            game.mechanic.open_options();
+        } else {
+            game.instances.options = new game.gui.Options();
+            me.game.add(game.instances.options, game.LAYERS.TOP);
+            me.game.sort();
+        }
     } else {
         me.game.remove(game.instances.options);
         game.instances.options = null;
     }
 };
+
 
 game.mechanic.save_settings = function() {
     localStorage.options = true;
@@ -677,7 +698,7 @@ game.mechanic.open_options = function() {
 game.mechanic.close_instance = function(name) {
     if (game.instances[name] !== null) {
         me.game.remove(game.instances[name], true);
-        game.instances[name] = null;        
+        game.instances[name] = null;
     }
 };
 
@@ -688,7 +709,7 @@ game.mechanic.close_all_windows = function() {
 };
 
 game.mechanic.trigger_backpack = function() {
-    if(game.instances.backpack === null){
+    if (game.instances.backpack === null) {
         game.mechanic.open_backpack();
     } else {
         game.mechanic.close_instance("backpack");
@@ -696,17 +717,10 @@ game.mechanic.trigger_backpack = function() {
 };
 
 game.mechanic.trigger_manabook = function() {
-    if(game.instances.manabook === null){
+    if (game.instances.manabook === null) {
         game.mechanic.open_manabook();
     } else {
         game.mechanic.close_instance("manabook");
     }
 };
 
-game.mechanic.trigger_options = function() {
-    if(game.instances.options === null){
-        game.mechanic.open_options();
-    } else {
-        game.mechanic.close_instance("options");
-    }
-};

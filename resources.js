@@ -360,7 +360,11 @@
     type: "image",
     src: "data/spell_fireball_icon.png"
 },{
-    name: "iceball",
+    name: "explosion",
+    type: "image",
+    src: "data/explosion.png"
+},{
+    name: "spell_iceball_effect",
     type: "image",
     src: "data/iceball.png"
 },{

@@ -2047,10 +2047,8 @@ game.gui.Shop = game.gui.Window.extend({
     human_icon: null,
     items: null,
     init: function(shop) {
-        game.instances.shop_items = new Array(48);
-        for (var i = 0; i < game.instances.shop_items.length; i++) {
-            game.instances.shop_items[i] = null;
-        }
+        game.instances.shop_items = game.mechanic.generateShop("blacksmith", 48, 300);
+        game.mechanic.shop_sort();
         console.log(this.items);
         this.entity_layer = game.LAYERS.GUI + 1;
         this.parent(20, 10, 300, 180);
@@ -2694,11 +2692,11 @@ game.gui.Options = game.gui.Window.extend({
     checkboxes: null,
     buttons: null,
     sliders: null,
-    init: function() {
+    init: function(menu) {
         this.checkboxes = {};
         this.buttons = {};
         this.sliders = {};
-        this.parent(20, 10, 300, 170);
+        this.parent(20, 10, 300, 170, menu);
         var context = this.renderable.image.getContext("2d");
         game.fonts.white.draw(context, "Enable sounds", 20, 20);
         var bmf = new me.BitmapFont("geebeeyay-8x8", 8, 1.0);

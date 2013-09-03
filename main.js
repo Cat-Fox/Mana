@@ -330,7 +330,7 @@ game.MenuScreen = game.AnimatedScreen.extend({
                     localStorage.audio_enabled = true;
                     break;
                 case 3 :
-                    game.mechanic.trigger_options();
+                    game.mechanic.trigger_options(false);
                     break;
                 case 4 :
                     me.state.change(me.state.CREDITS);
