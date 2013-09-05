@@ -1,14 +1,23 @@
 Mana 
 ====
 Description:
+
 MelonJS RPG game http://zaraka.github.io/Mana
+
 State:
+
 WORK IN PROGRESS
 
 ##What is it?
-It's Javascript HTML5 Canvas 'Game'. It's written on MelonJS Engine.
+It's Javascript HTML5 Canvas 'Game' written on MelonJS library.
+
+##Roadmap
+Implement game ruleset
+
+Node.js server
+
+Less bad bugs, more funny bugs
+
+Fun (only for premium)
 
 
-##How does it work?
-You need Webserver or local Apache server, just use EasyPHP, or some XAMPP. put everything in /www folder
-and use your favorite Browser.

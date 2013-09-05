@@ -33,7 +33,6 @@ game.gui.BigText = me.ObjectEntity.extend({
         settings = {};
         settings.spritewidth = 0;
         settings.spriteheight = 0;
-        var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
         this.parent(0, 0, settings);
         this.text = text;
         this.timer_run = me.timer.getTime();
