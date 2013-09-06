@@ -377,7 +377,7 @@ game.InventoryTile = me.GUI_Object.extend({
         if (this.tooltip === null && this.icon !== null) {
             var object; //stores Item_Object
             if (this.tile_type === "shop") {
-               object = game.instances.shop_items[this.id];
+                object = game.instances.shop_items[this.id];
             } else {
                 object = me.gamestat.getItemValue(this.tile_type)[this.id];
             }
@@ -910,49 +910,6 @@ game.gui.DropItem = me.GUI_Object.extend({
     }
 });
 
-game.gui.Credits = me.ObjectEntity.extend({
-    init: function(x, y) {
-        settings = {};
-        settings.spritewidth = game.screenWidth;
-        settings.spriteheight = 1000;
-        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
-
-        var font = new me.BitmapFont("geebeeyay-8x8", 8, 1.0);
-        var context = settings.image.getContext("2d");
-
-        context.fillStyle = "black";
-        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
-
-        game.fonts.loading.draw(context, "MANA", (game.screenWidth - 60) / 2, 70);
-        game.fonts.white.draw(context, "The Adventure full of bugs", (game.screenWidth - 80) / 2, 105);
-
-        var total_height = 120;
-        font.draw(context,
-                "PROGRAMMING - ZARAKA\n\
-        MELONJS GAME ENGINE\n\
-        \n\
-        TILESETS\n\
-        MOZZILA BROWSERQUEST\n\
-        OPENGAMEART.ORG\n\
-        ADITIONAL ART\n\
-        ANAFOX\n\
-        VOX\n\
-        \n\
-        MUSIC\n\
-        ORI DACHOVSKY\n\
-        HELP WANTED! CAN YOU CREATE GAME?",
-                50,
-                total_height);
-        this.parent(x, y, settings);
-        this.setVelocity(0.1, -0.1);
-    }, update: function() {
-        this.vel.y += this.accel.y * me.timer.tick;
-        this.updateMovement();
-        this.parent();
-        return true;
-    }
-});
-
 game.gui.Dialog = me.ObjectEntity.extend({
     dialog: null,
     branch: null,
@@ -986,9 +943,8 @@ game.gui.Dialog = me.ObjectEntity.extend({
 
         context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
         context.fillStyle = "black";
-        context.fillRect(0, 0, 40, 40)
+        context.fillRect(0, 0, 40, 40);
         context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
-
 
         this.parent(10, 20, settings);
         this.floating = true;
@@ -998,7 +954,6 @@ game.gui.Dialog = me.ObjectEntity.extend({
         me.game.add(this.text_object, game.guiLayer + 1);
         this.createCurrentIcon();
         me.game.sort();
-
     },
     update: function() {
         if (me.input.isKeyPressed('use')) {
@@ -1090,8 +1045,7 @@ game.gui.Dialog = me.ObjectEntity.extend({
         var message_object = this.dialog.branches[this.branch].messages[this.message];
         switch (message_object.type) {
             case "NPC":
-                this.human_icon = new game.gui.NPCIcon(this.pos.x + 8, this.pos.y + 8, this.dialog.npc_image, this.dialog.image_size, this.dialog.anim_length);
-                me.game.add(this.human_icon, game.guiLayer + 1);
+                this.createIconNPC();
                 break;
             case "PLAYER":
                 this.human_icon = new game.gui.HumanIcon(this.pos.x + 5, this.pos.y + 2, "predefined");
@@ -1099,14 +1053,13 @@ game.gui.Dialog = me.ObjectEntity.extend({
                 me.game.sort();
                 break;
             case "QUESTION":
-                this.human_icon = new game.gui.NPCIcon(this.pos.x + 8, this.pos.y + 8, this.dialog.npc_image, this.dialog.image_size, this.dialog.anim_length);
-                me.game.add(this.human_icon, game.guiLayer + 1);
-                me.game.sort();
+                this.createIconNPC();
                 break;
             default:
-                console.error("dialog message type not recognized");
+                this.createIconNPC();
                 break;
         }
+        me.game.sort();
     }, nextMessage: function() {
         this.message++;
         if (this.message === this.dialog.branches[this.branch].length) {
@@ -1126,6 +1079,9 @@ game.gui.Dialog = me.ObjectEntity.extend({
             me.game.remove(this.option_object);
             this.option_object = null;
         }
+    }, createIconNPC: function() {
+        this.human_icon = new game.gui.NPCIcon(this.pos.x + 8, this.pos.y + 8, this.dialog.npc_image, this.dialog.image_size, this.dialog.anim_length);
+        me.game.add(this.human_icon, game.LAYERS.GUI + 1);
     }
 });
 

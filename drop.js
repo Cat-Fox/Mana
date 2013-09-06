@@ -64,10 +64,14 @@ game.mechanic.DropTable = Object.extend({
     gold: null,
     equip: null,
     consumable: null,
-    init: function(gold, equip, consumable) {
+    mana: null,
+    init: function(gold, equip, consumable, mana) {
+        mana = typeof mana !== 'undefined' ? mana : 0;
+        
         this.gold = gold;
         this.equip = equip;
         this.consumable = consumable;
+        this.mana = mana;
     }
 });
 
@@ -319,6 +323,16 @@ game.mechanic.drop = function(x, y, container_value, drop_table) {
         }
         me.game.add(consumable, game.LAYERS.ITEMS);
         drop = true;
+    }
+    
+    //Drop Mana
+    var chance_mana = Number.prototype.random(0, 1000);
+    if(chance_mana <= drop_table.mana){
+        var mana_ammount = Number.prototype.random(0, (container_value / 2));
+        if(mana_ammount > 0){
+            me.gamestat.updateValue('mana', mana_ammount);
+            me.event.publish("/player/mana", [me.gamestat.getItemValue("mana")]);
+        }
     }
 
     if (drop) {

@@ -11,7 +11,8 @@ game.spells.Fireball = game.consumables.Layout.extend({
         var tooltip_text = [];
         tooltip_text.push(new game.gui.TextLine("Fireball", game.fonts.bad_red));
         tooltip_text.push(new game.gui.TextLine("Deal 15 DMG", game.fonts.bad_red));
-        var item = new game.ItemObject("Fireball", "spell_fireball_icon", "spell", "normal", {fireball: 1, sound: "turn_page"}, tooltip_text);
+        tooltip_text.push(new game.gui.TextLine("Cost 10 mana", game.fonts.magic_blue));
+        var item = new game.ItemObject("Fireball", "spell_fireball_icon", "spell", "normal", {fireball: 1, sound: "turn_page", cost: 10}, tooltip_text);
 
         this.onPickup(item);
     }

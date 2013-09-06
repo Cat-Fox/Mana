@@ -107,8 +107,10 @@ game.Player = me.ObjectEntity.extend({
         game.mechanic.updateStats();
 
         //INSTANCES
-        game.instances.exp_bar = new game.ExpBar(game.screenWidth - 30, game.screenHeight - 10);
-        me.game.add(game.instances.exp_bar, game.guiLayer);
+        game.instances.exp_bar = new game.gui.StatsBar(game.screenWidth - 30, game.screenHeight - 10);
+        me.game.add(game.instances.exp_bar, game.LAYERS.GUI);
+        me.event.publish("/player/exp", [me.gamestat.getItemValue("exp")]);
+        me.event.publish("/player/mana", [me.gamestat.getItemValue("mana")]);
 
         game.instances.belt = new game.gui.Belt();
         me.game.add(game.instances.belt, game.guiLayer);
@@ -136,7 +138,7 @@ game.Player = me.ObjectEntity.extend({
             me.game.add(deathSmoke);
             me.game.add(dieText, game.guiLayer);
             var respawn_entity = new game.entities.Respawn(this.pos.x, this.pos.y);
-            me.game.add(respawn_entity)
+            me.game.add(respawn_entity);
             me.game.sort();
         }
 
@@ -287,7 +289,7 @@ game.Player = me.ObjectEntity.extend({
         if (res.length >= 1) {
             for (var i = 0; i < res.length; i++) {
                 //this is quite horrible solution
-                if ((res[i].obj.type === "npc") || (res[i].obj.type === me.game.ENEMY_OBJECT) || (res[i].obj.type == "solid_object")) {
+                if ((res[i].obj.type === "npc") || (res[i].obj.type === me.game.ENEMY_OBJECT) || (res[i].obj.type === "solid_object")) {
                     if (res[i].x !== 0) {
                         // x axis
                         if (res[i].x < 0) {

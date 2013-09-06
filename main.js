@@ -119,7 +119,7 @@ var game =
                 me.entityPool.add("PlusSkillButton", game.PlusSkillButton, true);
 
 
-                //player stuff
+                //Setup Gamestat
                 me.gamestat.add("hp", 50);
                 me.gamestat.add("maxhp", 50);
                 me.gamestat.add("exp", 0);
@@ -154,6 +154,7 @@ var game =
                     spells[i] = null;
                 }
                 me.gamestat.add("spells", spells);
+                me.gamestat.add("mana", 0);
 
                 me.sys.fps = 30;
 
@@ -163,7 +164,6 @@ var game =
                 // start the game
                 me.state.change(me.state.MENU);
             }
-
         };
 
 

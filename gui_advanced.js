@@ -390,17 +390,17 @@ game.Backpack = game.gui.InventoryWindow.extend({
 
             //then drop tile
             this.drop_tile.mouseUp(this.selected_tile);
-
             //then tile
             this.tiles[selected.row][selected.column].mouseUp();
         }
     }
 });
 
-game.ExpBar = me.ObjectEntity.extend({
+game.gui.StatsBar = me.ObjectEntity.extend({
     percent: null,
-    font: null,
-    subscribe: null,
+    subscribe_exp: null,
+    subscribe_mana: null,
+    mana_text: null,
     init: function(x, y) {
         settings = {};
         settings.spriteWidth = 100;
@@ -420,11 +420,19 @@ game.ExpBar = me.ObjectEntity.extend({
         this.percent = 0;
         this.floating = true;
 
-        this.font = game.fonts.good_green;
-        this.subscribe = me.event.subscribe("/player/exp", function(a) {
-            game.instances.exp_bar.onUpdate(a);
+        this.mana_text = new game.gui.SmallText(310, 209, "0", game.fonts.magic_blue);
+        this.mana_text.floating = true;
+        me.game.add(this.mana_text, game.LAYERS.GUI + 1);
+        console.log(this.mana_text.pos.x + " " + this.mana_text.pos.y);
+        me.game.sort();
+
+        this.subscribe_exp = me.event.subscribe("/player/exp", function(a) {
+            game.instances.exp_bar.onUpdateExp(a);
         });
-    }, onUpdate: function(exp) {
+        this.subscribe_mana = me.event.subscribe("/player/mana", function(a){
+           game.instances.exp_bar.onUpdateMana(a); 
+        });
+    }, onUpdateExp: function(exp) {
         this.percent = Math.floor((100 / me.gamestat.getItemValue("next_level")) * exp);
         var context = this.renderable.image.getContext("2d");
         context.strokeStyle = "#958686";
@@ -441,13 +449,14 @@ game.ExpBar = me.ObjectEntity.extend({
             context.lineTo(6 + width, 5);
             context.stroke();
         }
-        context.fillStyle = "#958686";
-        context.fillRect(3, 9, 90, 10);
-        var size = this.font.measureText(context, exp + "/" + me.gamestat.getItemValue("next_level"));
-        this.font.draw(context, exp + "/" + me.gamestat.getItemValue("next_level"), 50 - (size.width / 2), 9);
+    }, onUpdateMana: function(mana){
+        this.mana_text.text = "Mana: " + mana.toString();
     },
     onDestroyEvent: function() {
-        me.event.unsubscribe(this.subscribe);
+        me.event.unsubscribe(this.subscribe_exp);
+        me.event.unsubscribe(this.subscribe_mana);
+        me.game.remove(this.mana_text);
+        this.mana_text = null;
     }
 });
 
@@ -854,5 +863,48 @@ game.gui.Options = game.gui.Window.extend({
         me.game.remove(this.sliders.effects);
         this.sliders.effects = null;
         this.sliders = null;
+    }
+});
+
+game.gui.Credits = me.ObjectEntity.extend({
+    init: function(x, y) {
+        settings = {};
+        settings.spritewidth = game.screenWidth;
+        settings.spriteheight = 1000;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+
+        var font = new me.BitmapFont("geebeeyay-8x8", 8, 1.0);
+        var context = settings.image.getContext("2d");
+
+        context.fillStyle = "black";
+        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
+
+        game.fonts.loading.draw(context, "MANA", (game.screenWidth - 60) / 2, 70);
+        game.fonts.white.draw(context, "The Adventure full of bugs", (game.screenWidth - 80) / 2, 105);
+
+        var total_height = 120;
+        font.draw(context,
+                "PROGRAMMING - ZARAKA\n\
+        MELONJS GAME ENGINE\n\
+        \n\
+        TILESETS\n\
+        MOZZILA BROWSERQUEST\n\
+        OPENGAMEART.ORG\n\
+        ADITIONAL ART\n\
+        ANAFOX\n\
+        VOX\n\
+        \n\
+        MUSIC\n\
+        ORI DACHOVSKY\n\
+        HELP WANTED! CAN YOU CREATE GAME?",
+                50,
+                total_height);
+        this.parent(x, y, settings);
+        this.setVelocity(0.1, -0.1);
+    }, update: function() {
+        this.vel.y += this.accel.y * me.timer.tick;
+        this.updateMovement();
+        this.parent();
+        return true;
     }
 });

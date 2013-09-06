@@ -375,6 +375,11 @@ game.mechanic.trigger_item = function(guid) {
             return true;
             break;
         case "spell":
+            if(selected.attributes.cost > me.gamestat.getItemValue("mana")){
+                game.instances.console.post("You don't have enough mana");
+                return false;
+            }
+            me.gamestat.updateValue("mana", -selected.attributes.cost);
             if (typeof selected.attributes.fireball !== "undefined") {
                 //PEWPEWPEW
                 var fireball;
@@ -394,6 +399,7 @@ game.mechanic.trigger_item = function(guid) {
                 }
                 me.game.add(fireball, game.LAYERS.ITEMS);
                 me.game.sort();
+                return true;
             }
             break;
         default:
@@ -527,7 +533,6 @@ game.mechanic.generateShop = function(type, size, value) {
 };
 
 game.mechanic.check_requirements = function(item) {
-    player = game.instances.player;
     switch (item.type) {
         case "weapon" :
             if (typeof item.attributes.str_req !== "undefined") {
@@ -539,7 +544,7 @@ game.mechanic.check_requirements = function(item) {
             break;
         case "armor" :
             if (typeof item.attributes.end_req !== "undefined") {
-                if (me.gamestat.getItemValue("stats").str < item.attributes.str_req) {
+                if (me.gamestat.getItemValue("stats").end < item.attributes.end_req) {
                     game.instances.console.post("Not enough Endurance");
                     return false;
                 }
@@ -547,7 +552,7 @@ game.mechanic.check_requirements = function(item) {
             break;
         case "artefact" :
             if (typeof item.attributes.int_req !== "undefined") {
-                if (me.gamestat.getItemValue("stats").str < item.attributes.str_req) {
+                if (me.gamestat.getItemValue("stats").int < item.attributes.int_req) {
                     game.instances.console.post("Not enough Inteligence");
                     return false;
                 }

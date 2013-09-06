@@ -295,6 +295,14 @@ game.npcs.AllyWalker = game.WalkerNPC.extend({
             me.game.add(this.target_text, this.z + 1);
             me.game.sort();
         }
+    }, onDestroyEvent: function(){
+        if(this.target !== null){
+            me.game.remove(this.target);
+            this.target = null;
+            me.game.remove(this.target_text);
+            this.target_text = null;
+        }
+        this.parent();
     }
 });
 

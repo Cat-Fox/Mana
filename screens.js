@@ -329,6 +329,24 @@ game.LoadingScreen = me.ScreenObject.extend({
         this.invalidate = false;
         this.loadPercent = 0;
         me.loader.onProgress = this.onProgressUpdate.bind(this);
+        this.message = "";
+        switch(Number.prototype.random(0,4)){
+            case 0 : 
+                this.message = "Be patient, trees growing, people dying, game is loading.";
+                break;
+            case 1 :
+                this.message = "Allocating Fun.";
+                break;
+            case 2 : 
+                this.message = "If you are not having fun, you are not dying enough.";
+                break;
+            case 3 :
+                this.message = "If you find a bug, don't be scared, bugs are friendly.";
+                break;
+            case 4 :
+                this.message = "This game is powered by Fun.";
+                break;
+        }
 
     },
     onProgressUpdate: function(progress)
@@ -352,16 +370,14 @@ game.LoadingScreen = me.ScreenObject.extend({
     draw: function(context)
     {
         me.video.clearSurface(context, "black");
-
         var logo_width = game.fonts.loading.measureText(context, "MANA").width;
 
         game.fonts.loading.draw(context,
                 "MANA",
                 ((me.video.getWidth() - logo_width) / 2),
-                (me.video.getHeight() - 60) / 2);
-
-        game.fonts.white.draw(context, "The Adventure full of Bugs", (me.video.getWidth() / 2) - 52, me.video.getHeight() / 2);
-
+                (me.video.getHeight() - 80) / 2);
+        game.fonts.white.draw(context, "The Adventure full of Bugs", (me.video.getWidth() / 2) - 60, (me.video.getHeight() / 2) - 10);
+        game.fonts.white.draw(context, this.message, 20, me.video.getHeight() - 30);
         var width = Math.floor(this.loadPercent * me.video.getWidth());
 
         // draw the progress bar
@@ -505,7 +521,7 @@ game.CharacterPickScreen = me.ScreenObject.extend({
         this.updateHair();
     },
     updateHair: function() {
-        var gender, hair, color, name;
+        var gender, color, name;
         if (this.pick_gender[this.current_gender] === "male") {
             gender = "m";
         } else {
@@ -601,36 +617,5 @@ game.CharacterPickScreen = me.ScreenObject.extend({
         this.buttons.color_right = null;
 
         me.input.unbindKey(me.input.KEY.ENTER);
-    }
-});
-
-//Nah... melonJS isn't good for loading level screens
-game.LevelLoding = me.ScreenObject.extend({
-    init: function(){
-        this.geebee = null;
-        this.loading_label = null;
-        this.message_label = null;
-    },
-    onResetEvent: function(){
-        this.geebee =  new me.BitmapFont("geebeeyay-8x8", 8, 1.0);
-        this.loading_label;
-        
-        var text = "";
-        switch(Number.prototype.random(0,5)){
-            case 0: text = "";
-                break;
-        }
-        
-        this.message_label = new game.gui.SmallText(50, game.screenHeight - 50, text);
-        this.message_label.floating = true;
-        me.game.add(this.message_label, game.LAYERS.GUI);
-        
-        
-        me.game.sort();
-    },
-    onDestroyEvent: function(){
-        me.game.remove(this.message_label);
-        this.message_label = null;
-        this.geebee = null;
     }
 });
