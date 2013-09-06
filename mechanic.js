@@ -332,7 +332,6 @@ game.mechanic.sort = function(a, b) {
 };
 
 game.mechanic.belt_use = function(id) {
-    console.log(id);
     var belt = me.gamestat.getItemValue("belt")[id];
     if (typeof belt !== null) {
         game.mechanic.trigger_item(belt);
@@ -520,6 +519,8 @@ game.mechanic.generateShop = function(type, size, value) {
                     result[i] = game.mechanic.generateItem(value);
                     break;
             }
+        } else {
+            result[i] = null;
         }
     }
     return result;
@@ -568,7 +569,6 @@ game.mechanic.attributeUp = function(attribute) {
 };
 
 game.mechanic.updateStats = function() {
-    console.log(me.gamestat.getItemValue("stats"));
     var max_hp = me.gamestat.getItemValue("stats").getHP();
     me.gamestat.setValue("maxhp", max_hp);
     if (me.gamestat.getItemValue("hp") > me.gamestat.getItemValue("maxhp")) {

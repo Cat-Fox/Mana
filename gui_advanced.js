@@ -738,8 +738,8 @@ game.gui.Shop = game.gui.Window.extend({
     items: null,
     init: function(shop) {
         game.instances.shop_items = game.mechanic.generateShop("blacksmith", 48, 300);
-        game.mechanic.shop_sort();                                         
-        console.log(this.items);
+        game.mechanic.shop_sort();            
+        
         this.entity_layer = game.LAYERS.GUI + 1;
         this.parent(20, 10, 300, 180);
         var context = this.renderable.image.getContext("2d");

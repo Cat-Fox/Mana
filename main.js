@@ -22,7 +22,7 @@ var game =
             pathfinding: {},
             spells: {},
             LAYERS: {GUI: 15, NPC: 5, ITEMS: 4, TOP: 20},
-            version: "0.0.4",
+            version: "0.0.5",
             onload: function()
             {
                 if (!me.video.init('screen', this.screenWidth, this.screenHeight, true, 2.0, true)) {

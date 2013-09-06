@@ -1,7 +1,6 @@
 game.spells.Fireball = game.consumables.Layout.extend({
     tooltip: null,
     init: function(x, y) {
-        console.log("creating Fireball");
         settings = {};
         settings.spritewidth = 16;
         settings.spriteheight = 16;
@@ -91,7 +90,7 @@ game.effects.Fireball = me.ObjectEntity.extend({
         return false;
     },
     onDestroyEvent: function(){
-        var explosion = new game.effects.Explosion(this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2));
+        var explosion = new game.effects.Explosion(this.pos.x + (this.width / 2), this.pos.y + (this.height / 2));
         me.game.add(explosion, game.LAYERS.NPC);
         me.game.sort();
     }

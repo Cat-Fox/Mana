@@ -376,7 +376,11 @@ game.InventoryTile = me.GUI_Object.extend({
     onMouseOver: function() {
         if (this.tooltip === null && this.icon !== null) {
             var object; //stores Item_Object
-            object = me.gamestat.getItemValue(this.tile_type)[this.id];
+            if (this.tile_type === "shop") {
+               object = game.instances.shop_items[this.id];
+            } else {
+                object = me.gamestat.getItemValue(this.tile_type)[this.id];
+            }
             if (object.tooltip_text !== null) {
                 this.tooltip = new game.gui.Tooltip(this.pos.x + this.width, this.pos.y, object.tooltip_text);
                 me.game.add(this.tooltip, this.z + 3);
