@@ -91,8 +91,14 @@ game.effects.Fireball = me.ObjectEntity.extend({
         return false;
     },
     onDestroyEvent: function(){
+<<<<<<< HEAD
+        console.log("destry");
+        var explosion = new game.effects.Explosion(this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2));
+        me.game.add(explosion, this.z + 1);
+=======
         var explosion = new game.effects.Explosion(this.pos.x + (this.width / 2), this.pos.y + (this.height / 2));
         me.game.add(explosion, game.LAYERS.NPC);
+>>>>>>> bebde176ab819e9b0b21a65428eaf08524f05db2
         me.game.sort();
     }
 });

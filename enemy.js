@@ -21,7 +21,7 @@ game.WalkerRat = game.npcs.EnemyNPC.extend({
         this.updateColRect(15, 18, 18, 12);
         this.type = me.game.ENEMY_OBJECT;
         this.attack_cooldown = 1500;
-        this.drop = new game.mechanic.DropTable(200, 999, 200);
+        this.drop = new game.mechanic.DropTable(200, 999, 200, 200);
         this.value = 200;
         this.name = "Rat";
     }

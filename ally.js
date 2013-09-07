@@ -1,4 +1,5 @@
 game.npcs.Fox = game.npcs.AllyWalker.extend({
+    drop: null,
     init: function(x, y) {
         settings = {};
         settings.spritewidth = 32;
@@ -19,7 +20,22 @@ game.npcs.Fox = game.npcs.AllyWalker.extend({
         this.mode_select = "walking";
         this.shadow_offset = new me.Vector2d(11, 13);
         this.target_offset = new me.Vector2d(11, 13);
-    }
+        this.name = "Lucky Fox";
+        this.drop = new game.mechanic.DropTable(500, 500, 500);
+    },
+     onUse: function(){
+        var speak = new game.effects.SpeakText(this.pos.x, this.pos.y, "Woof!");
+        me.game.add(speak, game.LAYERS.GUI);
+        me.game.sort();
+        game.mechanic.drop(this.pos.x, this.pos.y, 500, this.drop);
+        me.game.remove(this);
+     },
+     onHit: function(){
+        var speak = new game.effects.SpeakText(this.pos.x, this.pos.y, "Woof! :(");
+        me.game.add(speak, game.LAYERS.GUI);
+        me.game.sort();
+        me.game.remove(this);
+     }
 });
 
 game.npcs.TalkyGuard = game.npcs.AllyNPC.extend({

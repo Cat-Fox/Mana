@@ -33,7 +33,6 @@ game.gui.BigText = me.ObjectEntity.extend({
         settings = {};
         settings.spritewidth = 0;
         settings.spriteheight = 0;
-        var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
         this.parent(0, 0, settings);
         this.text = text;
         this.timer_run = me.timer.getTime();
@@ -325,8 +324,8 @@ game.effects.Explosion = me.ObjectEntity.extend({
         settings.image = "explosion";
         
         this.parent(x - 12, y - 12, settings);
-        this.renderable.addAnimation("always", [0, 1, 2, 3, 4, 5], 6);
-        this.renderable.setCurrentAnimation("always", this.cleanup);
+        this.renderable.addAnimation("always", [0, 1, 2, 3, 4, 5], -1);
+        this.renderable.setCurrentAnimation("always", this.cleanup.bind(this));
     },
     cleanup: function(){
         me.game.remove(this);

@@ -260,6 +260,7 @@ game.npcs.AllyWalker = game.WalkerNPC.extend({
     targeted: null,
     target: null,
     target_text: null,
+    name: null,
     init: function(x, y, settings, c_shadow, stats) {
         this.parent(x, y, settings, c_shadow, stats);
         this.target = null;
@@ -288,13 +289,20 @@ game.npcs.AllyWalker = game.WalkerNPC.extend({
     onTarget: function() {
         this.targeted = true;
         if (this.target === null) {
-            var text = "Stupid Fox";
-            this.target = me.entityPool.newInstanceOf("Target", this.pos.x + 15, this.pos.y + 16, "red");
-            this.target_text = me.entityPool.newInstanceOf("SmallText", this.pos.x + (this.renderable.width / 4), this.pos.y + (this.renderable.height), text, game.fonts.white);
+            this.target = me.entityPool.newInstanceOf("Target", this.pos.x + 15, this.pos.y + 16, "green");
+            this.target_text = me.entityPool.newInstanceOf("SmallText", this.pos.x + (this.renderable.width / 4), this.pos.y + (this.renderable.height), this.name, game.fonts.white);
             me.game.add(this.target, this.z - 1);
             me.game.add(this.target_text, this.z + 1);
             me.game.sort();
         }
+    }, onDestroyEvent: function(){
+        if(this.target !== null){
+            me.game.remove(this.target);
+            this.target = null;
+            me.game.remove(this.target_text);
+            this.target_text = null;
+        }
+        this.parent();
     }
 });
 
@@ -405,7 +413,7 @@ game.npcs.EnemyNPC = game.WalkerNPC.extend({
             }
         }
 
-        var distance = parseInt(this_vector.distance(player_vector))
+        var distance = parseInt(this_vector.distance(player_vector));
 
         if (this.path === null && distance > 25) {
             this.path = game.pathfinding.findPath(game.pathfinding.getObjectNode(this), game.pathfinding.getPlayerNode());
@@ -574,7 +582,7 @@ game.npcs.AllyNPC = game.ShadowObject.extend({
             if (this.speak_text_timer === 0) {
                 var random = Number.prototype.random(0, this.dialog.hit_texts.length - 1);
                 this.speak_text = new game.gui.SmallText(this.pos.x, this.pos.y - 5, this.dialog.hit_texts[random], game.fonts.white);
-                me.game.add(this.speak_text, game.guiLayer);
+                me.game.add(this.speak_text, game.LAYERS.GUI);
                 me.game.sort();
                 this.speak_text_timer = me.timer.getTime();
             }

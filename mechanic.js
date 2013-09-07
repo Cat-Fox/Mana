@@ -332,7 +332,6 @@ game.mechanic.sort = function(a, b) {
 };
 
 game.mechanic.belt_use = function(id) {
-    console.log(id);
     var belt = me.gamestat.getItemValue("belt")[id];
     if (typeof belt !== null) {
         game.mechanic.trigger_item(belt);
@@ -376,6 +375,11 @@ game.mechanic.trigger_item = function(guid) {
             return true;
             break;
         case "spell":
+            if(selected.attributes.cost > me.gamestat.getItemValue("mana")){
+                game.instances.console.post("You don't have enough mana");
+                return false;
+            }
+            me.gamestat.updateValue("mana", -selected.attributes.cost);
             if (typeof selected.attributes.fireball !== "undefined") {
                 //PEWPEWPEW
                 var fireball;
@@ -395,6 +399,7 @@ game.mechanic.trigger_item = function(guid) {
                 }
                 me.game.add(fireball, game.LAYERS.ITEMS);
                 me.game.sort();
+                return true;
             }
             break;
         default:
@@ -520,13 +525,14 @@ game.mechanic.generateShop = function(type, size, value) {
                     result[i] = game.mechanic.generateItem(value);
                     break;
             }
+        } else {
+            result[i] = null;
         }
     }
     return result;
 };
 
 game.mechanic.check_requirements = function(item) {
-    player = game.instances.player;
     switch (item.type) {
         case "weapon" :
             if (typeof item.attributes.str_req !== "undefined") {
@@ -538,7 +544,7 @@ game.mechanic.check_requirements = function(item) {
             break;
         case "armor" :
             if (typeof item.attributes.end_req !== "undefined") {
-                if (me.gamestat.getItemValue("stats").str < item.attributes.str_req) {
+                if (me.gamestat.getItemValue("stats").end < item.attributes.end_req) {
                     game.instances.console.post("Not enough Endurance");
                     return false;
                 }
@@ -546,7 +552,7 @@ game.mechanic.check_requirements = function(item) {
             break;
         case "artefact" :
             if (typeof item.attributes.int_req !== "undefined") {
-                if (me.gamestat.getItemValue("stats").str < item.attributes.str_req) {
+                if (me.gamestat.getItemValue("stats").int < item.attributes.int_req) {
                     game.instances.console.post("Not enough Inteligence");
                     return false;
                 }
@@ -568,7 +574,6 @@ game.mechanic.attributeUp = function(attribute) {
 };
 
 game.mechanic.updateStats = function() {
-    console.log(me.gamestat.getItemValue("stats"));
     var max_hp = me.gamestat.getItemValue("stats").getHP();
     me.gamestat.setValue("maxhp", max_hp);
     if (me.gamestat.getItemValue("hp") > me.gamestat.getItemValue("maxhp")) {
