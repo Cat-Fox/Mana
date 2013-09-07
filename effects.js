@@ -318,6 +318,7 @@ game.effects.BMF_Font = me.ObjectEntity.extend({
 
 game.effects.Explosion = me.ObjectEntity.extend({
     init: function(x, y){
+        console.log(explosion);
         settings = {};
         settings.spritewidth = 24;
         settings.spriteheight = 24;

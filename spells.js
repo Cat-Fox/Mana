@@ -91,6 +91,7 @@ game.effects.Fireball = me.ObjectEntity.extend({
         return false;
     },
     onDestroyEvent: function(){
+        console.log("destry");
         var explosion = new game.effects.Explosion(this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2));
         me.game.add(explosion, this.z + 1);
         me.game.sort();
