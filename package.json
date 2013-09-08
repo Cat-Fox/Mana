@@ -1,0 +1,32 @@
+{
+  "name": "Mana",
+  "version": "0.0.5",
+  "description": "Mana the Adventure full of Bugs",
+  "homepage": "http://www.zaraka.org/mana/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zaraka/Mana"
+  },
+  "bugs": {
+    "url": "https://github.com/Zaraka/Mana/issues"
+  },
+  "licenses": [
+    {
+      "type": "GPL v3",
+      "url": ""
+    }
+  ],
+  "author": {
+    "name": "Zaraka",
+    "email": "zarakaangel@gmail.com"
+  },
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-concat": "~0.2.0",
+    "grunt-contrib-uglify": "~0.2.0"
+  }
+}

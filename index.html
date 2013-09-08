@@ -33,10 +33,6 @@
     </head>
     <body style="background-color: black">
         <div class="center">
-            <header class="header">
-                <a href="index.html" class="button">Home</a>
-                <a href="index.html" class="button">Database</a>
-            </header>
         <div id="info">
             <div id="console">
                 <span id="framecounter">(0/0 fps)</span><br>
@@ -47,57 +43,13 @@
                 B - backpack |
                 ALT - items on floor |
                 [1-8] - belt
-                <div id="debugDiv">Console: </div>
             </div>
             <div id="screen">
                 <script type="text/javascript" src="lib/jquery-1.10.1.js"></script>
-                <script type="text/javascript">
-                    if (typeof console != "undefined")
-                        if (typeof console.log != 'undefined')
-                            console.olog = console.log;
-                        else
-                            console.olog = function() {
-                            };
-
-                    console.log = function(message) {
-                        console.olog(message);
-                        $('#debugDiv').append('<p>' + message + '</p>');
-                        $("#debugDiv").scrollTop($("#debugDiv")[0].scrollHeight);
-                    };
-                    console.error = console.debug = console.info = console.log
-                </script>
                 <script type="text/javascript" src="lib/melonJS-0.9.8.js"></script>
                 <script type="text/javascript" src="lib/debugPanel.js"></script>
                 
-                <script type="text/javascript" src="functions.js"></script>
-                <script type="text/javascript" src="main.js"></script>
-                <script type="text/javascript" src="instances.js"></script>
-                <script type="text/javascript" src="resources.js"></script>
-                <script type="text/javascript" src="fonts.js"></script>
-                <script type="text/javascript" src="audio.js"></script>
-                <script type="text/javascript" src="mechanic.js"></script>
-                <script type="text/javascript" src="pathfinding.js"></script>
-                <script type="text/javascript" src="stats.js"></script>
-                
-                <script type="text/javascript" src="screens.js"></script>
-                
-                <script type="text/javascript" src="effects.js"></script>
-                <script type="text/javascript" src="entities.js"></script>
-                <script type="text/javascript" src="weapons.js"></script>
-                <script type="text/javascript" src="items.js"></script>
-                <script type="text/javascript" src="spells.js"></script>
-                <script type="text/javascript" src="destroyable.js"></script>
-                
-                <script type="text/javascript" src="gui_components.js"></script>
-                <script type="text/javascript" src="gui_advanced.js"></script>
-                
-                <script type="text/javascript" src="npc.js"></script>
-                <script type="text/javascript" src="player.js"></script>
-                <script type="text/javascript" src="ally.js"></script>
-                <script type="text/javascript" src="enemy.js"></script>                                
-                
-                <script type="text/javascript" src="spawn.js"></script>
-                <script type="text/javascript" src="drop.js"></script>
+                <script type="text/javascript" src="build/Mana-0.0.5.js"></script>
             </div>
         </div>
             </div>
