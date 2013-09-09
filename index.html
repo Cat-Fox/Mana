@@ -12,16 +12,6 @@
                 color: white;
             }
 
-            #debugDiv {
-                color: #33ff00;
-                height: 400px;
-                overflow-y: scroll;
-            }
-            
-            #debugDiv p{
-                margin: 0 0 0 0;
-            }
-
             #screen {
                 float: left;
                 margin-left: 10px;
@@ -32,26 +22,17 @@
         </style>
     </head>
     <body style="background-color: black">
-        <div class="center">
-        <div id="info">
-            <div id="console">
-                <span id="framecounter">(0/0 fps)</span><br>
-                Controls: <br>
-                Arrows - move |
-                X - attack |
-                C - use |
-                B - backpack |
-                ALT - items on floor |
-                [1-8] - belt
-            </div>
-            <div id="screen">
-                <script type="text/javascript" src="lib/jquery-1.10.1.js"></script>
-                <script type="text/javascript" src="lib/melonJS-0.9.8.js"></script>
-                <script type="text/javascript" src="lib/debugPanel.js"></script>
-                
-                <script type="text/javascript" src="build/Mana-0.0.5.js"></script>
-            </div>
-        </div>
+            <div id="info">
+                <div id="console">
+                    <span id="framecounter">(0/0 fps)</span><br>
+                </div>
+                <div id="screen">
+                    <script type="text/javascript" src="lib/jquery-1.10.1.js"></script>
+                    <script type="text/javascript" src="lib/melonJS-0.9.8.js"></script>
+                    <script type="text/javascript" src="lib/debugPanel.js"></script>
+
+                    <script type="text/javascript" src="build/Mana-0.0.5.js"></script>
+                </div>
             </div>
     </body>
 </html>

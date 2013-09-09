@@ -158,6 +158,14 @@ game.effects.HealText = game.gui.SmallText.extend({
     }
 });
 
+/**
+ * Drop tooltip for items on ground
+ * 
+ * @param {int} x x-pos
+ * @param {int} y y-pos
+ * @param {string} text Text shown in Tooltip
+ * @param {string} type Typo of font
+ */
 game.DropTooltip = me.ObjectEntity.extend({
     text: null,
     type: null,

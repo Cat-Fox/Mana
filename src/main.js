@@ -35,13 +35,11 @@ var game =
                     return;
                 }
 
-                // add "#debug" to the URL to enable the debug Panel
-                if (document.location.hash === "#debug") {
-                    window.onReady(function() {
-                        me.plugin.register.defer(debugPanel, "debug");
-                    });
+                if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
+                    alert('The File APIs are not fully supported in this browser.');
+                    return;
                 }
-
+                
                 me.state.set(me.state.LOADING, new game.LoadingScreen());
                 me.audio.init("mp3,ogg");
                 me.loader.onload = this.loaded.bind(this);
@@ -66,7 +64,7 @@ var game =
                 //-------------------SPELLS------------------------
                 me.entityPool.add("Fireball", game.spells.Fireball, true);
                 //------------------Entities---------------------------
-                
+
                 me.entityPool.add("Shadow", game.Shadow, true);
                 me.entityPool.add("Sparks", game.Sparks, true);
                 me.entityPool.add("Smile", game.Smile, true);
@@ -150,11 +148,12 @@ var game =
                 var history = new game.mechanic.History();
                 me.gamestat.add("history", history);
                 var spells = new Array(64);
-                for(var i = 0; i < spells.length; i++){
+                for (var i = 0; i < spells.length; i++) {
                     spells[i] = null;
                 }
                 me.gamestat.add("spells", spells);
                 me.gamestat.add("mana", 0);
+                me.gamestat.add("helmet", 0);
 
                 me.sys.fps = 30;
 

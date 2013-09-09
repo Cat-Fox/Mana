@@ -32,6 +32,7 @@ game.npcs.Fox = game.npcs.AllyWalker.extend({
      },
      onHit: function(){
         var speak = new game.effects.SpeakText(this.pos.x, this.pos.y, "Woof! :(");
+        game.instances.player.hurt(5, 10, "normal");
         me.game.add(speak, game.LAYERS.GUI);
         me.game.sort();
         me.game.remove(this);

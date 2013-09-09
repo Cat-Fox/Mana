@@ -729,3 +729,6 @@ game.mechanic.trigger_manabook = function() {
     }
 };
 
+game.mechanic.switch_helmet = function(bool_val){
+    me.gamestat.setValue("helmet", bool_val);
+};

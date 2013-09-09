@@ -427,7 +427,6 @@ game.npcs.EnemyNPC = game.WalkerNPC.extend({
             this.attack_time = me.timer.getTime();
             var angle = (this_vector.angle(player_vector) * (180 / Math.PI));
             if (angle <= 45 && angle >= -45) {
-                console.log(this);
                 this.renderable.setCurrentAnimation("attack_right", this.finishAttack.bind(this));
                 this.flipX(false);
             } else if (angle < -45 && angle >= -120) {
