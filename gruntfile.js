@@ -14,14 +14,10 @@ module.exports = function(grunt) {
         'src/gui_components.js',
         'src/gui_advanced.js',
         'src/screens.js',
-        
-        
-        
         'src/weapons.js',
         'src/items.js',
         'src/spells.js',
         'src/destroyable.js',
-        
         'src/npc.js',
         'src/player.js',
         'src/ally.js',
