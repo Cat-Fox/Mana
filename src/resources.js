@@ -384,31 +384,31 @@
     , {
     name: "axe",
     type: "image",
-    src: "assets/weapons/weapon--axe.png"
+    src: "assets/weapons/weapon-axe.png"
 }, {
     name: "sword1",
     type: "image",
-    src: "assets/weapons/weapon--sword1.png"
+    src: "assets/weapons/weapon-sword1.png"
 }, {
     name: "sword2",
     type: "image",
-    src: "assets/weapons/weapon--sword2.png"
+    src: "assets/weapons/weapon-sword2.png"
 }, {
     name: "bluesword",
     type: "image",
-    src: "assets/weapons/weapon--bluesword.png"
+    src: "assets/weapons/weapon-bluesword.png"
 }, {
     name: "redsword",
     type: "image",
-    src: "assets/weapons/weapon--redsword.png"
+    src: "assets/weapons/weapon-redsword.png"
 }, {
     name: "goldensword",
     type: "image",
-    src: "assets/weapons/weapon--goldensword.png"
+    src: "assets/weapons/weapon-goldensword.png"
 }, {
     name: "morningstar",
     type: "image",
-    src: "assets/weapons/weapon--morningstar.png"
+    src: "assets/weapons/weapon-morningstar.png"
 }, {
     name: "target",
     type: "image",
