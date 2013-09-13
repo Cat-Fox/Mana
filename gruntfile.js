@@ -13,6 +13,35 @@ module.exports = function(grunt) {
         'src/entities.js',
         'src/gui_components.js',
         'src/gui_advanced.js',
+        'src/gui_inventory.js',
+        'src/screens.js',
+        'src/weapons.js',
+        'src/items.js',
+        'src/spells.js',
+        'src/destroyable.js',
+        'src/npc.js',
+        'src/player.js',
+        'src/ally.js',
+        'src/enemy.js',
+        'src/spawn.js',
+        'src/drop.js'
+    ];
+    
+        var devFiles = [
+        'src/functions.js',
+        'src/main.js',
+        'src/instances.js',
+        'src/resources-dev.js',
+        'src/fonts.js',
+        'src/audio.js',
+        'src/mechanic.js',
+        'src/pathfinding.js',
+        'src/stats.js',
+        'src/effects.js',
+        'src/entities.js',
+        'src/gui_components.js',
+        'src/gui_advanced.js',
+        'src/gui_inventory.js',
         'src/screens.js',
         'src/weapons.js',
         'src/items.js',
@@ -33,6 +62,10 @@ module.exports = function(grunt) {
             dist: {
                 src: sourceFiles,
                 dest: 'build/<%= pkg.name %>-<%= pkg.version %>.js'
+            },
+            dev: {
+              src: devFiles,
+              dest: 'build/<%= pkg.name %>-<%= pkg.version %>-dev.js'
             }
         },
         uglify: {
