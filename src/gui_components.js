@@ -80,19 +80,19 @@ game.gui.InventoryWindow = me.ObjectEntity.extend({
         settings = {};
         settings.spritewidth = 370;
         settings.spriteheight = 190;
-        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+        settings.image = convertImageToCanvas(me.loader.getImage("gui_backpack"));
         //drawing backpack image
-        var context = settings.image.getContext("2d");
-        context.fillStyle = "#958686";
-        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
-        context.strokeStyle = "black";
-        context.moveTo(0, 0);
-        context.lineWidth = 3;
-        context.lineTo(settings.spritewidth, 0);
-        context.lineTo(settings.spritewidth, settings.spriteheight);
-        context.lineTo(0, settings.spriteheight);
-        context.lineTo(0, 0);
-        context.stroke();
+        /*var context = settings.image.getContext("2d");
+         context.fillStyle = "#958686";
+         context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
+         context.strokeStyle = "black";
+         context.moveTo(0, 0);
+         context.lineWidth = 3;
+         context.lineTo(settings.spritewidth, 0);
+         context.lineTo(settings.spritewidth, settings.spriteheight);
+         context.lineTo(0, settings.spriteheight);
+         context.lineTo(0, 0);
+         context.stroke();*/
 
         this.parent(15, 5, settings);
         this.floating = true;
@@ -207,7 +207,9 @@ game.CharacterTile = me.GUI_Object.extend({
                 me.game.add(this.icon, this.z + 1);
                 me.game.sort();
             }
-            game.instances.backpack.updateEquip();
+            if (game.instances.backpack !== null) {
+                game.instances.backpack.updateEquip();
+            }
         } else {
             if (game.instances.belt.tiles[this.id].icon !== null) {
                 me.game.remove(game.instances.belt.tiles[this.id].icon);
@@ -319,7 +321,6 @@ game.InventoryTile = me.GUI_Object.extend({
                     game.instances.shop.selected_type = this.tile_type;
                 } else if (game.instances.manabook !== null) {
                     game.instances.manabook.selected_tile = this.id;
-                    console.log(game.instances.manabook.selected_tile);
                 }
                 this.follow_mouse = true;
             }
@@ -706,7 +707,11 @@ game.gui.HumanIcon = me.ObjectEntity.extend({
         settings.spritewidth = 32;
         settings.spriteheight = 32;
         if (image === "predefined") {
-            settings.image = game.createPlayerCanvas();
+            var armor = me.gamestat.getItemValue("equip").armor;
+            if (armor === null) {
+                settings.image = game.createPlayerCanvas();
+            } else
+                settings.image = game.createPlayerCanvas(game.mechanic.get_inventory_item(armor).attributes.image_name);
         } else {
             settings.image = image;
         }
@@ -934,18 +939,19 @@ game.gui.Dialog = me.ObjectEntity.extend({
         settings = {};
         settings.spritewidth = 370;
         settings.spriteheight = 40;
-        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
-
-        var context = settings.image.getContext("2d");
-        context.fillStyle = "#958686";
-        context.strokeStyle = "black";
-        context.lineWidth = 2;
-
-        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
-        context.fillStyle = "black";
-        context.fillRect(0, 0, 40, 40);
-        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
-
+        settings.image = "gui_dialog";
+        /*settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+         
+         var context = settings.image.getContext("2d");
+         context.fillStyle = "#958686";
+         context.strokeStyle = "black";
+         context.lineWidth = 2;
+         
+         context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
+         context.fillStyle = "black";
+         context.fillRect(0, 0, 40, 40);
+         context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+         */
         this.parent(10, 20, settings);
         this.floating = true;
 
@@ -1085,32 +1091,58 @@ game.gui.Dialog = me.ObjectEntity.extend({
     }
 });
 
-game.gui.DialogOptions = me.ObjectEntity.extend({
+
+game.gui.Window = me.ObjectEntity.extend({
+    close_button: null,
+    init: function(x, y, width, height) {
+        settings = {};
+        settings.spritewidth = width;
+        settings.spriteheight = height;
+        settings.image = me.video.createCanvas(width, height);
+
+        var context = settings.image.getContext("2d");
+        context.fillStyle = "#1E1C21";
+        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
+        context.strokeStyle = "#564c5c";
+        context.strokeRect(1, 1, settings.spritewidth - 2, settings.spriteheight - 2);
+        context.strokeStyle = "black";
+        context.lineWidth = 2;
+        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+        context.drawImage(me.loader.getImage("guimini_frame_corner_down_left"), 0, settings.spriteheight - 4);
+        context.drawImage(me.loader.getImage("guimini_frame_corner_down_right"), settings.spritewidth - 4, settings.spriteheight - 4);
+        context.drawImage(me.loader.getImage("guimini_frame_corner_top_left"), 0, 0);
+        context.drawImage(me.loader.getImage("guimini_frame_corner_top_right"), settings.spritewidth - 4, 0);
+        context.lineWidth = 1;
+
+        this.parent(x, y, settings);
+        this.floating = true;
+    },
+    update: function() {
+
+        this.parent();
+        return true;
+    },
+    onDestroyEvent: function() {
+    }
+});
+
+game.gui.DialogOptions = game.gui.Window.extend({
     cursor: null,
     option: null,
     option_length: null,
     cursor_start: null,
     init: function(options) {
         settings = {};
-        settings.spritewidth = 200;
         var f_height = game.fonts.white.measureText(me.video.getScreenContext(), "M").height;
         var height = f_height * (options.length + 1) + 2 * (options.length + 1);
         height += 4;
-        settings.spriteheight = height;
-        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+        this.parent(50, 62, 200, height);
 
-        var context = settings.image.getContext("2d");
-        context.fillStyle = "#958686";
-        context.strokeStyle = "black";
-        context.lineWidth = 2;
-
-        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
-        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+        var context = this.renderable.image.getContext("2d");
         game.fonts.white.draw(context, "A for up, S for down", 5, 2);
         for (var i = 0; i < options.length; i++) {
             game.fonts.white.draw(context, options[i].message, 25, 2 + (f_height * (i + 1) + (i * 2)));
         }
-        this.parent(50, 62, settings);
         this.floating = true;
         this.option = 0;
         this.option_length = options.length - 1;
@@ -1164,46 +1196,6 @@ game.gui.CloseButton = me.GUI_Object.extend({
     }
 });
 
-game.gui.Window = me.ObjectEntity.extend({
-    close_button: null,
-    init_v: null,
-    init: function(x, y, width, height) {
-        this.init_v = true;
-        settings = {};
-        settings.spritewidth = width;
-        settings.spriteheight = height;
-        settings.image = me.video.createCanvas(width, height);
-
-        var context = settings.image.getContext("2d");
-        context.fillStyle = "#958686";
-        context.strokeStyle = "black";
-        context.lineWidth = 2;
-
-        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
-        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
-
-        this.parent(x, y, settings);
-        this.floating = true;
-        this.close_button = new game.gui.CloseButton(this.pos.x + width - 8, this.pos.y, this);
-    },
-    update: function() {
-        if (this.init_v) {
-            this.init_v = false;
-            me.game.add(this.close_button, this.z + 1);
-            me.game.sort();
-        }
-
-        this.parent();
-        return true;
-    },
-    onDestroyEvent: function() {
-        me.game.remove(this.close_button);
-        this.close_button = null;
-    }
-});
-
-
-
 game.gui.MoneyTab = me.ObjectEntity.extend({
     icon: null,
     font: null,
@@ -1212,19 +1204,22 @@ game.gui.MoneyTab = me.ObjectEntity.extend({
         settings = {};
         settings.spritewidth = 65;
         settings.spriteheight = 16;
-        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
-
-        var context = settings.image.getContext("2d");
-        context.lineWidth = 1;
-        context.strokeStyle = "black";
-        context.fillStyle = "black";
-        //140 125
-        context.strokeRect(0, 0, 16, 16);
-        context.strokeRect(0, 0, 16, 16);
-        context.strokeRect(0, 0, 16, 16);
-        context.strokeRect(0, 0, 65, 16);
-        context.strokeRect(0, 0, 65, 16);
-        context.strokeRect(0, 0, 65, 16);
+        settings.image = "gui_moneytab";
+        /*
+         settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+         
+         var context = settings.image.getContext("2d");
+         context.lineWidth = 1;
+         context.strokeStyle = "black";
+         context.fillStyle = "black";
+         //140 125
+         context.strokeRect(0, 0, 16, 16);
+         context.strokeRect(0, 0, 16, 16);
+         context.strokeRect(0, 0, 16, 16);
+         context.strokeRect(0, 0, 65, 16);
+         context.strokeRect(0, 0, 65, 16);
+         context.strokeRect(0, 0, 65, 16);
+         */
         this.parent(x, y, settings);
         this.floating = true;
         this.icon = new game.Icon(this.pos.x, this.pos.y + 1, "money-1");
@@ -1350,8 +1345,8 @@ game.gui.CheckBox = me.GUI_Object.extend({
         this.update_func = update_func;
         this.checked = state;
         settings = {};
-        settings.spritewidth = 12;
-        settings.spriteheight = 12;
+        settings.spritewidth = 10;
+        settings.spriteheight = 10;
         if (state) {
             settings.image = "checkbox_checked";
         } else {
@@ -1443,16 +1438,17 @@ game.gui.SliderContainer = me.ObjectEntity.extend({
         this.activated = false;
         settings = {};
         settings.spritewidth = 100;
-        settings.spriteheight = 10;
-        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
-
-        var context = settings.image.getContext("2d");
-        context.strokeStyle = "black";
-        context.fillStyle = "red";
-        context.lineWidth = 2;
-        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
-        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
-        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+        settings.spriteheight = 7;
+        settings.image = "gui_slider";
+        /*
+         var context = settings.image.getContext("2d");
+         context.strokeStyle = "black";
+         context.fillStyle = "red";
+         context.lineWidth = 2;
+         context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
+         context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+         context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+         */
 
         this.parent(x, y, settings);
         this.floating = true;
@@ -1482,17 +1478,18 @@ game.gui.Slider = me.GUI_Object.extend({
         this.parent_container = parent_c;
         settings = {};
         settings.spritewidth = 5;
-        settings.spriteheight = 14;
-        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+        settings.spriteheight = 11;
+        settings.image = "gui_slider_thumb";
 
-        var context = settings.image.getContext("2d");
-        context.strokeStyle = "black";
-        context.fillStyle = "#958686";
-        context.lineWidth = 2;
-        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
-        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
-        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
-
+        /*
+         var context = settings.image.getContext("2d");
+         context.strokeStyle = "black";
+         context.fillStyle = "#958686";
+         context.lineWidth = 2;
+         context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
+         context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+         context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+         */
         this.parent(x, y, settings);
         this.floating = true;
         this.moving = false;
@@ -1543,229 +1540,32 @@ game.gui.Background = me.ObjectEntity.extend({
     }
 });
 
-game.gui.TextInput = me.ObjectEntity.extend({
-    focus: null,
-    text: null,
-    text_object: null,
-    array: null,
-    max_char: null,
-    type_input: null,
+game.gui.TextInput = me.Renderable.extend({
     init: function(x, y, type, length) {
-        this.type_input = type;
-        this.max_char = length;
-        settings = {};
-        settings.spritewidth = 2 + (9 * this.max_char);
-        settings.spriteheight = 15;
-        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
-        var context = settings.image.getContext('2d');
-        context.strokeStyle = "white";
-        context.lineWidth = 2;
-        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
-        this.parent(x, y, settings);
-        this.floating = true;
-        this.text_object = new game.effects.BMF_Font(this.pos.x + 2, this.pos.y + 4, "");
-        this.text_object.floating = true;
-        me.game.add(this.text_object, game.LAYERS.TOP + 1);
-        me.game.sort();
+        x = x * 2;
+        y = y * 2;
+        this.$input = $('<input type="' + type + '" required>').css({
+            "left": x,
+            "top": y
+        });
 
-        if (this.type_input === "text") {
-            this.text = "";
-            me.input.bindKey(me.input.KEY.A, "A", true);
-            me.input.bindKey(me.input.KEY.B, "B", true);
-            me.input.bindKey(me.input.KEY.C, "C", true);
-            me.input.bindKey(me.input.KEY.D, "D", true);
-            me.input.bindKey(me.input.KEY.E, "E", true);
-            me.input.bindKey(me.input.KEY.F, "F", true);
-            me.input.bindKey(me.input.KEY.G, "G", true);
-            me.input.bindKey(me.input.KEY.H, "H", true);
-            me.input.bindKey(me.input.KEY.I, "I", true);
-            me.input.bindKey(me.input.KEY.J, "J", true);
-            me.input.bindKey(me.input.KEY.K, "K", true);
-            me.input.bindKey(me.input.KEY.L, "L", true);
-            me.input.bindKey(me.input.KEY.M, "M", true);
-            me.input.bindKey(me.input.KEY.N, "N", true);
-            me.input.bindKey(me.input.KEY.O, "O", true);
-            me.input.bindKey(me.input.KEY.P, "P", true);
-            me.input.bindKey(me.input.KEY.R, "R", true);
-            me.input.bindKey(me.input.KEY.S, "S", true);
-            me.input.bindKey(me.input.KEY.T, "T", true);
-            me.input.bindKey(me.input.KEY.U, "U", true);
-            me.input.bindKey(me.input.KEY.V, "V", true);
-            me.input.bindKey(me.input.KEY.W, "W", true);
-            me.input.bindKey(me.input.KEY.X, "X", true);
-            me.input.bindKey(me.input.KEY.Y, "Y", true);
-            me.input.bindKey(me.input.KEY.Z, "Z", true);
-            me.input.bindKey(me.input.KEY.NUM0, "0", true);
-            me.input.bindKey(me.input.KEY.NUM1, "1", true);
-            me.input.bindKey(me.input.KEY.NUM2, "2", true);
-            me.input.bindKey(me.input.KEY.NUM3, "3", true);
-            me.input.bindKey(me.input.KEY.NUM4, "4", true);
-            me.input.bindKey(me.input.KEY.NUM5, "5", true);
-            me.input.bindKey(me.input.KEY.NUM6, "6", true);
-            me.input.bindKey(me.input.KEY.NUM7, "7", true);
-            me.input.bindKey(me.input.KEY.NUM8, "8", true);
-            me.input.bindKey(me.input.KEY.NUM9, "9", true);
-            me.input.bindKey(me.input.KEY.SPACE, "SPACE", true);
-        } else if (this.type_input === "numbers") {
-            if (typeof me.state.current().isGame() !== "undefined") {
-                me.input.unbindKey(me.input.KEY.NUM0);
-                me.input.unbindKey(me.input.KEY.NUM1);
-                me.input.unbindKey(me.input.KEY.NUM2);
-                me.input.unbindKey(me.input.KEY.NUM3);
-                me.input.unbindKey(me.input.KEY.NUM4);
-                me.input.unbindKey(me.input.KEY.NUM5);
-                me.input.unbindKey(me.input.KEY.NUM6);
-                me.input.unbindKey(me.input.KEY.NUM7);
-                me.input.unbindKey(me.input.KEY.NUM8);
-            }
-            this.text = 0;
-            me.input.bindKey(me.input.KEY.NUM0, "0", true);
-            me.input.bindKey(me.input.KEY.NUM1, "1", true);
-            me.input.bindKey(me.input.KEY.NUM2, "2", true);
-            me.input.bindKey(me.input.KEY.NUM3, "3", true);
-            me.input.bindKey(me.input.KEY.NUM4, "4", true);
-            me.input.bindKey(me.input.KEY.NUM5, "5", true);
-            me.input.bindKey(me.input.KEY.NUM6, "6", true);
-            me.input.bindKey(me.input.KEY.NUM7, "7", true);
-            me.input.bindKey(me.input.KEY.NUM8, "8", true);
-            me.input.bindKey(me.input.KEY.NUM9, "9", true);
-        }
-        me.input.bindKey(me.input.KEY.ESC, "BACKSPACE", true);
+        switch (type) {
+            case "text":
+                this.$input
+                        .attr("maxlength", length)
+                        .attr("pattern", "[a-zA-Z0-9_\-]+");
 
-        this.array = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
-    }, update: function() {
-        if (this.type_input === "text" && this.text.length < 18) {
-            for (var i = 0; i < this.array.length; i++) {
-                if (me.input.isKeyPressed(this.array[i])) {
-                    this.text = this.text + this.array[i];
-                    this.text_object.text = this.text_object.text + this.array[i];
-                }
-            }
-
-            if (me.input.isKeyPressed("SPACE")) {
-                this.text = this.text + " ";
-                this.text_object.text = this.text_object.text + " ";
-            }
-
-            if (me.input.isKeyPressed("BACKSPACE")) {
-                this.text = this.text.substring(0, this.text.length - 1);
-                this.text_object.text = this.text_object.text.substring(0, this.text_object.text.length - 1);
-            }
-        } else if (this.type_input === "numbers") {
-            if (this.text_object.text.length < this.max_char) {
-                if (me.input.isKeyPressed("0")) {
-                    if (this.text > 0) {
-                        this.text = this.text * 10;
-
-                    }
-                } else if (me.input.isKeyPressed("1")) {
-                    this.text = this.text * 10;
-                    this.text = this.text + 1;
-                } else if (me.input.isKeyPressed("2")) {
-                    this.text = this.text * 10;
-                    this.text = this.text + 2;
-                } else if (me.input.isKeyPressed("3")) {
-                    this.text = this.text * 10;
-                    this.text = this.text + 3;
-                } else if (me.input.isKeyPressed("4")) {
-                    this.text = this.text * 10;
-                    this.text = this.text + 4;
-                } else if (me.input.isKeyPressed("5")) {
-                    this.text = this.text * 10;
-                    this.text = this.text + 5;
-                } else if (me.input.isKeyPressed("6")) {
-                    this.text = this.text * 10;
-                    this.text = this.text + 6;
-                } else if (me.input.isKeyPressed("7")) {
-                    this.text = this.text * 10;
-                    this.text = this.text + 7;
-                } else if (me.input.isKeyPressed("8")) {
-                    this.text = this.text * 10;
-                    this.text = this.text + 8;
-                } else if (me.input.isKeyPressed("9")) {
-                    this.text = this.text * 10;
-                    this.text = this.text + 9;
-                }
-                this.text_object.text = this.text.toString();
-            }
-            if (me.input.isKeyPressed("BACKSPACE")) {
-                if (this.text_object.text.length > 1) {
-                    this.text_object.text = this.text_object.text.substring(0, this.text_object.text.length - 1);
-                    this.text = parseInt(this.text_object.text);
-                } else {
-                    this.text_object.text = "0";
-                    this.text = 0;
-                }
-            }
+                break;
+            case "number":
+                this.$input
+                        .attr("max", length);
+                break;
         }
 
-        this.parent();
-        return false;
-    }, onDestroyEvent: function() {
-        if (this.type_input === "text") {
-            me.input.unbindKey(me.input.KEY.A);
-            me.input.unbindKey(me.input.KEY.B);
-            me.input.unbindKey(me.input.KEY.C);
-            me.input.unbindKey(me.input.KEY.D);
-            me.input.unbindKey(me.input.KEY.E);
-            me.input.unbindKey(me.input.KEY.F);
-            me.input.unbindKey(me.input.KEY.G);
-            me.input.unbindKey(me.input.KEY.H);
-            me.input.unbindKey(me.input.KEY.I);
-            me.input.unbindKey(me.input.KEY.J);
-            me.input.unbindKey(me.input.KEY.K);
-            me.input.unbindKey(me.input.KEY.L);
-            me.input.unbindKey(me.input.KEY.M);
-            me.input.unbindKey(me.input.KEY.N);
-            me.input.unbindKey(me.input.KEY.O);
-            me.input.unbindKey(me.input.KEY.P);
-            me.input.unbindKey(me.input.KEY.Q);
-            me.input.unbindKey(me.input.KEY.R);
-            me.input.unbindKey(me.input.KEY.S);
-            me.input.unbindKey(me.input.KEY.T);
-            me.input.unbindKey(me.input.KEY.U);
-            me.input.unbindKey(me.input.KEY.V);
-            me.input.unbindKey(me.input.KEY.W);
-            me.input.unbindKey(me.input.KEY.X);
-            me.input.unbindKey(me.input.KEY.Y);
-            me.input.unbindKey(me.input.KEY.Z);
-            me.input.unbindKey(me.input.KEY.NUM0);
-            me.input.unbindKey(me.input.KEY.NUM1);
-            me.input.unbindKey(me.input.KEY.NUM2);
-            me.input.unbindKey(me.input.KEY.NUM3);
-            me.input.unbindKey(me.input.KEY.NUM4);
-            me.input.unbindKey(me.input.KEY.NUM5);
-            me.input.unbindKey(me.input.KEY.NUM6);
-            me.input.unbindKey(me.input.KEY.NUM7);
-            me.input.unbindKey(me.input.KEY.NUM8);
-            me.input.unbindKey(me.input.KEY.NUM9);
-            me.input.unbindKey(me.input.KEY.SPACE);
-        } else if (this.type_input === "numbers") {
-            me.input.unbindKey(me.input.KEY.NUM0);
-            me.input.unbindKey(me.input.KEY.NUM1);
-            me.input.unbindKey(me.input.KEY.NUM2);
-            me.input.unbindKey(me.input.KEY.NUM3);
-            me.input.unbindKey(me.input.KEY.NUM4);
-            me.input.unbindKey(me.input.KEY.NUM5);
-            me.input.unbindKey(me.input.KEY.NUM6);
-            me.input.unbindKey(me.input.KEY.NUM7);
-            me.input.unbindKey(me.input.KEY.NUM8);
-            me.input.unbindKey(me.input.KEY.NUM9);
-
-            if (typeof me.state.current().isGame() !== "undefined") {
-                me.input.bindKey(me.input.KEY.NUM1, "belt1", true);
-                me.input.bindKey(me.input.KEY.NUM2, "belt2", true);
-                me.input.bindKey(me.input.KEY.NUM3, "belt3", true);
-                me.input.bindKey(me.input.KEY.NUM4, "belt4", true);
-                me.input.bindKey(me.input.KEY.NUM5, "belt5", true);
-                me.input.bindKey(me.input.KEY.NUM6, "belt6", true);
-                me.input.bindKey(me.input.KEY.NUM7, "belt7", true);
-                me.input.bindKey(me.input.KEY.NUM8, "belt8", true);
-            }
-        }
-        me.input.unbindKey(me.input.KEY.ESC);
-        me.game.remove(this.text_object);
-        this.text_object = null;
+        $(me.video.getWrapper()).append(this.$input);
+    },
+    destroy: function() {
+        this.$input.remove();
     }
 });
 
@@ -1818,7 +1618,6 @@ game.gui.MoneyInput = me.ObjectEntity.extend({
                 me.gamestat.setValue("stash_money", 0);
             }
         } else {
-            console.log("to stash");
             var value = this.input.text;
             if (me.gamestat.getItemValue("money") >= value) {
                 me.gamestat.updateValue("money", -value);

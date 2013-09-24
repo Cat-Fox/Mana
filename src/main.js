@@ -63,6 +63,7 @@ var game =
                 me.entityPool.add("Gold", game.consumables.Money, true);
                 //-------------------SPELLS------------------------
                 me.entityPool.add("Fireball", game.spells.Fireball, true);
+                me.entityPool.add("Heal", game.spells.Heal, true);
                 //------------------Entities---------------------------
 
                 me.entityPool.add("Shadow", game.Shadow, true);

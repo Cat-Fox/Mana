@@ -36,9 +36,10 @@ game.consumables.Layout = game.ShadowObject.extend({
         this.rarity = rarity;
         this.life_timer = me.timer.getTime();
     }, update: function() {
-        if (me.timer.getTime() > (this.life_timer + 60000)) {
+        //This didn't work as intended
+        /*if (me.timer.getTime() > (this.life_timer + 60000)) {
             me.game.remove(this);
-        }
+        }*/
 
         var res = me.game.collide(this, true);
         var targeted = false;

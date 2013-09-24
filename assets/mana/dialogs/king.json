@@ -1,16 +1,16 @@
 {
-    "npc_name": "King",
+    "npc_name": "Village king",
     "npc_image": "npc_king",
     "image_size": 32,
     "anim_length": 2,
     "branches" : [
         {
             "messages" : [
-                {"type": "NPC", "message" : "Eh we need your halp!"},
-                {"type": "NPC", "message" : "Go kill some enemys"},
-                {"type": "NPC", "message" : "ok?"},
-                {"type": "PLAYER", "message" : "OKAY!"},
-                {"type": "NPC", "message" : "BAI!"},
+                {"type": "NPC", "message" : "You must be that wanderer,\nGuards told me someone new has come!"},
+                {"type": "NPC", "message" : "Well it's not the best time to visit this little village"},
+                {"type": "NPC", "message" : "Something happened to mountain, now everything goes to hell"},
+                {"type": "NPC", "message" : "I suggest to leave, but you don't look like a coward.\nSo found Jake he will tell you more"},
+                {"type": "NPC", "message" : "And don't get killed yourself!"},
                 {"type": "QUIT"}
             ]
         }
@@ -19,5 +19,8 @@
         "OMG why we choose you?",
         "Idiot....",
         "I have become king for this?"
+    ],
+    "random_speech": [
+        "chmp"
     ]
 }

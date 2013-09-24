@@ -69,9 +69,9 @@ game.Player = me.ObjectEntity.extend({
         this.renderable.addAnimation("attack_up", [15, 16, 17, 18, 19], 1);
         this.renderable.addAnimation("attack_right", [0, 1, 2, 3, 4], 1);
 
-        this.setVelocity(1.5, 1.5);
+        this.setVelocity(1.7, 1.7);
         this.gravity = 0;
-        this.updateColRect(10, 12, 13, 14);
+        this.updateColRect(10, 12, 17, 10);
         this.renderable.setCurrentAnimation("iddle_down");
 
         this.attack_cooldown_run = 0;
@@ -107,7 +107,7 @@ game.Player = me.ObjectEntity.extend({
         game.mechanic.updateStats();
 
         //INSTANCES
-        game.instances.exp_bar = new game.gui.StatsBar(game.screenWidth - 30, game.screenHeight - 10);
+        game.instances.exp_bar = new game.gui.StatsBar(game.screenWidth - 100, game.screenHeight - 20);
         me.game.add(game.instances.exp_bar, game.LAYERS.GUI);
         me.event.publish("/player/exp", [me.gamestat.getItemValue("exp")]);
         me.event.publish("/player/mana", [me.gamestat.getItemValue("mana")]);

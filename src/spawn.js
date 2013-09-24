@@ -31,14 +31,14 @@ game.Spawn = me.ObjectEntity.extend({
             if (me.game.getEntityByGUID(this.guids[i]) === null) {
                 this.guids.splice(i, 1);
                 this.respawn_timers.push(me.timer.getTime());
-                console.log(this.respawn_timers.length + " " + this.npc + " will be spawned");
+                //console.log(this.respawn_timers.length + " " + this.npc + " will be spawned");
             }
         }
 
         for (var i = 0; i < this.respawn_timers.length; i++) {
             if (me.timer.getTime() > (this.respawn_timers[i] + (this.respawn * 1000))) {
                 this.respawn_timers.splice(i, 1);
-                console.log(this.respawn_timers.length + " more " + this.npc + " will be spawned");
+                //console.log(this.respawn_timers.length + " more " + this.npc + " will be spawned");
                 this.createNPC();
             }
         }

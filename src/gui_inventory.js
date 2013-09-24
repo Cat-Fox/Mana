@@ -70,7 +70,6 @@ game.gui.ManaBook = game.gui.InventoryWindow.extend({
 
             //then tile
             this.tiles[this.selected_tile].mouseUp();
-            console.log(this.tiles[this.selected_tile]);
         }
     }
 });
@@ -138,6 +137,7 @@ game.Backpack = game.gui.InventoryWindow.extend({
     attributes: null,
     init: function() {
         this.parent("backpack");
+        game.instances.backpack = this;
         var context = this.renderable.image.getContext('2d');
 
         context.fillStyle = "black";

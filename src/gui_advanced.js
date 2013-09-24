@@ -7,16 +7,16 @@ game.gui.StatsBar = me.ObjectEntity.extend({
     exp_tooltip: null,
     init: function(x, y) {
         settings = {};
-        settings.spriteWidth = 100;
-        settings.spriteHeight = 20;
-        settings.image = me.video.createCanvas(140, 20);
+        settings.spritewidth = 100;
+        settings.spriteheight = 20;
+        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
 
         var context = settings.image.getContext("2d");
-        context.fillStyle = "#958686";
-        context.fillRect(0, 0, 100, 20);
+        context.fillStyle = "#1E1C21";
+        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
         context.strokeStyle = "black";
         context.lineWidth = 2;
-        context.strokeRect(0, 0, 100, 20);
+        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
         context.lineWidth = 1;
         context.strokeRect(5, 4, 90, 3);
 
@@ -24,10 +24,9 @@ game.gui.StatsBar = me.ObjectEntity.extend({
         this.percent = 0;
         this.floating = true;
 
-        this.mana_text = new game.gui.SmallText(310, 209, "0", game.fonts.magic_blue);
+        this.mana_text = new game.gui.SmallText(310, 209, "0", game.fonts.light_blue);
         this.mana_text.floating = true;
         me.game.add(this.mana_text, game.LAYERS.GUI + 1);
-        console.log(this.mana_text.pos.x + " " + this.mana_text.pos.y);
         me.game.sort();
 
         this.mana_tooltip = null;
@@ -114,7 +113,7 @@ game.gui.StatsBar = me.ObjectEntity.extend({
     }
 });
 
-game.gui.Tooltip = me.ObjectEntity.extend({
+game.gui.Tooltip = game.gui.Window.extend({
     lines: null,
     init: function(x_pos, y_pos, text_lines) {
         //creating context
@@ -123,22 +122,15 @@ game.gui.Tooltip = me.ObjectEntity.extend({
         for (var i = 0; i < text_lines.length; i++) {
             height += text_lines[i].font.measureText(me.video.getScreenContext(), text_lines[i].text).height;
         }
-        settings.spriteheight = height;
-        settings.spritewidth = 140;
-        settings.image = me.video.createCanvas(settings.spritewidth, settings.spriteheight);
+        this.parent(x_pos, y_pos, 140, height);
 
         //drawing to context
-        var context = settings.image.getContext("2d");
-        context.fillStyle = "#958686";
-        context.fillRect(0, 0, settings.spritewidth, settings.spriteheight);
-        context.strokeStyle = "black";
-        context.strokeRect(0, 0, settings.spritewidth, settings.spriteheight);
+        var context = this.renderable.image.getContext("2d");
         var y = 3;
         for (var i = 0; i < text_lines.length; i++) {
             text_lines[i].font.draw(context, text_lines[i].text, 3, y);
             y += text_lines[i].font.measureText(context, text_lines[i].text).height;
         }
-        this.parent(x_pos, y_pos, settings);
         this.lines = text_lines;
         this.floating = true;
         this.renderable.setOpacity(0.9);
@@ -507,13 +499,10 @@ game.gui.Options = game.gui.Window.extend({
         me.game.add(this.sliders.effects, game.LAYERS.TOP + 1);
         this.buttons.save = new game.gui.FuncButton(30, 160, "Save", "", null, game.mechanic.save_settings);
         me.game.add(this.buttons.save, game.LAYERS.TOP + 1);
-
-
         me.game.sort();
     },
     onDestroyEvent: function() {
         this.parent();
-
         me.game.remove(this.checkboxes.enable_sound);
         this.checkboxes.enable_sound = null;
         this.checkboxes = null;

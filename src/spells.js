@@ -96,3 +96,41 @@ game.effects.Fireball = me.ObjectEntity.extend({
         me.game.sort();
     }
 });
+
+game.spells.Heal = game.consumables.Layout.extend({
+    tooltip: null,
+    init: function(x, y) {
+        settings = {};
+        settings.spritewidth = 16;
+        settings.spriteheight = 16;
+        settings.image = "book";
+        this.parent(x, y, settings, false, "Book of Healing", "normal");
+    },
+    onUse: function() {
+        var tooltip_text = [];
+        tooltip_text.push(new game.gui.TextLine("Heal", game.fonts.bad_red));
+        tooltip_text.push(new game.gui.TextLine("Heals 15 HP", game.fonts.bad_red));
+        tooltip_text.push(new game.gui.TextLine("Cost 10 mana", game.fonts.magic_blue));
+        var item = new game.ItemObject("Heal", "spell_health_icon", "spell", "normal", {heal: 10, sound: "turn_page", cost: 10}, tooltip_text);
+
+        this.onPickup(item);
+    }
+});
+
+game.effects.Heal = me.ObjectEntity.extend({
+    heal: null,
+    init: function(x, y, heal){
+        this.heal = heal;
+        settings = {};
+        settings.spritewidth = 24;
+        settings.spriteheight = 24;
+        settings.image = "spell_health_anim";
+        this.parent(x, y, settings);
+        this.renderable.addAnimation("always", [0,1,2,3,4,5,6], 2);
+        this.renderable.setCurrentAnimation("always", this.onFinished.bind(this));
+        game.instances.player.updateHP(this.heal);
+    },
+    onFinished: function(){
+        me.game.remove(this);
+    }
+});

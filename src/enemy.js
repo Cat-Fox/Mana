@@ -119,7 +119,7 @@ game.npcs.MimicWeapon = game.WalkerNPC.extend({
             this.destroyTooltip();
             this.stealth = false;
             var text = new game.effects.SpeakText(this.pos.x, this.pos.y, "HAHAHAHAH!");
-            me.game.add(text, this.guiLayer - 2);
+            me.game.add(text, this.z);
 
             var active_mimic = new game.npcs.MimicWeaponActive(this.pos.x, this.pos.y);
             me.game.add(active_mimic, this.z);
@@ -170,10 +170,11 @@ game.npcs.MimicWeaponActive = game.npcs.EnemyNPC.extend({
         this.updateColRect(10, 16, 22, 16);
         this.type = me.game.ENEMY_OBJECT;
         this.attack_cooldown = 1500;
-        this.drop = new game.mechanic.DropTable(200, 50, 200);
+        this.drop = new game.mechanic.DropTable(200, 800, 200);
         this.attack_cooldown_run = false;
         this.mode_select = "attacking";
         this.shadow_offset = new me.Vector2d(12, 24);
+        this.target_offset = new me.Vector2d(12, 28);
         this.target_box = null;
         this.target_text = null;
         this.name = "Cursed Axe";
@@ -222,7 +223,7 @@ game.npcs.Goblin = game.npcs.EnemyNPC.extend({
         this.updateColRect(10, 16, 22, 16);
         this.type = me.game.ENEMY_OBJECT;
         this.attack_cooldown = 1500;
-        this.drop = new game.mechanic.DropTable(200, 50, 200);
+        this.drop = new game.mechanic.DropTable(400, 300, 300);
         this.attack_cooldown_run = false;
         this.target_box = null;
         this.target_text = null;
@@ -278,7 +279,7 @@ game.npcs.Bat = game.npcs.EnemyNPC.extend({
         this.updateColRect(10, 16, 22, 16);
         this.type = me.game.ENEMY_OBJECT;
         this.attack_cooldown = 900;
-        this.drop = new game.mechanic.DropTable(400, 50, 200);
+        this.drop = new game.mechanic.DropTable(400, 100, 200);
         this.attack_cooldown_run = false;
         this.target_box = null;
         this.target_text = null;

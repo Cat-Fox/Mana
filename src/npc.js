@@ -315,6 +315,8 @@ game.npcs.EnemyNPC = game.WalkerNPC.extend({
     attack_cooldown_run: false,
     attack_time: null,
     path: null,
+    target_canvas: null,
+    target_overflow: null,
     init: function(x, y, settings, c_shadow, stats) {
         this.parent(x, y, settings, c_shadow, stats);
         this.attack_cooldown_run = false;
@@ -322,6 +324,10 @@ game.npcs.EnemyNPC = game.WalkerNPC.extend({
         this.target_offset = new me.Vector2d(15, 16);
         this.mode_select = "walking";
         this.path = null;
+        this.target_canvas = convertImageToCanvas(settings.image);
+        var context = this.target_canvas.getContext('2d');
+        context.scale(1.1,1.1);
+        this.target_overflow = null;
     },
     update: function() {
         this.targeted = false;
@@ -338,8 +344,10 @@ game.npcs.EnemyNPC = game.WalkerNPC.extend({
             if (this.targeted === false) {
                 me.game.remove(this.target);
                 me.game.remove(this.target_text);
+                me.game.remove(this.target_overflow);
                 this.target = null;
                 this.target_text = null;
+                this.target_overflow = null;
             } else {
                 this.target.pos.x = this.pos.x + this.target_offset.x;
                 this.target.pos.y = this.pos.y + this.target_offset.y;
@@ -354,7 +362,8 @@ game.npcs.EnemyNPC = game.WalkerNPC.extend({
         if (this.target === null) {
             var text = this.stats.hp + "/" + this.stats.max_hp;
             this.target = me.entityPool.newInstanceOf("Target", this.pos.x + 15, this.pos.y + 16, "red");
-            this.target_text = me.entityPool.newInstanceOf("SmallText", this.pos.x + (this.renderable.width / 4), this.pos.y + (this.renderable.height / 1.5), text, game.fonts.bad_red);
+            this.target_text = me.entityPool.newInstanceOf("SmallText", this.pos.x, this.pos.y + this.renderable.height + 10, text, game.fonts.bad_red);
+            this.target_overflow;
             me.game.add(this.target, this.z - 1);
             me.game.add(this.target_text, this.z + 1);
             me.game.sort();

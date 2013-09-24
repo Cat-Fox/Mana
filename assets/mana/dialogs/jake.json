@@ -6,7 +6,7 @@
     "branches" : [
         {
             "messages" : [
-                {"type": "NPC", "message" : "Hey You!"},
+                {"type": "NPC", "message" : "!"},
                 {"type": "NPC", "message" : "What do you want here?"},
                 {"type": "NPC", "message" : "You should visit king, he is that red building!"},
                 {"type": "QUIT"}
@@ -15,7 +15,9 @@
     ],
     "hit_texts" : [
         "Yea, keep doing that",
-        "OMG you so stupid",
-        "You're lucky you're hero"
+    ],
+    "random_speech" : [
+        "Anyone wounded?",
+        "Don't try to fight them, just call for help when you see them."
     ]
 }

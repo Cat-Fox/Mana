@@ -50,34 +50,6 @@ game.Shadow = me.ObjectEntity.extend({
     }
 });
 
-game.Smile = me.ObjectEntity.extend({
-    timer: null,
-    init: function(x, y, smile) {
-        settings = {};
-        settings.image = "smiles16";
-        settings.spritewidth = 16;
-        settings.spriteheight = 16;
-        this.parent(x, y, settings);
-        this.renderable.addAnimation("lick", [0]);
-        this.renderable.addAnimation("dead", [1]);
-        this.renderable.addAnimation("sleepy", [2]);
-        this.renderable.addAnimation("wow", [3]);
-        this.renderable.addAnimation("kill", [4]);
-        this.renderable.addAnimation("happy", [5]);
-        this.renderable.setCurrentAnimation(smile);
-        this.timer = me.timer.getTime();
-        this.setVelocity(1, 1);
-        this.collidable = false;
-    },
-    update: function() {
-        this.vel.y -= this.accel.y * me.timer.tick;
-        this.updateMovement();
-        if ((me.timer.getTime() - this.timer) > 600) {
-            me.game.remove(this);
-        }
-    }
-});
-
 game.entities.Firecamp = me.ObjectEntity.extend({
     attack_timer: null,
     attacking: false,
@@ -85,8 +57,16 @@ game.entities.Firecamp = me.ObjectEntity.extend({
         settings = {};
         settings.spritewidth = 16;
         settings.sriteheight = 32;
-        settings.image = "firecamp1";
-        this.parent(x, y + 16, settings);
+        if(me.game.currentLevel.level_name === "VILLAGE"){
+            settings.image = "firecamp1";
+            
+            y += 16;
+        } else {
+            settings.image = "firecamp2";
+            x += 8;
+            y += 8;
+        }
+        this.parent(x, y, settings);
         this.updateColRect(0, 16, 0, 16);
         this.collidable = true;
         this.type = "fire";
@@ -270,21 +250,6 @@ game.entities.Respawn = me.ObjectEntity.extend({
             me.game.remove(this);
             game.mechanic.respawn();
         }
-    }
-});
-
-game.entities.Fireball = me.ObjectEntity.extend({
-    init: function(x, y){
-        settings = {};
-        settings.spritewidth = 16;
-        settings.spriteheight = 16;
-        settings.image = "sparks";
-        this.parent(x, y, settings);
-        this.renderable.addAnimation("right", [0,1,2,3,4], 4);
-        this.renderable.setCurrentAnimation("right");
-        
-        
-        this.setVelocity(2.0, 0.0);
     }
 });
 

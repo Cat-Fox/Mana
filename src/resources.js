@@ -496,6 +496,42 @@
     type: "image",
     src: "assets/gui/close_button.png"
 },{
+    name: "gui_slider",
+    type: "image",
+    src: "assets/gui/gui_slider.png"
+},{
+    name: "gui_slider_thumb",
+    type: "image",
+    src: "assets/gui/gui_slider_thumb.png"
+},{
+    name: "gui_backpack",
+    type: "image",
+    src: "assets/gui/gui_backpack.png"
+},{
+    name: "gui_moneytab",
+    type: "image",
+    src: "assets/mana/gui/gui_moneytab.png"
+},{
+    name: "gui_dialog",
+    type: "image",
+    src: "assets/mana/gui/gui_dialog.png"
+},{
+    name: "guimini_frame_corner_down_left",
+    type: "image",
+    src: "assets/mana/gui/guimini_frame_corner_down_left.png"
+},{
+    name: "guimini_frame_corner_down_right",
+    type: "image",
+    src: "assets/mana/gui/guimini_frame_corner_down_right.png"
+},{
+    name: "guimini_frame_corner_top_left",
+    type: "image",
+    src: "assets/mana/gui/guimini_frame_corner_top_left.png"
+},{
+    name: "guimini_frame_corner_top_right",
+    type: "image",
+    src: "assets/mana/gui/guimini_frame_corner_top_right.png"
+},{
     name: "inventory_tile",
     type: "image",
     src: "assets/gui/inventory_tile.png"
@@ -531,6 +567,10 @@
     name: "firecamp1",
     type: "image",
     src: "assets/entities/firecamp1.png"
+},{
+    name: "firecamp2",
+    type: "image",
+    src: "assets/entities/firecamp2.png"
 },{
     name: "particle",
     type: "image",

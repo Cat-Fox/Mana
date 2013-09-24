@@ -380,6 +380,11 @@ game.mechanic.trigger_item = function(guid) {
                 return false;
             }
             me.gamestat.updateValue("mana", -selected.attributes.cost);
+            me.event.publish("/player/mana", [me.gamestat.getItemValue("mana")]);
+            if(typeof selected.attributes.heal !== "undefined"){
+                var heal = new game.effects.Heal(player.pos.x, player.pos.y, selected.attributes.heal);
+                me.game.add(heal, game.LAYERS.NPC);
+            }
             if (typeof selected.attributes.fireball !== "undefined") {
                 //PEWPEWPEW
                 var fireball;
@@ -398,9 +403,9 @@ game.mechanic.trigger_item = function(guid) {
                         break;
                 }
                 me.game.add(fireball, game.LAYERS.ITEMS);
-                me.game.sort();
                 return true;
             }
+            me.game.sort();
             break;
         default:
             game.instances.console.post("This item cannot be used");
@@ -511,6 +516,7 @@ game.mechanic.respawn = function() {
     me.gamestat.getItemValue("history").previous_level = "respawn";
     me.gamestat.setValue("hp", me.gamestat.getItemValue("maxhp"));
     me.gamestat.setValue("money", 0);
+    game.instances.enemy_panel = null;
     me.levelDirector.loadLevel("test_map");
     game.mechanic.initialize_level();
 };

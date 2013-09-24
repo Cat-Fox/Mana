@@ -216,7 +216,6 @@ game.CreditsScreen = me.ScreenObject.extend({
         this.credits = null;
     },
     onResetEvent: function() {
-        console.log("loading credits");
         this.gold_font = new me.BitmapFont("geebeeyay-8x8", 8, 1.0);
         me.input.bindKey(me.input.KEY.ENTER, "enter", true);
         this.credits = new game.gui.Credits(0, 0);
@@ -462,7 +461,6 @@ game.CharacterPickScreen = me.ScreenObject.extend({
     },
     update: function() {
         if (me.input.isKeyPressed("enter")) {
-            console.log("enter");
             this.play();
         }
         return false;
@@ -551,7 +549,7 @@ game.CharacterPickScreen = me.ScreenObject.extend({
         this.body_down.renderable.image = me.loader.getImage(gender + "_body");
     },
     play: function() {
-        if (this.text_input.text.length === 0) {
+        if (this.text_input.$input.length === 0) {
             game.instances.console.post("You can't have nameless hero");
             return;
         }
@@ -572,12 +570,15 @@ game.CharacterPickScreen = me.ScreenObject.extend({
         } else {
             hair = this.pick_hair_f[this.current_hair];
         }
+        
+        
         var body = {
             gender: gender,
             hair: hair,
             color: color,
-            name: this.text_input.text
+            name: this.text_input.$input["0"].value.toUpperCase()
         };
+        
         me.gamestat.add("body", body);
 
         me.state.change(me.state.PLAY);

@@ -19,19 +19,39 @@
                 height: 440px;
                 border: 5px solid #363636;
             }
+
+            #screen {
+                position: relative;
+            }
+
+            #screen input {
+                position: absolute;
+                z-index: 2;
+                background-color: black;
+                border: 2px solid red;
+                color: white;
+                font-family: century gothic;
+                font-size: 20px;
+            }
         </style>
+        <script type="text/javascript" src="lib/jquery-1.10.1.js"></script>
+        <script type="text/javascript">
+            $(window).bind('beforeunload', function() {
+                return 'Are you sure you want to leave? Your game will not save!';
+            });
+        </script>
     </head>
     <body style="background-color: black">
-            <div id="info">
-                <div id="console">
-                    <span id="framecounter">(0/0 fps)</span><br>
-                </div>
-                <div id="screen">
-                    <script type="text/javascript" src="lib/jquery-1.10.1.js"></script>
-                    <script type="text/javascript" src="lib/melonJS-0.9.8.js"></script>
-
-                    <script type="text/javascript" src="build/Mana-0.0.5-dev.js"></script>
-                </div>
+        <div id="info">
+            <div id="console">
+                <span id="framecounter">(0/0 fps)</span><br>
             </div>
+            <div id="screen">
+                
+                <script type="text/javascript" src="lib/melonJS-0.9.8.js"></script>
+
+                <script type="text/javascript" src="build/Mana-0.0.5-dev.js"></script>
+            </div>
+        </div>
     </body>
 </html>
