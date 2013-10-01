@@ -2,7 +2,7 @@ Mana
 ====
 Description:
 
-MelonJS RPG game http://zaraka.org/Mana
+MelonJS RPG game http://zaraka.org/mana_game
 
 State:
 
