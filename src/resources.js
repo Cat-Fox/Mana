@@ -510,27 +510,27 @@
 },{
     name: "gui_moneytab",
     type: "image",
-    src: "assets/mana/gui/gui_moneytab.png"
+    src: "assets/gui/gui_moneytab.png"
 },{
     name: "gui_dialog",
     type: "image",
-    src: "assets/mana/gui/gui_dialog.png"
+    src: "assets/gui/gui_dialog.png"
 },{
     name: "guimini_frame_corner_down_left",
     type: "image",
-    src: "assets/mana/gui/guimini_frame_corner_down_left.png"
+    src: "assets/gui/guimini_frame_corner_down_left.png"
 },{
     name: "guimini_frame_corner_down_right",
     type: "image",
-    src: "assets/mana/gui/guimini_frame_corner_down_right.png"
+    src: "assets/gui/guimini_frame_corner_down_right.png"
 },{
     name: "guimini_frame_corner_top_left",
     type: "image",
-    src: "assets/mana/gui/guimini_frame_corner_top_left.png"
+    src: "assets/gui/guimini_frame_corner_top_left.png"
 },{
     name: "guimini_frame_corner_top_right",
     type: "image",
-    src: "assets/mana/gui/guimini_frame_corner_top_right.png"
+    src: "assets/gui/guimini_frame_corner_top_right.png"
 },{
     name: "inventory_tile",
     type: "image",
