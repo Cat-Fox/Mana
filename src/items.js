@@ -76,7 +76,6 @@ game.consumables.Layout = game.ShadowObject.extend({
         if (this.tooltip === null) {
             this.tooltip = new game.DropTooltip(this.pos.x - (this.renderable.width / 2), this.pos.y - 5, this.name, this.rarity);
             me.game.add(this.tooltip, game.guiLayer - 1);
-            me.game.sort();
         }
     },
     destroyTooltip: function() {
@@ -89,7 +88,6 @@ game.consumables.Layout = game.ShadowObject.extend({
         if (this.target_box === null) {
             this.target_box = new game.Target(this.pos.x, this.pos.y + 5, "green");
             me.game.add(this.target_box, this.z - 1);
-            me.game.sort();
         }
     },
     destroyTargetBox: function() {
@@ -158,7 +156,6 @@ game.consumables.Burger = game.consumables.Layout.extend({
     onUse: function() {
         game.instances.audio.channels.effects.addEffect("itempick2");
         game.instances.player.updateHP(30);
-        me.game.sort();
         me.game.remove(this);
     }
 });
@@ -184,7 +181,7 @@ game.consumables.Money = game.consumables.Layout.extend({
     },
     onUse: function() {
         game.instances.audio.channels.effects.addEffect("coins");
-        me.gamestat.updateValue("money", this.value);
+        me.save.money = me.save.money + this.value;
         me.game.remove(this);
         this.collidable = false;
     }

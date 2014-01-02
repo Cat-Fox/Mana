@@ -288,7 +288,7 @@ game.mechanic.generateItem = function(max_object_value) {
 };
 
 game.mechanic.drop = function(x, y, container_value, drop_table) {
-    var max_object_value = Math.floor(container_value + (me.gamestat.getItemValue("stats").getMagicFind() * (container_value / 100)));
+    var max_object_value = Math.floor(container_value + (me.save.stats.getMagicFind() * (container_value / 100)));
     var drop = false;
     console.log("container value " + container_value + " max value " + max_object_value);
     //Drop Gold
@@ -331,12 +331,9 @@ game.mechanic.drop = function(x, y, container_value, drop_table) {
         console.log("generate mana");
         var mana_ammount = Number.prototype.random(0, (container_value / 2));
         if(mana_ammount > 0){
-            me.gamestat.updateValue('mana', mana_ammount);
-            me.event.publish("/player/mana", [me.gamestat.getItemValue("mana")]);
+            me.save.mana = mana_ammount;
+            me.event.publish("/player/mana", [me.save.mana]);
         }
     }
 
-    if (drop) {
-        me.game.sort();
-    }
 };

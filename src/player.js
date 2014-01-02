@@ -1,9 +1,11 @@
+
+
 game.createPlayerCanvas = function(armor) {
     armor = typeof armor !== 'undefined' ? armor : null;
 
     var canvas = me.video.createCanvas(160, 288);
     var context = canvas.getContext('2d');
-    var body = me.gamestat.getItemValue("body");
+    var body = me.save.body;
 
     if (armor === null) {
         if (body.gender === "m") {
@@ -77,7 +79,7 @@ game.Player = me.ObjectEntity.extend({
         this.attack_cooldown_run = 0;
 
         //store GUID
-        if (me.gamestat.getItemValue("player") === 0) {
+        if (me.save.player === 0) {
             me.gamestat.add("player", this.GUID);
         } else {
             me.gamestat.setValue("player", this.GUID);
@@ -109,15 +111,14 @@ game.Player = me.ObjectEntity.extend({
         //INSTANCES
         game.instances.exp_bar = new game.gui.StatsBar(game.screenWidth - 100, game.screenHeight - 20);
         me.game.add(game.instances.exp_bar, game.LAYERS.GUI);
-        me.event.publish("/player/exp", [me.gamestat.getItemValue("exp")]);
-        me.event.publish("/player/mana", [me.gamestat.getItemValue("mana")]);
+        me.event.publish("/player/exp", [me.save.exp]);
+        me.event.publish("/player/mana", [me.save.mana]);
 
         game.instances.belt = new game.gui.Belt();
         me.game.add(game.instances.belt, game.guiLayer);
 
-        this.hp_text = new game.gui.SmallText(this.pos.x + 5, this.posy + this.renderable.height, me.gamestat.getItemValue("hp") + "/" + me.gamestat.getItemValue("maxhp"), this.hp_font);
+        this.hp_text = new game.gui.SmallText(this.pos.x + 5, this.posy + this.renderable.height, me.save.hp") + "/" + me.gamestat.getItemValue("maxhp, this.hp_font);
         me.game.add(this.hp_text, game.LAYERS.GUI - 1);
-        me.game.sort();
         this.belt_cooldown_run = new Array(8);
         for (var i = 0; i < this.belt_cooldown_run.length; i++) {
             this.belt_cooldown_run[i] = 0;
@@ -126,7 +127,6 @@ game.Player = me.ObjectEntity.extend({
         if (typeof me.game.currentLevel.level_name !== "undefined") {
             var message = new game.gui.BigText(me.game.currentLevel.level_name);
             me.game.add(message, game.guiLayer);
-            me.game.sort();
         }
 
     },
@@ -139,7 +139,6 @@ game.Player = me.ObjectEntity.extend({
             me.game.add(dieText, game.guiLayer);
             var respawn_entity = new game.entities.Respawn(this.pos.x, this.pos.y);
             me.game.add(respawn_entity);
-            me.game.sort();
         }
 
         if (me.input.isKeyPressed("debug")) {
@@ -178,17 +177,16 @@ game.Player = me.ObjectEntity.extend({
             game.mechanic.belt_use(7);
         }
 
-        if ((me.gamestat.getItemValue("hp") <= (me.gamestat.getItemValue("maxhp") * 0.05)) && this.red_screen === null) {
+        if ((me.save.hp") <= (me.gamestat.getItemValue("maxhp * 0.05)) && this.red_screen === null) {
             this.red_screen = new game.effects.RedScreen();
             me.game.add(this.red_screen, game.guiLayer - 1);
-            me.game.sort();
-        } else if ((me.gamestat.getItemValue("hp") >= (me.gamestat.getItemValue("maxhp") * 0.05)) && this.red_screen !== null) {
+        } else if ((me.save.hp") >= (me.gamestat.getItemValue("maxhp * 0.05)) && this.red_screen !== null) {
             me.game.remove(this.red_screen);
             this.red_screen = null;
         }
 
         // TODO:CHANGE
-        //me.game.HUD.setItemValue("HP", me.gamestat.getItemValue("hp"));
+        //me.game.HUD.setItemValue("HP", me.save.hp);
         if (this.use_box !== null) {
             if (me.timer.getTime() > (this.use_box_timer + 200)) {
                 this.destroyUse();
@@ -319,9 +317,9 @@ game.Player = me.ObjectEntity.extend({
         this.updateTargetBox();
         this.hp_text.pos.x = this.pos.x + 5;
         this.hp_text.pos.y = this.pos.y + this.renderable.height;
-        this.hp_text.text = me.gamestat.getItemValue("hp") + "/" + me.gamestat.getItemValue("maxhp");
+        this.hp_text.text = me.save.hp") + "/" + me.gamestat.getItemValue("maxhp;
         if (this.weapon !== null) {
-            var weapon = game.mechanic.get_inventory_item(me.gamestat.getItemValue("equip").weapon);
+            var weapon = game.mechanic.get_inventory_item(me.save.equip.weapon);
             if (weapon === false) {
                 //should not be required, in other case this will fix it
                 this.equipWeapon();
@@ -349,37 +347,35 @@ game.Player = me.ObjectEntity.extend({
         if (value > 0) {
             var text = new game.effects.HealText(this.pos.x, this.pos.y, value + "HP");
             me.game.add(text, game.LAYERS.GUI - 1);
-            me.game.sort();
         }
-        if ((me.gamestat.getItemValue("hp") + value) > me.gamestat.getItemValue("maxhp")) {
-            me.gamestat.setValue("hp", me.gamestat.getItemValue("maxhp"));
+        if ((me.save.hp") + value) > me.gamestat.getItemValue("maxhp) {
+            me.gamestat.setValue("hp", me.save.maxhp);
         } else {
             me.gamestat.updateValue("hp", value);
         }
     },
     updateEXP: function(value) {
-        if (me.gamestat.getItemValue("exp") + value >= me.gamestat.getItemValue("next_level")) {
+        if (me.save.exp + value >= me.save.next_level) {
             //NEXT LEVEL
             this.levelUp(value);
         } else {
-            me.gamestat.updateValue("exp", value);
-            me.event.publish("/player/exp", [me.gamestat.getItemValue("exp")]);
+            me.save.exp = me.save.exp + value;
+            me.event.publish("/player/exp", [me.save.exp]);
         }
     },
     levelUp: function(value) {
-        var addition = me.gamestat.getItemValue("exp") + value - me.gamestat.getItemValue("next_level");
-        me.gamestat.updateValue("level", 1);
-        me.gamestat.setValue("exp", addition);
-        var next_level = Math.floor(me.gamestat.getItemValue("next_level") + me.gamestat.getItemValue("next_level") * 2.5);
-        me.gamestat.setValue("next_level", next_level);
-        me.gamestat.updateValue("skill", 5);
+        var addition = me.save.exp + value - me.save.next_level;
+        me.save.level = me.save.level + 1;
+        me.save.exp = addition;
+        var next_level = Math.floor((me.save.next_level) + me.save.next_level * 2.5);
+        me.save.next_level = next_level;
+        me.save.skill = me.save.skill + 5;
         game.instances.audio.channels.effects.addEffect("level_up");
-        var bigText = me.entityPool.newInstanceOf("BigText", "YOU HAVE REACHED LEVEL " + me.gamestat.getItemValue("level"));
+        var bigText = me.entityPool.newInstanceOf("BigText", "YOU HAVE REACHED LEVEL " + me.save.level);
         me.game.add(bigText, game.guiLayer);
-        me.game.sort();
         game.instances.console.post("You haved reached new level");
         game.mechanic.updateStats();
-        me.event.publish("/player/exp", [me.gamestat.getItemValue("exp")]);
+        me.event.publish("/player/exp", [me.save.exp]);
     },
     createAttack: function(direction) {
         if (direction === "up") {
@@ -394,8 +390,7 @@ game.Player = me.ObjectEntity.extend({
                 this.attack_box = new game.CollisionBox(this.pos.x + 10 + 12, this.pos.y + 8, "human_attack");
             }
         }
-        me.game.add(this.attack_box, 4);
-        me.game.sort();
+        me.game.add(this.attack_box, 4);        
 
     },
     destroyAttack: function() {
@@ -429,7 +424,6 @@ game.Player = me.ObjectEntity.extend({
             this.use_box = me.entityPool.newInstanceOf("CollisionBox", this.target_box.pos.x, this.target_box.pos.y, "human_use");
             this.use_box_timer = me.timer.getTime();
             me.game.add(this.use_box, 5);
-            me.game.sort();
         }
     }, 
     hurt: function(dmg_min, dmg_max, dmg_type) {
@@ -438,7 +432,7 @@ game.Player = me.ObjectEntity.extend({
         this.hit_text = me.entityPool.newInstanceOf("HitText", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2), dmg, game.fonts.bad_red);
         me.game.add(this.hit_text, this.z + 1);
         me.game.sort();
-        if (me.gamestat.getItemValue("hp") <= 0) {
+        if (me.save.hp <= 0) {
             //just die already!)
             this.dying = true;
         } else {
@@ -450,28 +444,27 @@ game.Player = me.ObjectEntity.extend({
             me.game.remove(this.weapon);
             this.weapon = null;
         }
-        if (me.gamestat.getItemValue("equip").weapon !== null) {
-            var weapon = game.mechanic.get_inventory_item(me.gamestat.getItemValue("equip").weapon);
+        if (me.save.equip.weapon !== null) {
+            var weapon = game.mechanic.get_inventory_item(me.save.equip.weapon);
             if (weapon === false) {
                 console.log("weapon not found in inventory");
-                me.gamestat.getItemValue("equip").weapon = null;
+                me.save.equip.weapon = null;
                 return false;
             }
             this.weapon = new game.weapons[weapon.attributes.object_name](this.pos.x + weapon.attributes.offset_x, this.pos.y + weapon.attributes.offset_y);
             me.game.add(this.weapon, this.z + 1);
-            me.game.sort();
             game.mechanic.updateStats();
             return true;
         }
     }, 
     equipArmor: function() {
-        if (me.gamestat.getItemValue("equip").armor === null) {
+        if (me.save.equip.armor === null) {
             this.renderable.image = game.createPlayerCanvas();
         } else {
-            var armor = game.mechanic.get_inventory_item(me.gamestat.getItemValue("equip").armor);
+            var armor = game.mechanic.get_inventory_item(me.save.equip.armor);
             if (armor === false) {
                 console.log("armor not found in inventory");
-                me.gamestat.getItemValue("equip").armor = null;
+                me.save.equip.armor = null;
                 return false;
             }
             this.renderable.image = game.createPlayerCanvas(armor.attributes.image_name);

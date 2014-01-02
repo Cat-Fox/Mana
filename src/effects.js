@@ -253,7 +253,6 @@ game.effects.Rain = me.ObjectEntity.extend({
             var x = Number.prototype.random(0, game.screenWidth);
             var drop = me.entityPool.newInstanceOf("RainDrop", x, 10);
             me.game.add(drop, game.guiLayer - 1);
-            me.game.sort();
             this.drops++;
             //console.log("creating drop " + this.drops);
         }

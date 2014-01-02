@@ -60,7 +60,6 @@ game.Spawn = me.ObjectEntity.extend({
         }
         tmp.stats.stance = "passive";
         me.game.add(tmp, this.z);
-        me.game.sort();
         this.guids.push(tmp.GUID);
     }
 });
@@ -129,7 +128,6 @@ game.DungeonSpawn = me.ObjectEntity.extend({
                 console.error("spawn type not recognized");
                 break;
         }
-        me.game.sort();
         me.game.remove(this);
     }
 });

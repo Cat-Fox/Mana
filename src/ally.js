@@ -26,7 +26,6 @@ game.npcs.Fox = game.npcs.AllyWalker.extend({
      onUse: function(){
         var speak = new game.effects.SpeakText(this.pos.x, this.pos.y, "Woof!");
         me.game.add(speak, game.LAYERS.GUI);
-        me.game.sort();
         game.mechanic.drop(this.pos.x, this.pos.y, 500, this.drop);
         me.game.remove(this);
      },
@@ -34,7 +33,6 @@ game.npcs.Fox = game.npcs.AllyWalker.extend({
         var speak = new game.effects.SpeakText(this.pos.x, this.pos.y, "Woof! :(");
         game.instances.player.hurt(5, 10, "normal");
         me.game.add(speak, game.LAYERS.GUI);
-        me.game.sort();
         me.game.remove(this);
      }
 });
@@ -47,7 +45,6 @@ game.npcs.TalkyGuard = game.npcs.AllyNPC.extend({
         if (game.instances.dialog === null) {
             game.instances.dialog = new game.gui.Dialog("dialog_guard", this.GUID);
             me.game.add(game.instances.dialog, game.LAYERS.GUI);
-            me.game.sort();
         }
     },
     cleanup: function() {
@@ -70,7 +67,6 @@ game.npcs.King = game.npcs.AllyNPC.extend({
         if (game.instances.dialog === null) {
             game.instances.dialog = new game.gui.Dialog("dialog_king", this.GUID);
             me.game.add(game.instances.dialog, game.LAYERS.GUI);
-            me.game.sort();
         }
     },
     cleanup: function() {
@@ -86,11 +82,10 @@ game.npcs.Priest = game.npcs.AllyNPC.extend({
     onUse: function() {
         if (game.instances.dialog === null) {
             game.instances.dialog = new game.gui.Dialog("dialog_priest", this.GUID);
-            if (me.gamestat.getItemValue("history").npcs_talks.priest) {
+            if (me.save.history.npcs_talks.priest) {
                 game.instances.dialog.setBranch(1);
             }
             me.game.add(game.instances.dialog, game.LAYERS.GUI);
-            me.game.sort();
         }
     },
     cleanup: function() {
@@ -106,7 +101,6 @@ game.npcs.Octocat = game.npcs.AllyNPC.extend({
         if (game.instances.dialog === null) {
             game.instances.dialog = new game.gui.Dialog("dialog_octocat", this.GUID);
             me.game.add(game.instances.dialog, game.LAYERS.GUI);
-            me.game.sort();
         }
     },
     cleanup: function() {
@@ -129,8 +123,7 @@ game.npcs.ManaChest = game.npcs.AllyNPC.extend({
         if (game.instances.dialog === null) {
             game.instances.dialog = new game.gui.Dialog("dialog_chest", this.GUID);
             me.game.add(game.instances.dialog, game.LAYERS.GUI);
-            me.game.sort();
-            if (me.gamestat.getItemValue("history").npcs_talks.stash) {
+            if (me.save.history.npcs_talks.stash) {
                 game.instances.dialog.setBranch(1);
             }
 
@@ -153,7 +146,6 @@ game.npcs.Zaraka = game.npcs.AllyNPC.extend({
         if (game.instances.dialog === null) {
             game.instances.dialog = new game.gui.Dialog("dialog_zaraka", this.GUID);
             me.game.add(game.instances.dialog, game.LAYERS.GUI);
-            me.game.sort();
         }
     },
     cleanup: function() {
@@ -178,11 +170,10 @@ game.npcs.Blacksmith = game.npcs.AllyNPC.extend({
     onUse: function() {
         if (game.instances.dialog === null && game.instances.shop === null) {
             game.instances.dialog = new game.gui.Dialog("dialog_blacksmith", this.GUID);
-            if (me.gamestat.getItemValue("history").npcs_talks.blacksmith) {
+            if (me.save.history.npcs_talks.blacksmith) {
                 game.instances.dialog.setBranch(1);
             }
             me.game.add(game.instances.dialog, game.LAYERS.GUI);
-            me.game.sort();
         }
     },
     cleanup: function() {
@@ -201,11 +192,10 @@ game.npcs.Wizard = game.npcs.AllyNPC.extend({
     onUse: function() {
         if (game.instances.dialog === null) {
             game.instances.dialog = new game.gui.Dialog("dialog_wizard", this.GUID);
-            if (me.gamestat.getItemValue("history").npcs_talks.wizard) {
+            if (me.save.history.npcs_talks.wizard) {
                 game.instances.dialog.setBranch(1);
             }
             me.game.add(game.instances.dialog, game.LAYERS.GUI);
-            me.game.sort();
         }
     },
     cleanup: function() {

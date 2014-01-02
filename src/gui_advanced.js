@@ -27,7 +27,6 @@ game.gui.StatsBar = me.ObjectEntity.extend({
         this.mana_text = new game.gui.SmallText(310, 209, "0", game.fonts.light_blue);
         this.mana_text.floating = true;
         me.game.add(this.mana_text, game.LAYERS.GUI + 1);
-        me.game.sort();
 
         this.mana_tooltip = null;
         this.exp_tooltip = null;
@@ -56,9 +55,8 @@ game.gui.StatsBar = me.ObjectEntity.extend({
 
         if (trigger_exp) {
             if(this.exp_tooltip === null){
-                this.exp_tooltip = new game.DropTooltip(310, 200, "Exp: " + me.gamestat.getItemValue("exp") + "/" + me.gamestat.getItemValue("next_level"), "normal");
+                this.exp_tooltip = new game.DropTooltip(310, 200, "Exp: " + me.save.exp + "/" + me.save.next_level, "normal");
                 me.game.add(this.exp_tooltip, game.LAYERS.GUI + 2);
-                me.game.sort();
             }
         } else {
             if(this.exp_tooltip !== null){
@@ -71,7 +69,6 @@ game.gui.StatsBar = me.ObjectEntity.extend({
             if(this.mana_tooltip === null){
                 this.mana_tooltip = new game.DropTooltip(310, 200, "Amount of Mana", "normal");
                 me.game.add(this.mana_tooltip, game.LAYERS.GUI + 2);
-                me.game.sort();
             }
         } else {
             if(this.mana_tooltip !== null){
@@ -85,7 +82,7 @@ game.gui.StatsBar = me.ObjectEntity.extend({
         return false;
     },
     onUpdateExp: function(exp) {
-        this.percent = Math.floor((100 / me.gamestat.getItemValue("next_level")) * exp);
+        this.percent = Math.floor((100 / me.save.next_level) * exp);
         var context = this.renderable.image.getContext("2d");
         context.strokeStyle = "#958686";
         context.lineWidth = 1;
@@ -158,7 +155,6 @@ game.gui.Console = me.ObjectEntity.extend({
         var line = new game.gui.ConsoleLine(0, game.screenHeight - 32, text);
         this.lines.push(line);
         me.game.add(line, game.guiLayer);
-        me.game.sort();
     }, removeLast: function() {
         me.game.remove(this.lines[0]);
         this.lines.splice(0, 1);
@@ -227,7 +223,6 @@ game.gui.Stash = game.gui.Window.extend({
         me.game.add(this.buttons.money2inventory, this.entity_layer);
         this.buttons.money2stash = new game.gui.ImageButton(this.pos.x + 97, this.pos.y + 150, "arrow_left", this, "showDialogStash");
         me.game.add(this.buttons.money2stash, this.entity_layer);
-        me.game.sort();
 
         me.input.registerPointerEvent('mouseup', me.game.viewport, this.mouseUp.bind(this));
     },
@@ -244,8 +239,8 @@ game.gui.Stash = game.gui.Window.extend({
         }
     },
     update: function() {
-        this.inventory_money.onUpdate(me.gamestat.getItemValue("money"));
-        this.stash_money.onUpdate(me.gamestat.getItemValue("stash_money"));
+        this.inventory_money.onUpdate(me.save.money);
+        this.stash_money.onUpdate(me.save.stash_money);
 
         this.parent();
         return true;
@@ -285,7 +280,7 @@ game.gui.Stash = game.gui.Window.extend({
                 for (var row = 0; row < this.inventory_tiles.length; row++) {
                     for (var column = 0; column < this.inventory_tiles[row].length; column++) {
                         if (this.inventory_tiles[row][column].containsPointV(me.input.mouse.pos)) {
-                            var item = me.gamestat.getItemValue("stash")[this.selected_tile];
+                            var item = me.save.stash[this.selected_tile];
                             game.mechanic.inventory_push(item, "inventory");
                             game.mechanic.stash_drop(item.guid);
                             flag = true;
@@ -302,7 +297,7 @@ game.gui.Stash = game.gui.Window.extend({
                 for (var row = 0; row < this.stash_tiles.length; row++) {
                     for (var column = 0; column < this.stash_tiles[row].length; column++) {
                         if (this.stash_tiles[row][column].containsPointV(me.input.mouse.pos)) {
-                            var item = me.gamestat.getItemValue("inventory")[this.selected_tile];
+                            var item = me.save.inventory[this.selected_tile];
                             game.mechanic.stash_push(item);
                             game.mechanic.inventory_drop(item.guid);
                             flag = true;
@@ -355,7 +350,6 @@ game.gui.EnemyPanel = me.ObjectEntity.extend({
         this.name_object = new game.gui.SmallText(this.pos.x + 3, 1, this.name, game.fonts.white);
         this.name_object.floating = true;
         me.game.add(this.name_object, game.guiLayer + 1);
-        me.game.sort();
     },
     setName: function(name) {
         this.name = name;
@@ -434,7 +428,6 @@ game.gui.Shop = game.gui.Window.extend({
 
         this.inventory_money = new game.gui.MoneyTab(this.pos.x + 215, this.pos.y + 150);
         me.game.add(this.inventory_money, this.entity_layer);
-        me.game.sort();
         me.input.registerPointerEvent('mouseup', me.game.viewport, this.mouseUp.bind(this));
     },
     onDestroyEvent: function() {
@@ -499,7 +492,6 @@ game.gui.Options = game.gui.Window.extend({
         me.game.add(this.sliders.effects, game.LAYERS.TOP + 1);
         this.buttons.save = new game.gui.FuncButton(30, 160, "Save", "", null, game.mechanic.save_settings);
         me.game.add(this.buttons.save, game.LAYERS.TOP + 1);
-        me.game.sort();
     },
     onDestroyEvent: function() {
         this.parent();

@@ -21,7 +21,7 @@ game.mechanic.Stats = Object.extend({
         this.player = player;
     },
     getBonusAttr: function(attribute) {
-        var equip = me.gamestat.getItemValue("equip");
+        var equip = me.save.equip;
         this["bonus_" + attribute] = 0;
         if (equip.weapon !== null) {
             var item = game.mechanic.get_inventory_item(equip.weapon);
@@ -46,7 +46,7 @@ game.mechanic.Stats = Object.extend({
         return this[attribute] + this["bonus_" + attribute];
     },
     getEquipAttr: function(attribute) {
-        var equip = me.gamestat.getItemValue("equip");
+        var equip = me.save.equip;
         var result = 0;
         if (equip.weapon !== null) {
             var item = game.mechanic.get_inventory_item(equip.weapon);
@@ -109,7 +109,7 @@ game.mechanic.Stats = Object.extend({
         return 1.3 + (this.agi / 95);
     },
     getDmg: function() {
-        var weapon = me.gamestat.getItemValue("equip").weapon;
+        var weapon = me.save.equip.weapon;
         if (weapon === null) {
             return [{type: "normal", min_dmg: 3, max_dmg: 5}];
         } else {
@@ -151,7 +151,7 @@ game.mechanic.count_dmg = function(dmg_min, dmg_max, dmg_type, armor_normal, arm
 
 game.mechanic.get_attribute_tooltip = function(attribute) {
     var tooltip_text = [];
-    var stats = me.gamestat.getItemValue("stats");
+    var stats = me.save.stats;
     switch (attribute) {
         case "str":
             tooltip_text.push(new game.gui.TextLine("Base " + stats.str, game.fonts.white));
@@ -179,7 +179,7 @@ game.mechanic.get_attribute_tooltip = function(attribute) {
 
 game.mechanic.player_hurt = function(dmg_min, dmg_max, dmg_type) {
     var normal_armor, magic_armor, armor_type;
-    var equip_armor = me.gamestat.getItemValue("equip").armor;
+    var equip_armor = me.save.equip.armor;
     if (equip_armor === null) {
         normal_armor = 0;
         magic_armor = 0;
@@ -200,7 +200,6 @@ game.mechanic.trigger_inventory = function() {
         game.instances.backpack = me.entityPool.newInstanceOf("Backpack");
         this.backpack = game.instances.backpack;
         me.game.add(game.instances.backpack, game.guiLayer);
-        me.game.sort();
         game.instances.audio.channels.effects.addEffect("itempick2");
     } else if (game.instances.backpack !== null) {
         me.game.remove(game.instances.backpack);
@@ -220,7 +219,6 @@ game.mechanic.trigger_stash = function(guid) {
 game.mechanic.open_stash = function(guid) {
     game.instances.stash = new game.gui.Stash();
     me.game.add(game.instances.stash, game.LAYERS.GUI);
-    me.game.sort();
     game.instances.audio.channels.effects.addEffect("chest_open");
     me.game.getEntityByGUID(guid).renderable.setCurrentAnimation("open");
 };
@@ -233,7 +231,7 @@ game.mechanic.close_stash = function(guid) {
 };
 
 game.mechanic.inventory_push = function(item, gamestat) {
-    var inventory = me.gamestat.getItemValue(gamestat);
+    var inventory = me.save[gamestat];
     for (var i = 0; i < inventory.length; i++) {
         if (inventory[i] === null) {
             inventory[i] = item;
@@ -244,7 +242,7 @@ game.mechanic.inventory_push = function(item, gamestat) {
 };
 
 game.mechanic.tiles_sort = function(gamestat) {
-    var inventory = me.gamestat.getItemValue(gamestat);
+    var inventory = me.save[gamestat];
     inventory.sort(game.mechanic.sort);
 };
 
@@ -253,7 +251,7 @@ game.mechanic.shop_sort = function() {
 };
 
 game.mechanic.inventory_drop = function(guid) {
-    var inventory = me.gamestat.getItemValue("inventory");
+    var inventory = me.save.inventory;
     for (var i = 0; i < inventory.length; i++) {
         if (inventory[i].guid === guid) {
             inventory[i] = null;
@@ -265,7 +263,7 @@ game.mechanic.inventory_drop = function(guid) {
 };
 
 game.mechanic.get_inventory_item = function(guid) {
-    var inventory = me.gamestat.getItemValue("inventory");
+    var inventory = me.save.inventory;
     for (var i = 0; i < inventory.length; i++) {
         if (inventory[i] === null) {
             continue;
@@ -275,7 +273,7 @@ game.mechanic.get_inventory_item = function(guid) {
         }
     }
 
-    var inventory = me.gamestat.getItemValue("spells");
+    var inventory = me.save.spells;
     for (var i = 0; i < inventory.length; i++) {
         if (inventory[i] === null) {
             continue;
@@ -288,7 +286,7 @@ game.mechanic.get_inventory_item = function(guid) {
 };
 
 game.mechanic.stash_push = function(item) {
-    var inventory = me.gamestat.getItemValue("stash");
+    var inventory = me.save.stash;
     for (var i = 0; i < inventory.length; i++) {
         if (inventory[i] === null) {
             inventory[i] = item;
@@ -299,7 +297,7 @@ game.mechanic.stash_push = function(item) {
 };
 
 game.mechanic.stash_drop = function(guid) {
-    var inventory = me.gamestat.getItemValue("stash");
+    var inventory = me.save.stash;
     for (var i = 0; i < inventory.length; i++) {
         if (inventory[i].guid === guid) {
             inventory[i] = null;
@@ -311,7 +309,7 @@ game.mechanic.stash_drop = function(guid) {
 };
 
 game.mechanic.get_stash_item = function(guid) {
-    var inventory = me.gamestat.getItemValue("inventory");
+    var inventory = me.save.inventory;
     for (var i = 0; i < inventory.length; i++) {
         if (inventory[i] === null) {
             continue;
@@ -332,7 +330,7 @@ game.mechanic.sort = function(a, b) {
 };
 
 game.mechanic.belt_use = function(id) {
-    var belt = me.gamestat.getItemValue("belt")[id];
+    var belt = me.save.belt[id];
     if (typeof belt !== null) {
         game.mechanic.trigger_item(belt);
     }
@@ -345,7 +343,7 @@ game.mechanic.trigger_item = function(guid) {
     switch (selected.type) {
         case "weapon":
             if (game.mechanic.check_requirements(selected)) {
-                me.gamestat.getItemValue("equip").weapon = guid;
+                me.save.equip.weapon = guid;
                 player.equipWeapon();
                 game.instances.audio.channels.effects.addEffect(selected.attributes.sound);
                 return true;
@@ -353,7 +351,7 @@ game.mechanic.trigger_item = function(guid) {
             break;
         case "armor":
             if (game.mechanic.check_requirements(selected)) {
-                me.gamestat.getItemValue("equip").armor = guid;
+                me.save.equip.armor = guid;
                 player.equipArmor();
                 game.instances.audio.channels.effects.addEffect(selected.attributes.sound);
                 return true;
@@ -365,7 +363,7 @@ game.mechanic.trigger_item = function(guid) {
                 game.instances.audio.channels.effects.addEffect(selected.attributes.sound);
             }
 
-            var belt = me.gamestat.getItemValue("belt");
+            var belt = me.save.belt;
             for (var i = 0; i < belt.length; i++) {
                 if (belt[i] === guid) {
                     belt[i] = null;
@@ -375,12 +373,12 @@ game.mechanic.trigger_item = function(guid) {
             return true;
             break;
         case "spell":
-            if(selected.attributes.cost > me.gamestat.getItemValue("mana")){
+            if(selected.attributes.cost > me.save.mana){
                 game.instances.console.post("You don't have enough mana");
                 return false;
             }
-            me.gamestat.updateValue("mana", -selected.attributes.cost);
-            me.event.publish("/player/mana", [me.gamestat.getItemValue("mana")]);
+            me.save.mana = me.save.mana - selected.attributes.cost;
+            me.event.publish("/player/mana", [me.save.mana]);
             if(typeof selected.attributes.heal !== "undefined"){
                 var heal = new game.effects.Heal(player.pos.x, player.pos.y, selected.attributes.heal);
                 me.game.add(heal, game.LAYERS.NPC);
@@ -405,7 +403,6 @@ game.mechanic.trigger_item = function(guid) {
                 me.game.add(fireball, game.LAYERS.ITEMS);
                 return true;
             }
-            me.game.sort();
             break;
         default:
             game.instances.console.post("This item cannot be used");
@@ -429,20 +426,20 @@ game.mechanic.destroy_dialoge = function(guid) {
 };
 
 game.mechanic.save_game = function() {
-    localStorage.level = me.gamestat.getItemValue("level");
-    localStorage.next_level = me.gamestat.getItemValue("next_level");
-    localStorage.hp = me.gamestat.getItemValue("hp");
-    localStorage.max_hp = me.gamestat.getItemValue("maxhp");
-    localStorage.exp = me.gamestat.getItemValue("exp");
-    localStorage.stats = JSON.stringify(me.gamestat.getItemValue("stats"));
-    localStorage.equip = JSON.stringify(me.gamestat.getItemValue("equip"));
-    localStorage.inventory = JSON.stringify(me.gamestat.getItemValue("inventory"));
-    localStorage.belt = JSON.stringify(me.gamestat.getItemValue("belt"));
-    localStorage.skill_points = me.gamestat.getItemValue("skill");
-    localStorage.money = me.gamestat.getItemValue("money");
-    localStorage.stash_money = me.gamestat.getItemValue("stash_money");
-    localStorage.history = JSON.stringify(me.gamestat.getItemValue("history"));
-    localStorage.stash = JSON.stringify(me.gamestat.getItemValue("stash"));
+    localStorage.level = me.save.level;
+    localStorage.next_level = me.save.next_level;
+    localStorage.hp = me.save.hp;
+    localStorage.max_hp = me.save.maxhp;
+    localStorage.exp = me.save.exp;
+    localStorage.stats = JSON.stringify(me.save.stats);
+    localStorage.equip = JSON.stringify(me.save.equip);
+    localStorage.inventory = JSON.stringify(me.save.inventory);
+    localStorage.belt = JSON.stringify(me.save.belt);
+    localStorage.skill_points = me.save.skill;
+    localStorage.money = me.save.money;
+    localStorage.stash_money = me.save.stash_money;
+    localStorage.history = JSON.stringify(me.save.history);
+    localStorage.stash = JSON.stringify(me.save.stash);
     localStorage.save = true;
     game.instances.console.post("Hero has been saved");
 };
@@ -513,8 +510,8 @@ game.mechanic.load_game = function() {
 };
 
 game.mechanic.respawn = function() {
-    me.gamestat.getItemValue("history").previous_level = "respawn";
-    me.gamestat.setValue("hp", me.gamestat.getItemValue("maxhp"));
+    me.save.history.previous_level = "respawn";
+    me.gamestat.setValue("hp", me.save.maxhp);
     me.gamestat.setValue("money", 0);
     game.instances.enemy_panel = null;
     me.levelDirector.loadLevel("test_map");
@@ -542,7 +539,7 @@ game.mechanic.check_requirements = function(item) {
     switch (item.type) {
         case "weapon" :
             if (typeof item.attributes.str_req !== "undefined") {
-                if (me.gamestat.getItemValue("stats").str < item.attributes.str_req) {
+                if (me.save.stats.str < item.attributes.str_req) {
                     game.instances.console.post("Not enough Strength");
                     return false;
                 }
@@ -550,7 +547,7 @@ game.mechanic.check_requirements = function(item) {
             break;
         case "armor" :
             if (typeof item.attributes.end_req !== "undefined") {
-                if (me.gamestat.getItemValue("stats").end < item.attributes.end_req) {
+                if (me.save.stats.end < item.attributes.end_req) {
                     game.instances.console.post("Not enough Endurance");
                     return false;
                 }
@@ -558,7 +555,7 @@ game.mechanic.check_requirements = function(item) {
             break;
         case "artefact" :
             if (typeof item.attributes.int_req !== "undefined") {
-                if (me.gamestat.getItemValue("stats").int < item.attributes.int_req) {
+                if (me.save.stats.int < item.attributes.int_req) {
                     game.instances.console.post("Not enough Inteligence");
                     return false;
                 }
@@ -569,9 +566,9 @@ game.mechanic.check_requirements = function(item) {
 };
 
 game.mechanic.attributeUp = function(attribute) {
-    var requirement = game.mechanic.stat_requirement(me.gamestat.getItemValue("stats")[attribute]);
-    if (me.gamestat.getItemValue("skill") >= requirement) {
-        me.gamestat.getItemValue("stats")[attribute] += 1;
+    var requirement = game.mechanic.stat_requirement(me.save.stats[attribute]);
+    if (me.save.skill >= requirement) {
+        me.save.stats[attribute] += 1;
         me.gamestat.updateValue("skill", -requirement);
         game.mechanic.updateStats();
     } else {
@@ -580,15 +577,15 @@ game.mechanic.attributeUp = function(attribute) {
 };
 
 game.mechanic.updateStats = function() {
-    var max_hp = me.gamestat.getItemValue("stats").getHP();
-    me.gamestat.setValue("maxhp", max_hp);
-    if (me.gamestat.getItemValue("hp") > me.gamestat.getItemValue("maxhp")) {
-        me.gamestat.setValue("hp", max_hp);
+    var max_hp = me.save.stats.getHP();
+    me.save.maxhp =  max_hp;
+    if (me.save.hp > me.save.maxhp) {
+        me.save.hp = max_hp;
     }
 };
 
 game.mechanic.stat_requirement = function(stat) {
-    var value = me.gamestat.getItemValue(stat);
+    var value = me.save[stat];
     if (value <= 20) {
         return 1;
     } else if (value <= 40) {
@@ -606,7 +603,6 @@ game.mechanic.trigger_rain = function() {
     if (game.instances.rain === null) {
         game.instances.rain = new game.effects.Rain();
         me.game.add(game.instances.rain, game.guiLayer - 1);
-        me.game.sort();
     }
 };
 
@@ -636,7 +632,6 @@ game.mechanic.trigger_options = function(menu) {
         } else {
             game.instances.options = new game.gui.Options();
             me.game.add(game.instances.options, game.LAYERS.TOP);
-            me.game.sort();
         }
     } else {
         me.game.remove(game.instances.options);
@@ -682,7 +677,6 @@ game.mechanic.open_backpack = function() {
         game.mechanic.close_all_windows();
         game.instances.backpack = new game.Backpack();
         me.game.add(game.instances.backpack, game.LAYERS.GUI);
-        me.game.sort();
     }
 };
 
@@ -692,7 +686,6 @@ game.mechanic.open_manabook = function() {
         game.mechanic.close_all_windows();
         game.instances.manabook = new game.gui.ManaBook();
         me.game.add(game.instances.manabook, game.LAYERS.GUI);
-        me.game.sort();
     }
 };
 
@@ -701,7 +694,6 @@ game.mechanic.open_options = function() {
         game.mechanic.close_all_windows();
         game.instances.options = new game.gui.InventoryOptions();
         me.game.add(game.instances.options, game.LAYERS.GUI);
-        me.game.sort();
     }
 };
 

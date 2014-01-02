@@ -123,8 +123,7 @@ game.MenuScreen = game.AnimatedScreen.extend({
         this.version = new game.gui.SmallText(10, 10, game.version, game.fonts.white);
         this.version.floating = true;
         me.game.add(this.version, 8);
-        me.game.add(this.small_logo, 8);
-        me.game.sort();
+        me.game.add(this.small_logo, 8);       
 
 
 
@@ -220,7 +219,6 @@ game.CreditsScreen = me.ScreenObject.extend({
         me.input.bindKey(me.input.KEY.ENTER, "enter", true);
         this.credits = new game.gui.Credits(0, 0);
         me.game.add(this.credits, 8);
-        me.game.sort();
     },
     update: function() {
         if (me.input.isKeyPressed('enter')) {
@@ -241,7 +239,6 @@ game.PlayScreen = game.AnimatedScreen.extend({
     {
         game.instances.console = new game.gui.Console(0, 0);
         me.game.add(game.instances.console, 9999);
-        me.game.sort();
 
 
         me.levelDirector.loadLevel("test_map");
@@ -409,7 +406,6 @@ game.CharacterPickScreen = me.ScreenObject.extend({
     onResetEvent: function() {
         game.instances.console = new game.gui.Console(0, 0);
         me.game.add(game.instances.console, 9999);
-        me.game.sort();
         this.pick_gender = ["male", "female"];
         this.pick_color = ["blond", "brown", "black", "green", "blue", "purple", "red"];
         this.current_color = 0;

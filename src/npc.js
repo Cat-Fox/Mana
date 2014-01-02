@@ -68,7 +68,6 @@ game.WalkerNPC = me.ObjectEntity.extend({
         if (c_shadow) {
             this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x + 15, this.pos.y + 15);
             me.game.add(this.shadow, game.LAYERS.NPC - 1);
-            me.game.sort();
         }
         this.drop = null;
         this.stats = stats;
@@ -126,7 +125,6 @@ game.WalkerNPC = me.ObjectEntity.extend({
                             var result_dmg = this.hurt(res[i].obj.dmg_min, res[i].obj.dmg_max, res[i].obj.element);
                             this.hit_text = me.entityPool.newInstanceOf("HitText", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2) + (i * 6), result_dmg, game.fonts.bad_red);
                             me.game.add(this.hit_text, this.z + 1);
-                            me.game.sort();
                             me.game.remove(res[i].obj);
                         }
                     }
@@ -156,8 +154,8 @@ game.WalkerNPC = me.ObjectEntity.extend({
     },
     onHit: function() {
         if (this.type === me.game.ENEMY_OBJECT) {
-            var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
-            var dmg = me.gamestat.getItemValue("stats").getDmg();
+            var player = me.game.getEntityByGUID(me.save.player);
+            var dmg = me.save.stats.getDmg();
             for (var i = 0; i < dmg.length; i++) {
                 var result_dmg = this.hurt(dmg[i].min_dmg, dmg[i].max_dmg, dmg[i].type);
                 var font = game.fonts.white;
@@ -173,7 +171,6 @@ game.WalkerNPC = me.ObjectEntity.extend({
             }
 
             player.destroyAttack();
-            me.game.sort();
         }
     },
     onUse: function() {
@@ -293,7 +290,6 @@ game.npcs.AllyWalker = game.WalkerNPC.extend({
             this.target_text = me.entityPool.newInstanceOf("SmallText", this.pos.x + (this.renderable.width / 4), this.pos.y + (this.renderable.height), this.name, game.fonts.white);
             me.game.add(this.target, this.z - 1);
             me.game.add(this.target_text, this.z + 1);
-            me.game.sort();
         }
     }, onDestroyEvent: function(){
         if(this.target !== null){
@@ -366,7 +362,6 @@ game.npcs.EnemyNPC = game.WalkerNPC.extend({
             this.target_overflow;
             me.game.add(this.target, this.z - 1);
             me.game.add(this.target_text, this.z + 1);
-            me.game.sort();
         }
     },
     hurt: function(dmg_min, dmg_max, dmg_type) {
@@ -379,10 +374,9 @@ game.npcs.EnemyNPC = game.WalkerNPC.extend({
                 if (typeof this.renderable.anim["die"] !== "undefined") {
                     this.renderable.setCurrentAnimation("die");
                 }
-                me.game.getEntityByGUID(me.gamestat.getItemValue("player")).updateEXP(this.stats.exp);
+                me.game.getEntityByGUID(me.save.player).updateEXP(this.stats.exp);
                 var exp_text = new game.effects.ExpText(this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2), this.stats.exp + "xp");
                 me.game.add(exp_text, this.z);
-                me.game.sort();
                 this.mode_select = "dying";
                 this.alive = false;
                 this.vel.x = 0;
@@ -581,7 +575,6 @@ game.npcs.AllyNPC = game.ShadowObject.extend({
             this.target_text = me.entityPool.newInstanceOf("SmallText", this.pos.x - (this.renderable.width / 2), this.pos.y + (this.renderable.height), this.name, game.fonts.white);
             me.game.add(this.target_box, this.z);
             me.game.add(this.target_text, this.z + 1);
-            me.game.sort();
         }
     }, onUse: function() {
 
@@ -591,7 +584,6 @@ game.npcs.AllyNPC = game.ShadowObject.extend({
                 var random = Number.prototype.random(0, this.dialog.hit_texts.length - 1);
                 this.speak_text = new game.gui.SmallText(this.pos.x, this.pos.y - 5, this.dialog.hit_texts[random], game.fonts.white);
                 me.game.add(this.speak_text, game.LAYERS.GUI);
-                me.game.sort();
                 this.speak_text_timer = me.timer.getTime();
             }
         }

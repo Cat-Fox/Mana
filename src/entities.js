@@ -4,7 +4,6 @@ game.CollectableShadow = me.CollectableEntity.extend({
         this.parent(x, y, settings);
         this.shadow = me.entityPool.newInstanceOf("Shadow", this.pos.x, this.pos.y + 5);
         me.game.add(this.shadow, 4);
-        me.game.sort();
     },
     onDestroyEvent: function() {
         me.game.remove(this.shadow);
@@ -17,7 +16,6 @@ game.ShadowObject = me.ObjectEntity.extend({
         this.parent(x, y, settings);
         this.shadow = new game.Shadow(this.pos.x, this.pos.y + 5);
         me.game.add(this.shadow, 4);
-        me.game.sort();
     },
     onDestroyEvent: function() {
         me.game.remove(this.shadow);
@@ -80,7 +78,7 @@ game.entities.Firecamp = me.ObjectEntity.extend({
             if (res) {
                 if (res.obj.type === "player") {
                     game.instances.audio.channels.effects.addEffect("fire");
-                    var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
+                    var player = me.game.getEntityByGUID(me.save.player);
                     player.hurt(9, 15, "normal");
                     this.attack_timer = me.timer.getTime();
                     this.attacking = true;
@@ -171,7 +169,6 @@ game.ParticleGenerator = me.ObjectEntity.extend({
             }
             var particle = me.entityPool.newInstanceOf("Particle", this.pos.x + pos_x - 5, this.pos.y + 16, this.image, this.GUID, this.type);
             me.game.add(particle, game.guiLayer - 1);
-            me.game.sort();
         }
         return false;
     },
@@ -215,17 +212,17 @@ game.ChangeLevel = me.LevelEntity.extend({
         this.parent(x, y, settings);
     },
     onCollision: function(){
-        me.gamestat.getItemValue("history").previous_level = me.game.currentLevel.name; 
+        me.save.history.previous_level = me.game.currentLevel.name; 
         this.parent();
     },
     onFadeComplete: function(){
         this.parent();
         
         var player = game.instances.player;
-        if(me.gamestat.getItemValue("history").previous_level !== null){
+        if(me.save.history.previous_level !== null){
             var exits = me.game.getEntityByProp("name","exit");
             for(var i = 0; i < exits.length; i++){
-                if(me.gamestat.getItemValue("history").previous_level === exits[i].from){
+                if(me.save.history.previous_level === exits[i].from){
                     player.pos.x = exits[i].pos.x;
                     player.pos.y = exits[i].pos.y;
                     break;

@@ -34,7 +34,6 @@ game.gui.ManaBook = game.gui.InventoryWindow.extend({
             this.belt_tiles[i] = me.entityPool.newInstanceOf("CharacterTile", this.pos.x + 25 + (i * 16), this.pos.y + 165, "belt", i);
             me.game.add(this.belt_tiles[i], this.entity_layer);
         }
-        me.game.sort();
     },
     onDestroyEvent: function() {
         this.parent();
@@ -61,7 +60,7 @@ game.gui.ManaBook = game.gui.InventoryWindow.extend({
     mouseUp: function() {
         this.parent();
         if (this.selected_tile !== null) {
-            var object = me.gamestat.getItemValue("spells")[this.selected_tile];
+            var object = me.save.spells[this.selected_tile];
 
             //then belt
             for (var i = 0; i < this.belt_tiles.length; i++) {
@@ -98,7 +97,7 @@ game.gui.InventoryOptions = game.gui.InventoryWindow.extend({
         me.game.add(this.buttons.save, this.entity_layer);
         this.buttons.save_game = new game.gui.FuncButton(this.pos.x + 10, this.pos.y + 140, "Save Hero", "", null, game.mechanic.save_game);
         me.game.add(this.buttons.save_game, this.entity_layer);
-        this.checkboxes.helmet = new game.gui.CheckBox(this.pos.x + 20, this.pos.y + 160, me.gamestat.getItemValue("helmet"), game.mechanic.switch_helmet);
+        this.checkboxes.helmet = new game.gui.CheckBox(this.pos.x + 20, this.pos.y + 160, me.save.helmet, game.mechanic.switch_helmet);
     },
     onDestroyEvent: function() {
         this.parent();
@@ -156,7 +155,7 @@ game.Backpack = game.gui.InventoryWindow.extend({
         this.font.draw(context, "Inventory", 15 + 135, 5 + 2);
         this.font.draw(context, "Belt", 15 + 135, 147);
 
-        this.bm_font.draw(context, me.gamestat.getItemValue("body").name, 10, 92);
+        this.bm_font.draw(context, me.save.body.name, 10, 92);
         var height = 105, attr_height;
         this.bm_font.draw(context, "LEVEL", 15, height);
         attr_height = height;
@@ -179,15 +178,15 @@ game.Backpack = game.gui.InventoryWindow.extend({
         this.labels = {};
         height = attr_height;
         height += 4;
-        this.labels.level = new game.effects.BMF_Font(105, height, me.gamestat.getItemValue("level"));
+        this.labels.level = new game.effects.BMF_Font(105, height, me.save.level);
         this.labels.level.floating = true;
         me.game.add(this.labels.level, this.entity_layer);
         height = height + this.labels.level.font.measureText(context, "L").height;
-        this.labels.exp = new game.gui.SmallText(105, height, me.gamestat.getItemValue("exp") + "/" + me.gamestat.getItemValue("next_level"), game.fonts.basic);
+        this.labels.exp = new game.gui.SmallText(105, height, me.save.exp + "/" + me.save.next_level, game.fonts.basic);
         this.labels.exp.floating = true;
         me.game.add(this.labels.exp, this.entity_layer);
         height = height + this.font.measureText(context, "HP").height;
-        this.labels.hp = new game.gui.SmallText(105, height, me.gamestat.getItemValue("hp") + "/" + me.gamestat.getItemValue("maxhp"), game.fonts.basic);
+        this.labels.hp = new game.gui.SmallText(105, height, me.save.hp + "/" + me.save.maxhp, game.fonts.basic);
         this.labels.hp.floating = true;
         me.game.add(this.labels.hp, this.entity_layer);
         height = height + this.font.measureText(context, "HP").height;
@@ -203,7 +202,7 @@ game.Backpack = game.gui.InventoryWindow.extend({
         this.attributes.int = new game.gui.AttributeText(105, height, "int");
         me.game.add(this.attributes.int, this.entity_layer);
         height = height + this.font.measureText(context, "HP").height;
-        this.labels.skill = new game.gui.SmallText(105, height, me.gamestat.getItemValue("skill"), game.fonts.basic);
+        this.labels.skill = new game.gui.SmallText(105, height, me.save.skill, game.fonts.basic);
         this.labels.skill.floating = true;
         me.game.add(this.labels.skill, this.entity_layer);
 
@@ -231,7 +230,7 @@ game.Backpack = game.gui.InventoryWindow.extend({
         this.artefact_tile = me.entityPool.newInstanceOf("CharacterTile", 110, 75, "artefact", null);
         me.game.add(this.artefact_tile, this.entity_layer);
 
-        if (me.gamestat.getItemValue("skill") > 0) {
+        if (me.save.skill > 0) {
             this.buttons_add = {};
             var x_pos = this.pos.x + 75;
             var height = this.font.measureText(context, "HP").height;
@@ -258,10 +257,9 @@ game.Backpack = game.gui.InventoryWindow.extend({
 
         this.money_tab = new game.gui.MoneyTab(this.pos.x + 140, this.pos.y + 125);
         me.game.add(this.money_tab, this.entity_layer);
-        me.game.sort();
 
     }, update: function() {
-        if (me.gamestat.getItemValue("skill") === 0 && this.buttons_add !== null) {
+        if (me.save.skill === 0 && this.buttons_add !== null) {
             me.game.remove(this.buttons_add.str);
             this.buttons_add.str = null;
             me.game.remove(this.buttons_add.agi);
@@ -273,11 +271,11 @@ game.Backpack = game.gui.InventoryWindow.extend({
             this.buttons_add = null;
         }
 
-        this.labels.skill.text = me.gamestat.getItemValue("skill");
-        this.labels.exp.text = me.gamestat.getItemValue("exp") + "/" + me.gamestat.getItemValue("next_level");
-        this.labels.hp.text = me.gamestat.getItemValue("hp") + "/" + me.gamestat.getItemValue("maxhp");
+        this.labels.skill.text = me.save.skill;
+        this.labels.exp.text = me.save.exp + "/" + me.save.next_level;
+        this.labels.hp.text = me.save.hp + "/" + me.save.maxhp;
 
-        this.money_tab.onUpdate(me.gamestat.getItemValue("money"));
+        this.money_tab.onUpdate(me.save.money);
 
         this.parent();
         return true;
@@ -291,17 +289,16 @@ game.Backpack = game.gui.InventoryWindow.extend({
             this.weapon_icon = null;
         }
 
-        if (me.gamestat.getItemValue("equip").weapon !== null) {
+        if (me.save.equip.weapon !== null) {
             if (this.weapon !== null) {
                 me.game.remove(this.weapon);
                 this.weapon = null;
             }
-            var weapon = game.mechanic.get_inventory_item(me.gamestat.getItemValue("equip").weapon);
+            var weapon = game.mechanic.get_inventory_item(me.save.equip.weapon);
             this.weapon_icon = new game.weapons[weapon.attributes.object_name](this.human_icon.pos.x + weapon.attributes.offset_x, this.human_icon.pos.y + weapon.attributes.offset_y);
             this.weapon_icon.renderable.setCurrentAnimation("iddle_down");
             this.weapon_icon.floating = true;
             me.game.add(this.weapon_icon, this.entity_layer + 1);
-            me.game.sort();
         }
     },
     onDestroyEvent: function() {
@@ -381,7 +378,7 @@ game.Backpack = game.gui.InventoryWindow.extend({
         if (this.selected_tile !== null) {
             var selected = this.getTileFromID(this.selected_tile);
 
-            var object = me.gamestat.getItemValue("inventory")[this.selected_tile];
+            var object = me.save.inventory[this.selected_tile];
             //noticed equip first
             this.weapon_tile.iconDown(object);
             this.armor_tile.iconDown(object);
@@ -394,7 +391,7 @@ game.Backpack = game.gui.InventoryWindow.extend({
 
             if (me.input.mouse.pos.x >= this.pos.x + 42 && me.input.mouse.pos.x <= this.pos.x + 42 + 40) {
                 if (me.input.mouse.pos.y >= this.pos.y + 15 && me.input.mouse.pos.y <= this.pos.y + 15 + 40) {
-                    game.mechanic.trigger_item(me.gamestat.getItemValue("inventory")[this.selected_tile].guid);
+                    game.mechanic.trigger_item(me.save.inventory[this.selected_tile].guid);
                 }
             }
 

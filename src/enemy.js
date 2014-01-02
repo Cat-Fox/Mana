@@ -108,7 +108,6 @@ game.npcs.MimicWeapon = game.WalkerNPC.extend({
                 this.tooltip = new game.DropTooltip(this.pos.x - (this.renderable.width / 2), this.pos.y - 5, "Axe", "normal");
                 me.game.add(this.tooltip, game.guiLayer - 1);
             }
-            me.game.sort();
         }
     },
     onUse: function() {
@@ -123,7 +122,6 @@ game.npcs.MimicWeapon = game.WalkerNPC.extend({
 
             var active_mimic = new game.npcs.MimicWeaponActive(this.pos.x, this.pos.y);
             me.game.add(active_mimic, this.z);
-            me.game.sort();
 
             me.game.remove(this);
         }
@@ -193,8 +191,7 @@ game.npcs.MimicWeaponActive = game.npcs.EnemyNPC.extend({
 
         this.onDrop();
         var deathSmoke = me.entityPool.newInstanceOf("DeathSmoke", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2));
-        me.game.add(deathSmoke, this.z);
-        me.game.sort();
+        me.game.add(deathSmoke, this.z);        
         me.game.remove(this);
     }
 });
@@ -250,7 +247,6 @@ game.npcs.Goblin = game.npcs.EnemyNPC.extend({
         this.onDrop();
         var deathSmoke = me.entityPool.newInstanceOf("DeathSmoke", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2));
         me.game.add(deathSmoke, this.z);
-        me.game.sort();
         me.game.remove(this);
     }
 });
@@ -306,7 +302,6 @@ game.npcs.Bat = game.npcs.EnemyNPC.extend({
         this.onDrop();
         var deathSmoke = me.entityPool.newInstanceOf("DeathSmoke", this.pos.x + (this.renderable.width / 2), this.pos.y + (this.renderable.height / 2));
         me.game.add(deathSmoke, this.z);
-        me.game.sort();
         me.game.remove(this);
     }
 });

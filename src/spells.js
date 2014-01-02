@@ -93,7 +93,6 @@ game.effects.Fireball = me.ObjectEntity.extend({
     onDestroyEvent: function(){
         var explosion = new game.effects.Explosion(this.pos.x + (this.width / 2), this.pos.y + (this.height / 2));
         me.game.add(explosion, game.LAYERS.NPC);
-        me.game.sort();
     }
 });
 

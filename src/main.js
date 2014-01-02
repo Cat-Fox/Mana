@@ -15,14 +15,24 @@ var game =
             mechanic: {},
             instances: {},
             entities: {},
-            object_layer: 4,
             effects: {},
             npcs: {},
             audio: {},
             pathfinding: {},
             spells: {},
+            ANIMATIONS: {
+                WALK_RIGHT: "right", 
+                WALK_UP: "up", 
+                WALK_DOWN: "down", 
+                ATTACK_RIGHT: "attack_right", 
+                ATTACK_TOP: "attack_top", 
+                ATTACK_DOWN: "attack_down",
+                IDDLE_RIGHT: "iddle_right",
+                IDDLE_TOP: "iddle_top",
+                IDDLE_DOWN: "iddle_down"
+            },
             LAYERS: {GUI: 15, NPC: 5, ITEMS: 4, TOP: 20},
-            version: "0.0.5",
+            version: "1.0.0",
             onload: function()
             {
                 if (!me.video.init('screen', this.screenWidth, this.screenHeight, true, 2.0, true)) {
@@ -39,6 +49,8 @@ var game =
                     alert('The File APIs are not fully supported in this browser.');
                     return;
                 }
+                
+                me.game.sortOn = "z";
                 
                 me.state.set(me.state.LOADING, new game.LoadingScreen());
                 me.audio.init("mp3,ogg");
@@ -118,7 +130,40 @@ var game =
                 me.entityPool.add("PlusSkillButton", game.PlusSkillButton, true);
 
 
-                //Setup Gamestat
+                me.save.add({
+                    hp: 50,
+                    maxhp: 50, 
+                    exp: 0, 
+                    level: 1, 
+                    next_level: 100,
+                    skill: 0,
+                    money: 0,
+                    mana: 0,
+                    helmet: 0,
+                    stats: new game.mechanic.Stats(1, 1, 1, 1, true),
+                    inventory: new Array(30),
+                    stash: new Array(40),
+                    belt: new Array(8),
+                    spels: new Array(64),
+                    equip: {weapon: null, armor: null, artefact: null}
+                });
+                
+                for (var i = 0; i < me.save.inventory.length; i++) {
+                    me.save.inventory[i] = null;
+                }
+                
+                for (var i = 0; i < me.save.stash.length; i++) {
+                    me.save.stash[i] = null;
+                }
+                
+                for (var i = 0; i < me.save.belt.length; i++) {
+                    me.save.belt[i] = null;
+                }
+                
+                for (var i = 0; i < me.save.spells.length; i++) {
+                    me.save.spells[i] = null;
+                }
+                /*                    
                 me.gamestat.add("hp", 50);
                 me.gamestat.add("maxhp", 50);
                 me.gamestat.add("exp", 0);
@@ -155,7 +200,7 @@ var game =
                 me.gamestat.add("spells", spells);
                 me.gamestat.add("mana", 0);
                 me.gamestat.add("helmet", 0);
-
+                */
                 me.sys.fps = 30;
 
                 //audio need to be global and set before menu

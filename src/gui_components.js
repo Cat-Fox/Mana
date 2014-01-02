@@ -42,7 +42,6 @@ game.gui.InventoryButton = me.GUI_Object.extend({
         this.image_icon = new game.Icon(x + 2, y + 0, image);
         me.game.add(this.image_icon, game.LAYERS.TOP);
         me.game.add(this.text_object, game.LAYERS.TOP);
-        me.game.sort();
         this.hovering = false;
         this.func = func;
     },
@@ -103,7 +102,6 @@ game.gui.InventoryWindow = me.ObjectEntity.extend({
         me.game.add(this.inventory_buttons.manabook, this.entity_layer);
         this.inventory_buttons.options = new game.gui.InventoryButton(384 - 80, 5 + 4 + (16 * 2) + 2, "Options", "options_icon", game.mechanic.open_options);
         me.game.add(this.inventory_buttons.options, this.entity_layer);
-        me.game.sort();
         me.input.registerPointerEvent('mouseup', me.game.viewport, this.mouseUp.bind(this));
     },
     onDestroyEvent: function() {
@@ -136,12 +134,12 @@ game.CharacterTile = me.GUI_Object.extend({
         this.id = id;
         this.tooltip = null;
         if (this.type !== "belt") {
-            if (me.gamestat.getItemValue("equip")[this.type] !== null) {
-                this.addIcon(me.gamestat.getItemValue("equip")[this.type]);
+            if (me.save.equip[this.type] !== null) {
+                this.addIcon(me.save.equip[this.type]);
             }
         } else {
-            if (me.gamestat.getItemValue("belt")[this.id] !== null) {
-                this.addIcon(me.gamestat.getItemValue("belt")[this.id]);
+            if (me.save.belt[this.id] !== null) {
+                this.addIcon(me.save.belt[this.id]);
             }
         }
     },
@@ -153,11 +151,11 @@ game.CharacterTile = me.GUI_Object.extend({
         }
 
         if (this.type !== "belt") {
-            if (me.gamestat.getItemValue("equip")[this.type] !== null && this.icon === null) {
-                this.addIcon(me.gamestat.getItemValue("equip")[this.type]);
-            } else if (me.gamestat.getItemValue("equip")[this.type] !== null && this.icon !== null) {
-                if ((game.mechanic.get_inventory_item(me.gamestat.getItemValue("equip")[this.type]).icon_name !== this.icon.image)) {
-                    this.addIcon(me.gamestat.getItemValue("equip")[this.type]);
+            if (me.save.equip[this.type] !== null && this.icon === null) {
+                this.addIcon(me.save.equip[this.type]);
+            } else if (me.save.equip[this.type] !== null && this.icon !== null) {
+                if ((game.mechanic.get_inventory_item(me.save.equip[this.type]).icon_name !== this.icon.image)) {
+                    this.addIcon(me.save.equip[this.type]);
                 }
             }
         }
@@ -205,7 +203,6 @@ game.CharacterTile = me.GUI_Object.extend({
             if (success) {
                 this.icon = new game.Icon(this.pos.x, this.pos.y, object.icon_name);
                 me.game.add(this.icon, this.z + 1);
-                me.game.sort();
             }
             if (game.instances.backpack !== null) {
                 game.instances.backpack.updateEquip();
@@ -216,7 +213,7 @@ game.CharacterTile = me.GUI_Object.extend({
                 game.instances.belt.tiles[this.id].icon = null;
             }
 
-            me.gamestat.getItemValue("belt")[this.id] = guid;
+            me.save.belt[this.id] = guid;
 
             this.icon = new game.Icon(this.pos.x, this.pos.y, object.icon_name);
 
@@ -224,7 +221,6 @@ game.CharacterTile = me.GUI_Object.extend({
             me.game.add(game.instances.belt.tiles[this.id].icon, game.guiLayer + 1);
 
             me.game.add(this.icon, this.z + 1);
-            me.game.sort();
         }
 
         return true;
@@ -251,14 +247,13 @@ game.CharacterTile = me.GUI_Object.extend({
         if (this.tooltip === null && this.icon !== null) {
             var object;
             if (this.type === "belt") {
-                object = game.mechanic.get_inventory_item(me.gamestat.getItemValue(this.type)[this.id]);
+                object = game.mechanic.get_inventory_item(me.save[this.type][this.id]);
             } else {
-                object = game.mechanic.get_inventory_item(me.gamestat.getItemValue("equip")[this.type]);
+                object = game.mechanic.get_inventory_item(me.save.equip[this.type]);
             }
             if (object.tooltip_text !== null) {
                 this.tooltip = new game.gui.Tooltip(this.pos.x + this.width, this.pos.y, object.tooltip_text);
                 me.game.add(this.tooltip, this.z + 3);
-                me.game.sort();
             }
         }
     },
@@ -310,7 +305,7 @@ game.InventoryTile = me.GUI_Object.extend({
         if (this.click_timer_run === 0) {
             this.click_timer_run = me.timer.getTime();
             if (this.icon !== null) {
-                game.instances.audio.channels.effects.addEffect(me.gamestat.getItemValue(this.tile_type)[this.id].attributes.sound);
+                game.instances.audio.channels.effects.addEffect(me.save[this.tile_type][this.id].attributes.sound);
                 if (game.instances.backpack !== null) {
                     game.instances.backpack.selected_tile = this.id;
                 } else if (game.instances.stash !== null) {
@@ -334,15 +329,14 @@ game.InventoryTile = me.GUI_Object.extend({
         if (this.tile_type === "shop") {
             container = game.instances.shop_items;
         } else if (this.tile_type === "spells") {
-            container = me.gamestat.getItemValue("spells");
+            container = me.save.spells;
         } else {
-            container = me.gamestat.getItemValue(this.tile_type);
+            container = me.save[this.tile_type];
         }
         if (this.icon === null && container[this.id] !== null) {
             this.icon_name = container[this.id].icon_name;
             this.icon = me.entityPool.newInstanceOf("Icon", this.pos.x, this.pos.y, this.icon_name);
             me.game.add(this.icon, this.z + 2);
-            me.game.sort();
         } else if (this.icon !== null && container[this.id] === null) {
             me.game.remove(this.icon);
             this.icon = null;
@@ -380,12 +374,11 @@ game.InventoryTile = me.GUI_Object.extend({
             if (this.tile_type === "shop") {
                 object = game.instances.shop_items[this.id];
             } else {
-                object = me.gamestat.getItemValue(this.tile_type)[this.id];
+                object = me.save[this.tile_type][this.id];
             }
             if (object.tooltip_text !== null) {
                 this.tooltip = new game.gui.Tooltip(this.pos.x + this.width, this.pos.y, object.tooltip_text);
                 me.game.add(this.tooltip, this.z + 3);
-                me.game.sort();
             }
         }
     },
@@ -496,7 +489,6 @@ game.Button = me.GUI_Object.extend({
         if (this.tooltip === null && this.title !== "") {
             this.tooltip = new game.gui.Tooltip(this.pos.x + this.width, this.pos.y, [new game.gui.TextLine(this.title, game.fonts.white)]);
             me.game.add(this.tooltip, this.z + 1);
-            me.game.sort();
         }
     }, onHoverOut: function() {
         if (this.tooltip !== null) {
@@ -594,7 +586,6 @@ game.SmallButton = me.GUI_Object.extend({
         if (this.tooltip === null) {
             this.tooltip = new game.gui.Tooltip(this.pos.x + this.width, this.pos.y + this.height, this.title);
             me.game.add(this.tooltip, this.z + 1);
-            me.game.sort();
         }
     }, onHoverOut: function() {
         if (this.tooltip !== null) {
@@ -635,7 +626,7 @@ game.DropButton = game.Button.extend({
     onClick: function() {
         this.parent();
         if (game.instances.backpack.selected_tile !== null) {
-            me.gamestat.getItemValue("inventory").splice(game.instances.backpack.selected_tile, 1);
+            me.save.inventory.splice(game.instances.backpack.selected_tile, 1);
         }
     }
 });
@@ -649,15 +640,15 @@ game.UseButton = game.Button.extend({
     },
     onClick: function() {
         this.parent();
-        var player = me.game.getEntityByGUID(me.gamestat.getItemValue("player"));
+        var player = me.game.getEntityByGUID(me.save.player);
         if (game.instances.backpack.selected_tile !== null) {
-            var selected = me.gamestat.getItemValue("inventory")[game.instances.backpack.selected_tile];
+            var selected = me.save.inventory[game.instances.backpack.selected_tile];
             switch (selected.type) {
                 case "consumable":
                     if (typeof selected.attributes.heal !== "undefined") {
                         player.updateHP(selected.attributes.heal);
                     }
-                    me.gamestat.getItemValue("inventory").splice(game.instances.backpack.selected_tile, 1);
+                    me.save.inventory.splice(game.instances.backpack.selected_tile, 1);
                     break;
                 case "default":
                     console.log("nothing");
@@ -707,7 +698,7 @@ game.gui.HumanIcon = me.ObjectEntity.extend({
         settings.spritewidth = 32;
         settings.spriteheight = 32;
         if (image === "predefined") {
-            var armor = me.gamestat.getItemValue("equip").armor;
+            var armor = me.save.equip.armor;
             if (armor === null) {
                 settings.image = game.createPlayerCanvas();
             } else
@@ -794,10 +785,9 @@ game.gui.Belt = me.ObjectEntity.extend({
             this.tiles[i] = new game.gui.BeltIcon(this.pos.x + i * 16, this.pos.y);
             me.game.add(this.tiles[i], game.guiLayer);
         }
-        me.game.sort();
     }, update: function() {
         for (var i = 0; i < this.tiles.length; i++) {
-            if (this.tiles[i].icon !== null && me.gamestat.getItemValue("belt")[i] === null) {
+            if (this.tiles[i].icon !== null && me.save.belt[i] === null) {
                 me.game.remove(this.tiles[i].icon);
                 this.tiles[i].icon = null;
             }
@@ -843,7 +833,6 @@ game.gui.PauseMenu = me.ObjectEntity.extend({
         me.game.add(this.buttons.save, game.LAYERS.GUI + 2);
         this.buttons.options = new game.gui.FuncButton(this.pos.x + (this.renderable.width / 2) - 40, this.pos.y + 25, "Options", "", null, game.mechanic.trigger_options);
         me.game.add(this.buttons.options, game.LAYERS.GUI + 2);
-        me.game.sort();
     },
     onDestroyEvent: function() {
         me.game.remove(this.buttons.save);
@@ -885,13 +874,13 @@ game.gui.DropItem = me.GUI_Object.extend({
     },
     mouseUp: function(selected) {
         if (this.containsPointV(me.input.mouse.pos)) {
-            var guid = me.gamestat.getItemValue("inventory")[selected].guid;
+            var guid = me.save.inventory[selected].guid;
 
-            me.gamestat.getItemValue("inventory")[selected] = null;
+            me.save.inventory[selected] = null;
 
             //now clean this shit sort, equip and belt
             game.mechanic.inventory_sort();
-            var equip = me.gamestat.getItemValue("equip");
+            var equip = me.save.equip;
             if (equip.weapon === guid) {
                 equip.weapon = null;
                 game.instances.backpack.weapon_tile.removeItem();
@@ -905,7 +894,7 @@ game.gui.DropItem = me.GUI_Object.extend({
                 equip.artefact = null;
                 game.instances.backpack.artefact_tile.removeItem();
             }
-            var belt = me.gamestat.getItemValue("belt");
+            var belt = me.save.belt;
             for (var i = 0; i < belt.length; i++) {
                 if (belt[i] === guid) {
                     belt[i] = null;
@@ -959,7 +948,6 @@ game.gui.Dialog = me.ObjectEntity.extend({
         this.text_object.floating = true;
         me.game.add(this.text_object, game.guiLayer + 1);
         this.createCurrentIcon();
-        me.game.sort();
     },
     update: function() {
         if (me.input.isKeyPressed('use')) {
@@ -993,11 +981,11 @@ game.gui.Dialog = me.ObjectEntity.extend({
             game.instances.dialog = null;
             return false;
         } else if (message_object.type === "SET_HISTORY") {
-            me.gamestat.getItemValue("history").npcs_talks[message_object.variable] = message_object.value;
+            me.save.history.npcs_talks[message_object.variable] = message_object.value;
             this.nextMessage();
             return false;
         } else if (message_object.type === "HEAL") {
-            me.gamestat.setValue("hp", me.gamestat.getItemValue("maxhp"));
+            me.save.hp = me.save.maxhp;
             this.nextMessage();
             return false;
         } else if (message_object.type === "QUESTION") {
@@ -1005,7 +993,6 @@ game.gui.Dialog = me.ObjectEntity.extend({
             this.option = 0;
             this.option_object = new game.gui.DialogOptions(message_object.answers);
             me.game.add(this.option_object, game.LAYERS.GUI);
-            me.game.sort();
         } else if (message_object.type === "SHOP") {
             game.instances.shop = new game.gui.Shop(this.dialog);
             me.game.add(game.instances.shop, game.LAYERS.GUI);
@@ -1028,9 +1015,9 @@ game.gui.Dialog = me.ObjectEntity.extend({
         } else if (message_object.type === "REQUIREMENT") {
             switch (message_object.req_type) {
                 case "GOLD":
-                    if (message_object.value <= me.gamestat.getItemValue("money")) {
+                    if (message_object.value <= me.save.money) {
                         game.instances.audio.channels.effects.addEffect("coins");
-                        me.gamestat.updateValue("money", -message_object.value);
+                        me.save.money = me.save.money - message_object.value;
                         this.setBranch(message_object.r_true);
                         return false;
                     } else {
@@ -1056,7 +1043,6 @@ game.gui.Dialog = me.ObjectEntity.extend({
             case "PLAYER":
                 this.human_icon = new game.gui.HumanIcon(this.pos.x + 5, this.pos.y + 2, "predefined");
                 me.game.add(this.human_icon, game.guiLayer + 1);
-                me.game.sort();
                 break;
             case "QUESTION":
                 this.createIconNPC();
@@ -1065,7 +1051,6 @@ game.gui.Dialog = me.ObjectEntity.extend({
                 this.createIconNPC();
                 break;
         }
-        me.game.sort();
     }, nextMessage: function() {
         this.message++;
         if (this.message === this.dialog.branches[this.branch].length) {
@@ -1150,7 +1135,6 @@ game.gui.DialogOptions = game.gui.Window.extend({
         this.cursor = new game.Icon(50 + 4, this.cursor_start, "item-sword1");
         this.cursor.floating = true;
         me.game.add(this.cursor, game.LAYERS.GUI + 1);
-        me.game.sort();
     },
     update: function() {
         if (me.input.isKeyPressed("option_up")) {
@@ -1229,7 +1213,6 @@ game.gui.MoneyTab = me.ObjectEntity.extend({
         this.label = new game.gui.SmallText(this.pos.x + 20, this.pos.y + 4, "0", this.font);
         this.label.floating = true;
         me.game.add(this.label, game.guiLayer + 1);
-        me.game.sort();
     },
     onDestroyEvent: function() {
         me.game.remove(this.icon);
@@ -1256,7 +1239,6 @@ game.mechanic.set_enemy_panel = function(name, percent) {
     if (game.instances.enemy_panel === null) {
         game.instances.enemy_panel = new game.gui.EnemyPanel();
         me.game.add(game.instances.enemy_panel, game.guiLayer);
-        me.game.sort();
     }
 
     game.instances.enemy_panel.setName(name);
@@ -1379,11 +1361,11 @@ game.gui.AttributeText = game.gui.SmallText.extend({
         this.floating = true;
     },
     getText: function() {
-        var result = me.gamestat.getItemValue("stats").getBonusAttr(this.attribute);
+        var result = me.save.stats.getBonusAttr(this.attribute);
         return result.toString();
     },
     getFont: function() {
-        if (me.gamestat.getItemValue("stats")["bons_" + this.attribute] > 0) {
+        if (me.save.stats["bons_" + this.attribute] > 0) {
             return game.fonts.teal;
         } else {
             return game.fonts.basic;
@@ -1405,7 +1387,6 @@ game.gui.AttributeText = game.gui.SmallText.extend({
             if (this.tooltip === null) {
                 this.tooltip = new game.gui.Tooltip(this.pos.x + this.font.measureText(me.video.getScreenContext(), this.text).width, this.pos.y, game.mechanic.get_attribute_tooltip(this.attribute));
                 me.game.add(this.tooltip, game.LAYERS.TOP);
-                me.game.sort();
             }
         } else {
             if (this.hovering) {
@@ -1455,7 +1436,6 @@ game.gui.SliderContainer = me.ObjectEntity.extend({
 
         this.slider = new game.gui.Slider(this.pos.x + init_v, this.pos.y - 2, this);
         me.game.add(this.slider, game.LAYERS.TOP + 4);
-        me.game.sort();
 
         me.input.registerPointerEvent("mouseup", me.game.viewport, this.mouseUp.bind(this));
     },
@@ -1599,7 +1579,6 @@ game.gui.MoneyInput = me.ObjectEntity.extend({
         me.game.add(this.input, game.LAYERS.TOP);
         this.button = new game.gui.FuncButton(x + 50, y + 30, "Ok", "", this, "onSubmit");
         me.game.add(this.button, game.LAYERS.TOP);
-        me.game.sort();
     }, onDestroyEvent: function() {
         me.game.remove(this.input);
         this.input = null;
@@ -1610,21 +1589,21 @@ game.gui.MoneyInput = me.ObjectEntity.extend({
     }, onSubmit: function() {
         if (this.where === "inventory") {
             var value = this.input.text;
-            if (me.gamestat.getItemValue("stash_money") >= value) {
-                me.gamestat.updateValue("stash_money", -value);
-                me.gamestat.updateValue("money", value);
+            if (me.save.stash_money >= value) {
+                me.save.stash_money = me.save.stash_money - value;
+                me.save.money = me.save.money + value;
             } else {
-                me.gamestat.updateValue("money", me.gamestat.getItemValue("stash_money"));
-                me.gamestat.setValue("stash_money", 0);
+                me.save.money = me.save.money + me.save.stash_money;
+                me.save.stash_money = 0;
             }
         } else {
             var value = this.input.text;
-            if (me.gamestat.getItemValue("money") >= value) {
-                me.gamestat.updateValue("money", -value);
-                me.gamestat.updateValue("stash_money", value);
+            if (me.save.money >= value) {
+                me.save.money = me.save.money - value;
+                me.save.stash_money = me.save.stash_money + value;
             } else {
-                me.gamestat.updateValue("stash_money", me.gamestat.getItemValue("money"));
-                me.gamestat.setValue("money", 0);
+                me.save.stash_money > me.save.stash_money + me.save.money;
+                me.save.money = 0;
             }
         }
         me.game.remove(this);
