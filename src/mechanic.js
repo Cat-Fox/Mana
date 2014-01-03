@@ -445,12 +445,12 @@ game.mechanic.save_game = function() {
 };
 
 game.mechanic.load_game = function() {
-    me.gamestat.setValue("level", parseInt(localStorage.level));
-    me.gamestat.setValue("next_level", parseInt(localStorage.next_level));
-    me.gamestat.setValue("hp", parseInt(localStorage.hp));
-    me.gamestat.setValue("maxhp", parseInt(localStorage.max_hp));
-    me.gamestat.setValue("exp", parseInt(localStorage.exp));
-    me.gamestat.setValue("money", parseInt(localStorage.money));
+    me.save.level = parseInt(localStorage.level);
+    me.save.next_level = parseInt(localStorage.next_level);
+    me.save.hp = parseInt(localStorage.hp);
+    me.save.maxhp = parseInt(localStorage.max_hp);
+    me.save.exp = parseInt(localStorage.exp);
+    me.save.money = parseInt(localStorage.money);
     var inventory = JSON.parse(localStorage.inventory);
     for (var i = 0; i < inventory.length; i++) {
         if (inventory[i] === null) {
@@ -491,28 +491,28 @@ game.mechanic.load_game = function() {
         }
         inventory[i] = new game.ItemObject(inventory[i].name, inventory[i].icon_name, inventory[i].type, inventory[i].rarity, inventory[i].attributes, tooltip, inventory[i].guid);
     }
-    me.gamestat.setValue("inventory", inventory);
-    me.gamestat.setValue("stash", JSON.parse(localStorage.stash));
-    me.gamestat.setValue("stash_money", parseInt(JSON.parse(localStorage.stash_money)));
-    me.gamestat.setValue("equip", JSON.parse(localStorage.equip));
-    me.gamestat.setValue("belt", JSON.parse(localStorage.belt));
-    me.gamestat.setValue("skill", parseInt(localStorage.skill_points));
+    me.save.inventory = inventory;
+    me.save.stash = JSON.parse(localStorage.stash);
+    me.save.stash_money = parseInt(JSON.parse(localStorage.stash_money));
+    me.save.equip = JSON.parse(localStorage.equip);
+    me.save.belt = JSON.parse(localStorage.belt);
+    me.save.skill = parseInt(localStorage.skill_points);
     var json = JSON.parse(localStorage.history);
     var history = new game.mechanic.History(json.killed_monsters, json.npcs_talks, json.deaths);
-    me.gamestat.setValue("history", history);
+    me.save.history = history;
     var old_stats = JSON.parse(localStorage.stats);
     var stats = new game.mechanic.Stats(old_stats.str, old_stats.agi, old_stats.end, old_stats.int, true);
     stats.getBonusAttr("str");
     stats.getBonusAttr("agi");
     stats.getBonusAttr("end");
     stats.getBonusAttr("vit");
-    me.gamestat.setValue("stats", stats);
+    me.save.stats = stats;
 };
 
 game.mechanic.respawn = function() {
     me.save.history.previous_level = "respawn";
-    me.gamestat.setValue("hp", me.save.maxhp);
-    me.gamestat.setValue("money", 0);
+    me.save.hp = me.save.maxhp;
+    me.save.money = 0;
     game.instances.enemy_panel = null;
     me.levelDirector.loadLevel("test_map");
     game.mechanic.initialize_level();
@@ -569,7 +569,7 @@ game.mechanic.attributeUp = function(attribute) {
     var requirement = game.mechanic.stat_requirement(me.save.stats[attribute]);
     if (me.save.skill >= requirement) {
         me.save.stats[attribute] += 1;
-        me.gamestat.updateValue("skill", -requirement);
+        me.save.skill = me.save.skill - requirement;
         game.mechanic.updateStats();
     } else {
         game.instances.console.post("Not enough skill points");
@@ -728,5 +728,5 @@ game.mechanic.trigger_manabook = function() {
 };
 
 game.mechanic.switch_helmet = function(bool_val){
-    me.gamestat.setValue("helmet", bool_val);
+    me.save.helmet = bool_val;
 };

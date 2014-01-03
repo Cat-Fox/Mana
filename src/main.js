@@ -40,11 +40,6 @@ var game =
                     return;
                 }
 
-                if (!me.sys.localStorage) {
-                    alert("Sorry, but your browser does not support Local Web Storage");
-                    return;
-                }
-
                 if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
                     alert('The File APIs are not fully supported in this browser.');
                     return;
@@ -144,7 +139,7 @@ var game =
                     inventory: new Array(30),
                     stash: new Array(40),
                     belt: new Array(8),
-                    spels: new Array(64),
+                    spells: new Array(64),
                     equip: {weapon: null, armor: null, artefact: null}
                 });
                 
@@ -163,6 +158,8 @@ var game =
                 for (var i = 0; i < me.save.spells.length; i++) {
                     me.save.spells[i] = null;
                 }
+                
+                console.log(me.save.stats);
                 /*                    
                 me.gamestat.add("hp", 50);
                 me.gamestat.add("maxhp", 50);
@@ -202,6 +199,7 @@ var game =
                 me.gamestat.add("helmet", 0);
                 */
                 me.sys.fps = 30;
+                
 
                 //audio need to be global and set before menu
                 game.instances.audio = new game.audio.Main();

@@ -1524,6 +1524,7 @@ game.gui.TextInput = me.Renderable.extend({
     init: function(x, y, type, length) {
         x = x * 2;
         y = y * 2;
+        this.parent(x, y, null);
         this.$input = $('<input type="' + type + '" required>').css({
             "left": x,
             "top": y

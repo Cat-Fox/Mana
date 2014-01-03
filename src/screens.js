@@ -123,9 +123,7 @@ game.MenuScreen = game.AnimatedScreen.extend({
         this.version = new game.gui.SmallText(10, 10, game.version, game.fonts.white);
         this.version.floating = true;
         me.game.add(this.version, 8);
-        me.game.add(this.small_logo, 8);       
-
-
+        me.game.add(this.small_logo, 8);
 
         this.selection = 0;
 
@@ -326,14 +324,14 @@ game.LoadingScreen = me.ScreenObject.extend({
         this.loadPercent = 0;
         me.loader.onProgress = this.onProgressUpdate.bind(this);
         this.message = "";
-        switch(Number.prototype.random(0,4)){
-            case 0 : 
+        switch (Number.prototype.random(0, 4)) {
+            case 0 :
                 this.message = "Be patient, trees growing, people dying, game is loading.";
                 break;
             case 1 :
                 this.message = "Allocating Fun.";
                 break;
-            case 2 : 
+            case 2 :
                 this.message = "If you are not having fun, you are not dying enough.";
                 break;
             case 3 :
@@ -404,6 +402,7 @@ game.CharacterPickScreen = me.ScreenObject.extend({
         this.background = null;
     },
     onResetEvent: function() {
+  
         game.instances.console = new game.gui.Console(0, 0);
         me.game.add(game.instances.console, 9999);
         this.pick_gender = ["male", "female"];
@@ -456,6 +455,7 @@ game.CharacterPickScreen = me.ScreenObject.extend({
         me.input.bindKey(me.input.KEY.ENTER, "enter", true);
     },
     update: function() {
+        console.log("update");
         if (me.input.isKeyPressed("enter")) {
             this.play();
         }
@@ -566,16 +566,14 @@ game.CharacterPickScreen = me.ScreenObject.extend({
         } else {
             hair = this.pick_hair_f[this.current_hair];
         }
-        
-        
-        var body = {
-            gender: gender,
-            hair: hair,
-            color: color,
-            name: this.text_input.$input["0"].value.toUpperCase()
-        };
-        
-        me.gamestat.add("body", body);
+
+        me.save.add({
+                body: {
+                        gender: gender,
+                        hair: hair,
+                        color: color,
+                        name: this.text_input.$input["0"].value.toUpperCase()}
+                });
 
         me.state.change(me.state.PLAY);
     },

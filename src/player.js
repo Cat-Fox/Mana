@@ -1,4 +1,6 @@
-
+/**
+ * player.js
+ */
 
 game.createPlayerCanvas = function(armor) {
     armor = typeof armor !== 'undefined' ? armor : null;
@@ -61,12 +63,12 @@ game.Player = me.ObjectEntity.extend({
 
 
         me.game.viewport.follow(this.pos, me.game.viewport.AXIS_BOTH);
-        this.renderable.addAnimation("right", [5, 6, 7, 8]);
-        this.renderable.addAnimation("up", [20, 21, 22, 23]);
-        this.renderable.addAnimation("down", [35, 36, 37, 38]);
-        this.renderable.addAnimation("iddle_right", [10, 11], 30);
-        this.renderable.addAnimation("iddle_up", [25, 26], 30);
-        this.renderable.addAnimation("iddle_down", [40, 41], 30);
+        this.renderable.addAnimation("right", [5, 6, 7, 8], 300);
+        this.renderable.addAnimation("up", [20, 21, 22, 23], 300);
+        this.renderable.addAnimation("down", [35, 36, 37, 38], 300);
+        this.renderable.addAnimation("iddle_right", [10, 11], 600);
+        this.renderable.addAnimation("iddle_up", [25, 26], 600);
+        this.renderable.addAnimation("iddle_down", [40, 41], 600);
         this.renderable.addAnimation("attack_down", [30, 31, 32, 33, 34], 1);
         this.renderable.addAnimation("attack_up", [15, 16, 17, 18, 19], 1);
         this.renderable.addAnimation("attack_right", [0, 1, 2, 3, 4], 1);
@@ -80,9 +82,9 @@ game.Player = me.ObjectEntity.extend({
 
         //store GUID
         if (me.save.player === 0) {
-            me.gamestat.add("player", this.GUID);
+            me.save.add({player : this.GUID});
         } else {
-            me.gamestat.setValue("player", this.GUID);
+            me.save.player = this.GUID;
         }
         game.instances.player = this;
         this.type = "player";
@@ -117,7 +119,7 @@ game.Player = me.ObjectEntity.extend({
         game.instances.belt = new game.gui.Belt();
         me.game.add(game.instances.belt, game.guiLayer);
 
-        this.hp_text = new game.gui.SmallText(this.pos.x + 5, this.posy + this.renderable.height, me.save.hp") + "/" + me.gamestat.getItemValue("maxhp, this.hp_font);
+        this.hp_text = new game.gui.SmallText(this.pos.x + 5, this.posy + this.renderable.height, me.save.hp + "/" + me.save.maxhp, this.hp_font);
         me.game.add(this.hp_text, game.LAYERS.GUI - 1);
         this.belt_cooldown_run = new Array(8);
         for (var i = 0; i < this.belt_cooldown_run.length; i++) {
@@ -177,10 +179,10 @@ game.Player = me.ObjectEntity.extend({
             game.mechanic.belt_use(7);
         }
 
-        if ((me.save.hp") <= (me.gamestat.getItemValue("maxhp * 0.05)) && this.red_screen === null) {
+        if ((me.save.hp <= (me.save.maxhp * 0.05)) && this.red_screen === null) {
             this.red_screen = new game.effects.RedScreen();
             me.game.add(this.red_screen, game.guiLayer - 1);
-        } else if ((me.save.hp") >= (me.gamestat.getItemValue("maxhp * 0.05)) && this.red_screen !== null) {
+        } else if ((me.save.hp >= (me.save.maxhp * 0.05)) && this.red_screen !== null) {
             me.game.remove(this.red_screen);
             this.red_screen = null;
         }
@@ -317,7 +319,7 @@ game.Player = me.ObjectEntity.extend({
         this.updateTargetBox();
         this.hp_text.pos.x = this.pos.x + 5;
         this.hp_text.pos.y = this.pos.y + this.renderable.height;
-        this.hp_text.text = me.save.hp") + "/" + me.gamestat.getItemValue("maxhp;
+        this.hp_text.text = me.save.hp + "/" + me.save.maxhp;
         if (this.weapon !== null) {
             var weapon = game.mechanic.get_inventory_item(me.save.equip.weapon);
             if (weapon === false) {
@@ -348,10 +350,10 @@ game.Player = me.ObjectEntity.extend({
             var text = new game.effects.HealText(this.pos.x, this.pos.y, value + "HP");
             me.game.add(text, game.LAYERS.GUI - 1);
         }
-        if ((me.save.hp") + value) > me.gamestat.getItemValue("maxhp) {
-            me.gamestat.setValue("hp", me.save.maxhp);
+        if ((me.save.hp + value) > me.save.maxhp) {
+            me.save.hp = me.save.maxhp;
         } else {
-            me.gamestat.updateValue("hp", value);
+            me.save.hp = me.save.hp + value;
         }
     },
     updateEXP: function(value) {
